@@ -29,37 +29,23 @@
 
 ## Long Term Roadmap
 
-### 🚀 Next Release (v0.2.0-alpha) - December 2024
-**Theme**: Foundation and Basic 3D Rendering
+### 🚀 Next Release (v0.4.0-beta) - December 2024
+**Theme**: Environmental Pressure and Advanced AI
 
 **Planned Features**:
-- [x] Basic Three.js scene setup with camera controls
-- [x] Geometric primitive creature models (sphere, cube, cylinder)
-- [x] Simple creature movement and basic physics
-- [x] Environment terrain generation (flat plane with obstacles)
-- [x] Basic React UI for game controls
+- [ ] Predator-prey relationships and interactions
+- [ ] Environmental pressure system affecting survival
+- [ ] Multiple biome environments (desert, forest, ocean)  
+- [ ] Advanced creature AI with pathfinding
+- [ ] Population migration patterns
+- [ ] Resource competition dynamics
 
 **Technical Improvements**:
-- [x] Project scaffolding with Vite
-- [x] Three.js integration and optimization setup
-- [ ] Basic testing framework implementation
-- [x] Code organization and component structure
-
-### 🚀 Next Release (v0.3.0-alpha) - February 2025
-**Theme**: Creature System and Basic Evolution
-
-**Planned Features**:
-- [x] Creature attribute system (size, speed, energy efficiency)
-- [x] Food resource system and consumption mechanics
-- [x] Basic reproduction and population growth
-- [x] Simple mutation system for creature properties
-- [x] Creature lifecycle (birth, aging, death)
-
-**Technical Improvements**:
-- [x] Basic testing framework implementation (Vitest + React Testing Library)
-- [ ] Performance optimization for larger populations
+- [ ] Performance optimization for 100+ creatures
 - [ ] Improved creature AI and behavior patterns
 - [ ] Enhanced visual feedback and animations
+- [ ] LOD system for complex scenes
+- [ ] Mobile compatibility improvements
 
 ### 🔮 Future Releases (6-12 months)
 

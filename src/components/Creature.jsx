@@ -2,21 +2,28 @@ import { useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
-function CreatureGeometry({ type, size }) {
+function CreatureGeometry({ type, size, isLowDetail = false }) {
+  // Use lower poly versions when there are many creatures for performance
+  const segments = isLowDetail ? 6 : 12
+  const radialSegments = isLowDetail ? 6 : 8
+  
   switch (type) {
     case 'cube':
       return <boxGeometry args={[size, size, size]} />
     case 'cylinder':
-      return <cylinderGeometry args={[size * 0.5, size * 0.5, size, 8]} />
+      return <cylinderGeometry args={[size * 0.5, size * 0.5, size, radialSegments]} />
     case 'sphere':
     default:
-      return <sphereGeometry args={[size * 0.5, 12, 8]} />
+      return <sphereGeometry args={[size * 0.5, segments, radialSegments]} />
   }
 }
 
-export default function Creature({ creature, isSelected, onClick }) {
+export default function Creature({ creature, isSelected, onClick, populationSize = 1 }) {
   const meshRef = useRef()
   const [hovered, setHovered] = useState(false)
+  
+  // Use low detail when population is large for performance
+  const isLowDetail = populationSize > 30
 
   useFrame((state) => {
     if (meshRef.current) {
@@ -82,7 +89,7 @@ export default function Creature({ creature, isSelected, onClick }) {
       castShadow
       receiveShadow
     >
-      <CreatureGeometry type={creature.type} size={creature.size} />
+      <CreatureGeometry type={creature.type} size={creature.size} isLowDetail={isLowDetail} />
       <meshPhongMaterial
         color={getCreatureColor()}
         emissive={getEmissiveColor()}

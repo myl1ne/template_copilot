@@ -111,9 +111,24 @@ export default function GameUI({ gameState, setGameState }) {
             <span>{gameState.isRunning ? 'Running' : 'Paused'}</span>
           </div>
           <div className="stat-item">
+            <span>Environment:</span>
+            <span style={{ 
+              color: gameState.environment?.season === 'drought' ? '#ff6b6b' : 
+                     gameState.environment?.season === 'abundance' ? '#51cf66' : '#69db7c' 
+            }}>
+              {gameState.environment?.season?.charAt(0).toUpperCase() + gameState.environment?.season?.slice(1) || 'Normal'}
+            </span>
+          </div>
+          <div className="stat-item">
             <span>Avg Energy:</span>
             <span>{gameState.population.length > 0 ? 
               Math.round(gameState.population.reduce((sum, c) => sum + c.energy, 0) / gameState.population.length) : 0}
+            </span>
+          </div>
+          <div className="stat-item">
+            <span>Generation:</span>
+            <span>{gameState.population.length > 0 ? 
+              Math.max(...gameState.population.map(c => Math.floor((c.age || 0) / 10))) + 1 : 1}
             </span>
           </div>
         </div>

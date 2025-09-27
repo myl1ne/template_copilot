@@ -13,11 +13,124 @@ export default function CreatureManager({ gameState, setGameState }) {
     return creaturePos.distanceTo(foodPosition) < maxDistance
   }
 
+  // Simple obstacle avoidance - check if path to target is blocked
+  const hasObstacleInPath = (fromPos, toPos, obstacles) => {
+    if (!obstacles || obstacles.length === 0) return false
+    
+    const direction = new THREE.Vector3(toPos[0] - fromPos[0], 0, toPos[2] - fromPos[2]).normalize()
+    const distance = new THREE.Vector3(...fromPos).distanceTo(new THREE.Vector3(...toPos))
+    
+    // Check for obstacles along the path
+    for (let i = 1; i < distance; i += 0.5) {
+      const checkPoint = new THREE.Vector3(
+        fromPos[0] + direction.x * i,
+        fromPos[1],
+        fromPos[2] + direction.z * i
+      )
+      
+      for (const obstacle of obstacles) {
+        const obstacleCenter = new THREE.Vector3(...obstacle.position)
+        const obstacleRadius = Math.max(...obstacle.size) * 0.5
+        if (checkPoint.distanceTo(obstacleCenter) < obstacleRadius + 0.5) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+
+  // Find alternative path around obstacles using simple steering
+  const getAvoidanceDirection = (creature, obstacles) => {
+    const creaturePos = new THREE.Vector3(...creature.position)
+    let avoidanceForce = new THREE.Vector3(0, 0, 0)
+    
+    obstacles.forEach(obstacle => {
+      const obstaclePos = new THREE.Vector3(...obstacle.position)
+      const distance = creaturePos.distanceTo(obstaclePos)
+      const obstacleRadius = Math.max(...obstacle.size) * 0.5
+      const detectionRadius = obstacleRadius + 2 // Detection zone around obstacle
+      
+      if (distance < detectionRadius) {
+        // Calculate repulsion force
+        const repulsion = creaturePos.clone().sub(obstaclePos).normalize()
+        const strength = 1 - (distance / detectionRadius) // Stronger when closer
+        avoidanceForce.add(repulsion.multiplyScalar(strength))
+      }
+    })
+    
+    if (avoidanceForce.length() > 0) {
+      return Math.atan2(avoidanceForce.z, avoidanceForce.x)
+    }
+    return null
+  }
+
+  // Environmental pressure system
+  const applyEnvironmentalPressure = (gameState, setGameState, delta) => {
+    // Initialize environmental state if not present
+    if (!gameState.environment) {
+      setGameState(prev => ({
+        ...prev,
+        environment: {
+          pressure: 0, // 0 = normal, 1 = high pressure
+          lastPressureChange: 0,
+          droughtCycle: 0,
+          season: 'normal' // normal, drought, abundance
+        }
+      }))
+      return
+    }
+
+    const env = gameState.environment
+    env.lastPressureChange += delta
+    env.droughtCycle += delta
+
+    // Seasonal pressure cycles (every 30-60 seconds)
+    if (env.lastPressureChange > 30 + Math.random() * 30) {
+      const newSeason = Math.random() < 0.3 ? 'drought' : (Math.random() < 0.1 ? 'abundance' : 'normal')
+      
+      setGameState(prev => ({
+        ...prev,
+        environment: {
+          ...prev.environment,
+          season: newSeason,
+          pressure: newSeason === 'drought' ? 0.8 : (newSeason === 'abundance' ? -0.3 : 0),
+          lastPressureChange: 0
+        }
+      }))
+    }
+
+    // Apply pressure effects to food sources
+    if (gameState.foodSources && env.season === 'drought') {
+      // Reduce food respawn rate and energy during drought
+      setGameState(prev => ({
+        ...prev,
+        foodSources: prev.foodSources.map(food => ({
+          ...food,
+          energy: food.energy > 0 ? food.energy : 0,
+          respawnTime: food.respawnTime > 0 ? food.respawnTime * 1.5 : food.respawnTime // Slower respawn
+        }))
+      }))
+    } else if (gameState.foodSources && env.season === 'abundance') {
+      // Increase food energy and faster respawn during abundance
+      setGameState(prev => ({
+        ...prev,
+        foodSources: prev.foodSources.map(food => ({
+          ...food,
+          energy: food.energy > 0 ? Math.min(80, food.energy + 5) : food.energy,
+          respawnTime: food.respawnTime > 0 ? food.respawnTime * 0.7 : food.respawnTime // Faster respawn
+        }))
+      }))
+    }
+  }
+
   // Generate food sources if needed
   const ensureFoodSources = () => {
-    if (!gameState.foodSources || gameState.foodSources.length < 10) {
+    const targetFoodCount = gameState.environment?.season === 'drought' ? 8 : (gameState.environment?.season === 'abundance' ? 20 : 15)
+    
+    if (!gameState.foodSources || gameState.foodSources.length < targetFoodCount) {
       const newFoodSources = []
-      for (let i = 0; i < 15; i++) {
+      for (let i = 0; i < targetFoodCount; i++) {
+        const baseEnergy = gameState.environment?.season === 'drought' ? 30 : (gameState.environment?.season === 'abundance' ? 70 : 50)
         newFoodSources.push({
           id: i,
           position: [
@@ -25,7 +138,7 @@ export default function CreatureManager({ gameState, setGameState }) {
             0.3,
             (Math.random() - 0.5) * 25
           ],
-          energy: 50,
+          energy: baseEnergy,
           respawnTime: 0
         })
       }
@@ -41,6 +154,10 @@ export default function CreatureManager({ gameState, setGameState }) {
     if (!gameState.isRunning) return
 
     timeRef.current += delta
+    
+    // Apply environmental pressure system
+    applyEnvironmentalPressure(gameState, setGameState, delta)
+    
     ensureFoodSources()
 
     // Update creatures every frame
@@ -69,16 +186,51 @@ export default function CreatureManager({ gameState, setGameState }) {
 
           // Look for nearby food when energy is low
           let targetFood = null
+          let hasObstacle = false
           if (newCreature.energy < 80 && prev.foodSources) {
             const nearbyFood = prev.foodSources.find(food => 
-              food.energy > 0 && canReachFood(newCreature, food.position, 5)
+              food.energy > 0 && canReachFood(newCreature, food.position, 8)
             )
             if (nearbyFood) {
               targetFood = nearbyFood
-              // Move toward food
-              const dx = nearbyFood.position[0] - newCreature.position[0]
-              const dz = nearbyFood.position[2] - newCreature.position[2]
-              newCreature.direction = Math.atan2(dz, dx)
+              // Check if path to food is blocked
+              hasObstacle = hasObstacleInPath(newCreature.position, nearbyFood.position, [
+                // Static obstacles from environment
+                ...Array.from({length: 8}, (_, i) => ({
+                  position: [
+                    (Math.random() - 0.5) * 20,
+                    Math.random() * 2 + 1,
+                    (Math.random() - 0.5) * 20
+                  ],
+                  size: [2, 3, 2] // Approximate obstacle size
+                }))
+              ])
+              
+              if (!hasObstacle) {
+                // Direct path to food
+                const dx = nearbyFood.position[0] - newCreature.position[0]
+                const dz = nearbyFood.position[2] - newCreature.position[2]
+                newCreature.direction = Math.atan2(dz, dx)
+              }
+            }
+          }
+
+          // Apply obstacle avoidance if needed
+          if (hasObstacle || (!targetFood && Math.random() < 0.1)) {
+            const avoidanceDirection = getAvoidanceDirection(newCreature, [
+              // Generate static obstacles (same seed for consistency)
+              ...Array.from({length: 8}, (_, i) => ({
+                position: [
+                  (Math.sin(i * 2.5) * 0.5) * 20,
+                  Math.random() * 2 + 1,
+                  (Math.cos(i * 2.5) * 0.5) * 20
+                ],
+                size: [2, 3, 2]
+              }))
+            ])
+            
+            if (avoidanceDirection !== null) {
+              newCreature.direction = avoidanceDirection
             }
           }
 
@@ -107,10 +259,11 @@ export default function CreatureManager({ gameState, setGameState }) {
             newCreature.position[2] = Math.sign(newCreature.position[2]) * bounds
           }
 
-          // Energy consumption based on efficiency and movement
+          // Energy consumption based on efficiency, movement, and environmental pressure
           const baseDrain = 3 * newCreature.energyEfficiency
           const movementDrain = moveSpeed * 2
-          newCreature.energy -= (baseDrain + movementDrain) * delta
+          const pressureMultiplier = gameState.environment?.pressure ? (1 + gameState.environment.pressure) : 1
+          newCreature.energy -= (baseDrain + movementDrain) * delta * pressureMultiplier
 
           return newCreature
         }).filter(creature => creature.energy > 0 && creature.age < creature.maxAge) // Remove dead or too old creatures
@@ -201,6 +354,7 @@ export default function CreatureManager({ gameState, setGameState }) {
           creature={creature}
           isSelected={gameState.selectedCreature?.id === creature.id}
           onClick={() => handleCreatureClick(creature)}
+          populationSize={gameState.population.length}
         />
       ))}
     </group>

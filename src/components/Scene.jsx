@@ -39,7 +39,7 @@ export default function Scene({ gameState, setGameState }) {
       />
 
       {/* Environment */}
-      <Environment />
+      <Environment gameState={gameState} />
 
       {/* Creatures */}
       <CreatureManager gameState={gameState} setGameState={setGameState} />

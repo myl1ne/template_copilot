@@ -11,26 +11,43 @@ function Obstacle({ position, size, color = '#8B4513' }) {
   )
 }
 
-function FoodSource({ position, size = 0.3, color = '#4CAF50' }) {
+function FoodSource({ food, size = 0.3 }) {
   const meshRef = useRef()
+  const isAvailable = food.energy > 0
 
   useFrame((state) => {
-    if (meshRef.current) {
-      // Gentle bobbing animation for food sources
-      meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 2) * 0.1
+    if (meshRef.current && isAvailable) {
+      // Gentle bobbing animation for available food sources
+      meshRef.current.position.y = food.position[1] + Math.sin(state.clock.elapsedTime * 2) * 0.1
+      // Slight glow effect
+      meshRef.current.scale.setScalar(1 + Math.sin(state.clock.elapsedTime * 4) * 0.1)
+    } else if (meshRef.current && !isAvailable) {
+      // Respawning food sources are smaller and less visible
+      const respawnProgress = Math.max(0, 1 - (food.respawnTime / 10))
+      meshRef.current.scale.setScalar(respawnProgress * 0.5)
     }
   })
 
+  const color = isAvailable ? '#4CAF50' : '#666666'
+  const emissive = isAvailable ? '#004d00' : '#000000'
+  const emissiveIntensity = isAvailable ? 0.2 : 0
+
   return (
-    <mesh ref={meshRef} position={position} castShadow>
+    <mesh ref={meshRef} position={food.position} castShadow>
       <sphereGeometry args={[size, 8, 6]} />
-      <meshLambertMaterial color={color} emissive="#004d00" emissiveIntensity={0.1} />
+      <meshLambertMaterial 
+        color={color} 
+        emissive={emissive} 
+        emissiveIntensity={emissiveIntensity}
+        transparent={!isAvailable}
+        opacity={isAvailable ? 1 : 0.3}
+      />
     </mesh>
   )
 }
 
-export default function Environment() {
-  // Generate random obstacles
+export default function Environment({ gameState }) {
+  // Generate static obstacles
   const obstacles = []
   for (let i = 0; i < 8; i++) {
     obstacles.push({
@@ -44,19 +61,6 @@ export default function Environment() {
         0.5 + Math.random() * 2,
         0.5 + Math.random() * 3,
         0.5 + Math.random() * 2
-      ]
-    })
-  }
-
-  // Generate random food sources
-  const foodSources = []
-  for (let i = 0; i < 15; i++) {
-    foodSources.push({
-      id: i,
-      position: [
-        (Math.random() - 0.5) * 25,
-        0.3,
-        (Math.random() - 0.5) * 25
       ]
     })
   }
@@ -78,11 +82,11 @@ export default function Environment() {
         />
       ))}
 
-      {/* Food sources */}
-      {foodSources.map(food => (
+      {/* Dynamic food sources */}
+      {gameState.foodSources && gameState.foodSources.map(food => (
         <FoodSource
           key={food.id}
-          position={food.position}
+          food={food}
         />
       ))}
 

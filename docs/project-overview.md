@@ -81,4 +81,4 @@ npm run build
 
 ---
 
-*Last updated: 2024-09-27 | Version: 0.2.0-alpha*
+*Last updated: 2024-09-27 | Version: 0.3.0-alpha*

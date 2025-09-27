@@ -15,13 +15,18 @@ export default function GameUI({ gameState, setGameState }) {
       id: Date.now(),
       type: creatureType,
       position: [
-        (Math.random() - 0.5) * 10,
+        (Math.random() - 0.5) * 15,
         1,
-        (Math.random() - 0.5) * 10
+        (Math.random() - 0.5) * 15
       ],
       velocity: [0, 0, 0],
       energy: 100,
       size: 0.5 + Math.random() * 0.5,
+      speed: 0.5 + Math.random() * 0.5,
+      energyEfficiency: 0.8 + Math.random() * 0.4,
+      age: 0,
+      maxAge: 60 + Math.random() * 40,
+      reproductionThreshold: 150,
       color: `hsl(${Math.random() * 360}, 70%, 60%)`
     }
 
@@ -98,12 +103,18 @@ export default function GameUI({ gameState, setGameState }) {
             <span>{gameState.population.length}</span>
           </div>
           <div className="stat-item">
+            <span>Food Sources:</span>
+            <span>{gameState.foodSources ? gameState.foodSources.filter(f => f.energy > 0).length : 0}</span>
+          </div>
+          <div className="stat-item">
             <span>Status:</span>
             <span>{gameState.isRunning ? 'Running' : 'Paused'}</span>
           </div>
           <div className="stat-item">
-            <span>Speed:</span>
-            <span>{gameState.speed}x</span>
+            <span>Avg Energy:</span>
+            <span>{gameState.population.length > 0 ? 
+              Math.round(gameState.population.reduce((sum, c) => sum + c.energy, 0) / gameState.population.length) : 0}
+            </span>
           </div>
         </div>
       </div>
@@ -122,9 +133,27 @@ export default function GameUI({ gameState, setGameState }) {
               <span>{Math.round(gameState.selectedCreature.energy)}</span>
             </div>
             <div className="stat-item">
-              <span>Size:</span>
-              <span>{gameState.selectedCreature.size.toFixed(2)}</span>
+              <span>Age:</span>
+              <span>{Math.round(gameState.selectedCreature.age || 0)}s</span>
             </div>
+            <div className="stat-item">
+              <span>Size:</span>
+              <span>{(gameState.selectedCreature.size || 0).toFixed(2)}</span>
+            </div>
+            <div className="stat-item">
+              <span>Speed:</span>
+              <span>{(gameState.selectedCreature.speed || 0).toFixed(2)}</span>
+            </div>
+            <div className="stat-item">
+              <span>Efficiency:</span>
+              <span>{(gameState.selectedCreature.energyEfficiency || 0).toFixed(2)}</span>
+            </div>
+            {gameState.selectedCreature.energy > (gameState.selectedCreature.reproductionThreshold || 150) && (
+              <div className="stat-item" style={{ color: '#4CAF50' }}>
+                <span>Status:</span>
+                <span>Ready to Reproduce!</span>
+              </div>
+            )}
           </div>
         </div>
       )}

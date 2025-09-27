@@ -38,13 +38,13 @@ npm install
 ### Basic Usage
 ```bash
 # Start development server
-npm start
+npm run dev
 
 # Build for production
 npm run build
 
-# Run tests
-npm test
+# Start game at http://localhost:5173/
+# Use mouse to control camera, spawn creatures, and watch them move around the environment
 ```
 
 ## Core Benefits
@@ -81,4 +81,4 @@ npm test
 
 ---
 
-*Last updated: 2024-09-27 | Version: 0.1.0-alpha*
+*Last updated: 2024-09-27 | Version: 0.3.0-alpha*

@@ -13,6 +13,38 @@ export default function CreatureManager({ gameState, setGameState }) {
     return creaturePos.distanceTo(foodPosition) < maxDistance
   }
 
+  // Check if predator can catch prey
+  const canCatchPrey = (predator, prey, maxDistance = 1.2) => {
+    const predatorPos = new THREE.Vector3(...predator.position)
+    const preyPos = new THREE.Vector3(...prey.position)
+    return predatorPos.distanceTo(preyPos) < maxDistance
+  }
+
+  // Find nearest prey for predators
+  const findNearestPrey = (predator, population) => {
+    const prey = population.filter(c => 
+      c.id !== predator.id && 
+      c.diet !== 'carnivore' && 
+      c.energy > 0
+    )
+    
+    if (prey.length === 0) return null
+    
+    let nearest = null
+    let shortestDistance = Infinity
+    
+    prey.forEach(p => {
+      const distance = new THREE.Vector3(...predator.position)
+        .distanceTo(new THREE.Vector3(...p.position))
+      if (distance < shortestDistance && distance < 8) { // Hunt within 8 units
+        shortestDistance = distance
+        nearest = p
+      }
+    })
+    
+    return nearest
+  }
+
   // Simple obstacle avoidance - check if path to target is blocked
   const hasObstacleInPath = (fromPos, toPos, obstacles) => {
     if (!obstacles || obstacles.length === 0) return false
@@ -176,6 +208,12 @@ export default function CreatureManager({ gameState, setGameState }) {
           // Age the creature
           newCreature.age += delta
 
+          // Initialize diet if missing (backward compatibility)
+          if (!newCreature.diet) {
+            newCreature.diet = 'herbivore'
+            newCreature.aggressiveness = Math.random() * 0.3
+          }
+
           // Random movement with some direction persistence
           if (!newCreature.direction) {
             newCreature.direction = Math.random() * Math.PI * 2
@@ -184,33 +222,71 @@ export default function CreatureManager({ gameState, setGameState }) {
 
           newCreature.directionChangeTime += delta
 
-          // Look for nearby food when energy is low
+          // Different behavior for predators vs herbivores
           let targetFood = null
+          let targetPrey = null
           let hasObstacle = false
-          if (newCreature.energy < 80 && prev.foodSources) {
-            const nearbyFood = prev.foodSources.find(food => 
-              food.energy > 0 && canReachFood(newCreature, food.position, 8)
-            )
-            if (nearbyFood) {
-              targetFood = nearbyFood
-              // Check if path to food is blocked
-              hasObstacle = hasObstacleInPath(newCreature.position, nearbyFood.position, [
-                // Static obstacles from environment
-                ...Array.from({length: 8}, (_, i) => ({
-                  position: [
-                    (Math.random() - 0.5) * 20,
-                    Math.random() * 2 + 1,
-                    (Math.random() - 0.5) * 20
-                  ],
-                  size: [2, 3, 2] // Approximate obstacle size
-                }))
-              ])
-              
-              if (!hasObstacle) {
-                // Direct path to food
+
+          if (newCreature.diet === 'carnivore') {
+            // Predator behavior - hunt for prey
+            targetPrey = findNearestPrey(newCreature, prev.population)
+            if (targetPrey) {
+              // Move toward prey
+              const dx = targetPrey.position[0] - newCreature.position[0]
+              const dz = targetPrey.position[2] - newCreature.position[2]
+              newCreature.direction = Math.atan2(dz, dx)
+            } else if (newCreature.energy < 60) {
+              // Fallback to eating food when no prey available and energy is low
+              const nearbyFood = prev.foodSources?.find(food => 
+                food.energy > 0 && canReachFood(newCreature, food.position, 6)
+              )
+              if (nearbyFood) {
+                targetFood = nearbyFood
                 const dx = nearbyFood.position[0] - newCreature.position[0]
                 const dz = nearbyFood.position[2] - newCreature.position[2]
                 newCreature.direction = Math.atan2(dz, dx)
+              }
+            }
+          } else {
+            // Herbivore behavior - look for food and avoid predators
+            const nearbyPredators = prev.population.filter(c => 
+              c.diet === 'carnivore' && 
+              c.id !== newCreature.id &&
+              new THREE.Vector3(...c.position).distanceTo(new THREE.Vector3(...newCreature.position)) < 5
+            )
+
+            if (nearbyPredators.length > 0) {
+              // Flee from nearest predator
+              const nearestPredator = nearbyPredators[0]
+              const dx = newCreature.position[0] - nearestPredator.position[0]
+              const dz = newCreature.position[2] - nearestPredator.position[2]
+              newCreature.direction = Math.atan2(dz, dx) // Run away
+            } else if (newCreature.energy < 80 && prev.foodSources) {
+              // Look for food when no immediate danger
+              const nearbyFood = prev.foodSources.find(food => 
+                food.energy > 0 && canReachFood(newCreature, food.position, 8)
+              )
+              if (nearbyFood) {
+                targetFood = nearbyFood
+                // Check if path to food is blocked
+                hasObstacle = hasObstacleInPath(newCreature.position, nearbyFood.position, [
+                  // Static obstacles from environment
+                  ...Array.from({length: 8}, (_, i) => ({
+                    position: [
+                      (Math.sin(i * 2.5) * 0.5) * 20,
+                      Math.random() * 2 + 1,
+                      (Math.cos(i * 2.5) * 0.5) * 20
+                    ],
+                    size: [2, 3, 2]
+                  }))
+                ])
+                
+                if (!hasObstacle) {
+                  // Direct path to food
+                  const dx = nearbyFood.position[0] - newCreature.position[0]
+                  const dz = nearbyFood.position[2] - newCreature.position[2]
+                  newCreature.direction = Math.atan2(dz, dx)
+                }
               }
             }
           }
@@ -234,14 +310,15 @@ export default function CreatureManager({ gameState, setGameState }) {
             }
           }
 
-          // Change direction occasionally if not targeting food
-          if (!targetFood && newCreature.directionChangeTime > 2 + Math.random() * 3) {
+          // Change direction occasionally if not targeting food or prey
+          if (!targetFood && !targetPrey && newCreature.directionChangeTime > 2 + Math.random() * 3) {
             newCreature.direction += (Math.random() - 0.5) * Math.PI * 0.5
             newCreature.directionChangeTime = 0
           }
 
-          // Move creature
-          const moveSpeed = newCreature.speed * (targetFood ? 1.5 : 1) // Move faster toward food
+          // Move creature - predators move faster when hunting
+          const huntingBonus = (newCreature.diet === 'carnivore' && targetPrey) ? 1.8 : 1
+          const moveSpeed = newCreature.speed * (targetFood ? 1.5 : huntingBonus) // Move faster toward food/prey
           const moveX = Math.cos(newCreature.direction) * moveSpeed * delta
           const moveZ = Math.sin(newCreature.direction) * moveSpeed * delta
 
@@ -275,12 +352,31 @@ export default function CreatureManager({ gameState, setGameState }) {
           updatedFoodSources = updatedFoodSources.map(food => {
             if (food.energy > 0 && canReachFood(creature, food.position)) {
               // Creature eats the food
-              const energyGain = Math.min(food.energy, 40)
+              const energyGain = Math.min(food.energy, creature.diet === 'carnivore' ? 20 : 40) // Predators get less from plants
               creature.energy = Math.min(200, creature.energy + energyGain)
               return { ...food, energy: 0, respawnTime: 10 + Math.random() * 5 } // Food consumed, will respawn
             }
             return food
           })
+        })
+
+        // Handle predation
+        const predators = updatedPopulation.filter(c => c.diet === 'carnivore')
+        const prey = updatedPopulation.filter(c => c.diet !== 'carnivore')
+        
+        predators.forEach(predator => {
+          const nearestPrey = prey.find(p => canCatchPrey(predator, p))
+          if (nearestPrey && Math.random() < 0.1) { // 10% chance to catch prey per frame when in range
+            // Predator catches prey
+            const energyGain = Math.min(nearestPrey.energy * 0.8, 100) // Get most of prey's energy
+            predator.energy = Math.min(250, predator.energy + energyGain)
+            
+            // Remove prey from population (it dies)
+            const preyIndex = updatedPopulation.findIndex(c => c.id === nearestPrey.id)
+            if (preyIndex !== -1) {
+              updatedPopulation.splice(preyIndex, 1)
+            }
+          }
         })
 
         // Respawn consumed food over time
@@ -303,7 +399,8 @@ export default function CreatureManager({ gameState, setGameState }) {
 
         const newOffspring = []
         reproductionCandidates.forEach(parent => {
-          if (Math.random() < 0.02) { // 2% chance per frame when energy is high enough
+          const reproductionChance = parent.diet === 'carnivore' ? 0.01 : 0.02 // Predators reproduce less frequently
+          if (Math.random() < reproductionChance) {
             // Create offspring with mutations
             const offspring = {
               id: Date.now() + Math.random(),
@@ -314,18 +411,20 @@ export default function CreatureManager({ gameState, setGameState }) {
                 parent.position[2] + (Math.random() - 0.5) * 2
               ],
               velocity: [0, 0, 0],
-              energy: 80, // Start with good energy
+              energy: parent.diet === 'carnivore' ? 100 : 80, // Predator offspring start with more energy
               size: Math.max(0.3, Math.min(1.2, parent.size + (Math.random() - 0.5) * 0.2)), // Mutate size
               speed: Math.max(0.2, Math.min(1.5, parent.speed + (Math.random() - 0.5) * 0.2)), // Mutate speed
               energyEfficiency: Math.max(0.5, Math.min(1.5, parent.energyEfficiency + (Math.random() - 0.5) * 0.1)), // Mutate efficiency
+              diet: parent.diet, // Inherit diet
+              aggressiveness: Math.max(0, Math.min(1, parent.aggressiveness + (Math.random() - 0.5) * 0.1)), // Mutate aggressiveness
               color: parent.color, // Keep parent color for now
               age: 0,
               maxAge: Math.max(30, Math.min(120, parent.maxAge + (Math.random() - 0.5) * 20)),
-              reproductionThreshold: Math.max(100, Math.min(200, parent.reproductionThreshold + (Math.random() - 0.5) * 20))
+              reproductionThreshold: Math.max(100, Math.min(250, parent.reproductionThreshold + (Math.random() - 0.5) * 20))
             }
             
             // Parent loses energy from reproduction
-            parent.energy -= 60
+            parent.energy -= parent.diet === 'carnivore' ? 80 : 60 // Predators lose more energy
             newOffspring.push(offspring)
           }
         })

@@ -27,12 +27,42 @@ export default function GameUI({ gameState, setGameState }) {
       age: 0,
       maxAge: 60 + Math.random() * 40,
       reproductionThreshold: 150,
+      diet: 'herbivore', // Default diet type
+      aggressiveness: Math.random() * 0.3, // Low for herbivores
       color: `hsl(${Math.random() * 360}, 70%, 60%)`
     }
 
     setGameState(prev => ({
       ...prev,
       population: [...prev.population, newCreature]
+    }))
+  }
+
+  const spawnPredator = () => {
+    const predator = {
+      id: Date.now() + Math.random(),
+      type: creatureType === 'sphere' ? 'cylinder' : creatureType, // Predators tend to be cylindrical
+      position: [
+        (Math.random() - 0.5) * 15,
+        1,
+        (Math.random() - 0.5) * 15
+      ],
+      velocity: [0, 0, 0],
+      energy: 120, // Start with higher energy
+      size: 0.7 + Math.random() * 0.4, // Slightly larger
+      speed: 0.8 + Math.random() * 0.4, // Faster
+      energyEfficiency: 0.6 + Math.random() * 0.3, // Less efficient but stronger
+      age: 0,
+      maxAge: 80 + Math.random() * 40, // Live longer
+      reproductionThreshold: 200, // Need more energy to reproduce
+      diet: 'carnivore',
+      aggressiveness: 0.7 + Math.random() * 0.3, // High aggression
+      color: `hsl(${Math.random() * 60}, 80%, 45%)` // Reddish colors
+    }
+
+    setGameState(prev => ({
+      ...prev,
+      population: [...prev.population, predator]
     }))
   }
 
@@ -79,7 +109,17 @@ export default function GameUI({ gameState, setGameState }) {
 
         <div className="control-group">
           <button onClick={spawnCreature} className="btn">
-            Spawn Creature
+            Spawn Herbivore
+          </button>
+        </div>
+
+        <div className="control-group">
+          <button 
+            onClick={spawnPredator} 
+            className="btn"
+            style={{ backgroundColor: '#dc3545', borderColor: '#dc3545' }}
+          >
+            Spawn Predator
           </button>
         </div>
 
@@ -101,6 +141,18 @@ export default function GameUI({ gameState, setGameState }) {
           <div className="stat-item">
             <span>Population:</span>
             <span>{gameState.population.length}</span>
+          </div>
+          <div className="stat-item">
+            <span>Herbivores:</span>
+            <span style={{ color: '#51cf66' }}>
+              {gameState.population.filter(c => c.diet !== 'carnivore').length}
+            </span>
+          </div>
+          <div className="stat-item">
+            <span>Predators:</span>
+            <span style={{ color: '#ff6b6b' }}>
+              {gameState.population.filter(c => c.diet === 'carnivore').length}
+            </span>
           </div>
           <div className="stat-item">
             <span>Food Sources:</span>
@@ -144,6 +196,14 @@ export default function GameUI({ gameState, setGameState }) {
               <span>{gameState.selectedCreature.type}</span>
             </div>
             <div className="stat-item">
+              <span>Diet:</span>
+              <span style={{ 
+                color: gameState.selectedCreature.diet === 'carnivore' ? '#ff6b6b' : '#51cf66' 
+              }}>
+                {gameState.selectedCreature.diet === 'carnivore' ? 'Predator' : 'Herbivore'}
+              </span>
+            </div>
+            <div className="stat-item">
               <span>Energy:</span>
               <span>{Math.round(gameState.selectedCreature.energy)}</span>
             </div>
@@ -162,6 +222,10 @@ export default function GameUI({ gameState, setGameState }) {
             <div className="stat-item">
               <span>Efficiency:</span>
               <span>{(gameState.selectedCreature.energyEfficiency || 0).toFixed(2)}</span>
+            </div>
+            <div className="stat-item">
+              <span>Aggression:</span>
+              <span>{((gameState.selectedCreature.aggressiveness || 0) * 100).toFixed(0)}%</span>
             </div>
             {gameState.selectedCreature.energy > (gameState.selectedCreature.reproductionThreshold || 150) && (
               <div className="stat-item" style={{ color: '#4CAF50' }}>

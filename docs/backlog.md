@@ -5,22 +5,22 @@
 ## 🔥 High Priority
 
 ### Not Started
-- **Predator-Prey System** - Add different creature types with hunting behavior
+- **Multi-Biome Environment System** - Different biomes with unique challenges  
   - **Status**: Not Started
-  - **GitHub Issue**: #18 (to be created)
-  - **Dependencies**: Current evolution system
-  - **Estimate**: 4-5 days
-
-- **Performance Optimization** - Implement LOD and culling for 100+ creatures
-  - **Status**: Not Started
-  - **GitHub Issue**: #19 (to be created)
-  - **Dependencies**: Current population system
+  - **GitHub Issue**: #21 (to be created)
+  - **Dependencies**: Current environmental pressure system
   - **Estimate**: 3-4 days
 
-- **Environmental Pressure System** - Dynamic challenges affecting survival
+- **Advanced Performance Scaling** - Support for 100+ creatures with frame-rate optimization
   - **Status**: Not Started
-  - **GitHub Issue**: #20 (to be created)
-  - **Dependencies**: Basic ecosystem
+  - **GitHub Issue**: #22 (to be created)  
+  - **Dependencies**: Current LOD system
+  - **Estimate**: 2-3 days
+
+- **Creature Lineage Tracking** - Family trees and genetic history visualization
+  - **Status**: Not Started
+  - **GitHub Issue**: #23 (to be created)
+  - **Dependencies**: Current reproduction system
   - **Estimate**: 2-3 days
 
 ---
@@ -84,6 +84,31 @@
 ---
 
 ## ✅ Recently Completed
+
+- **Predator-Prey System** - Added different creature types with hunting behavior ✅
+  - **Completed**: 2024-09-27
+  - **GitHub Issue**: Progress 2/n
+  - **Features**: Carnivore/herbivore creatures, hunting mechanics, prey-predator interactions
+
+- **Enhanced Creature AI** - Improved pathfinding with obstacle avoidance ✅
+  - **Completed**: 2024-09-27  
+  - **GitHub Issue**: Progress 2/n
+  - **Features**: Smart food seeking, obstacle detection, alternative route finding
+
+- **Environmental Pressure System** - Dynamic challenges affecting survival ✅
+  - **Completed**: 2024-09-27
+  - **GitHub Issue**: Progress 2/n
+  - **Features**: Seasonal cycles (drought/abundance), adaptive food spawning, pressure effects
+
+- **Performance Optimization** - LOD system for large populations ✅
+  - **Completed**: 2024-09-27
+  - **GitHub Issue**: Progress 2/n
+  - **Features**: Level-of-detail rendering, reduced polygons for 30+ creatures
+
+- **Enhanced UI Components** - Better creature information and statistics ✅
+  - **Completed**: 2024-09-27
+  - **GitHub Issue**: Progress 2/n
+  - **Features**: Environmental status, generation tracking, predator/herbivore counts
 
 - **Project Setup and Scaffolding** - Created Vite React app with Three.js integration ✅
   - **Completed**: 2024-09-27
@@ -160,11 +185,11 @@
 ## 📊 Backlog Summary
 
 | Priority | Not Started | In Progress | Under Review | Completed |
-|----------|-------------|-------------|--------------|-----------| 
-| High     | 3           | 0           | 0            | 6         |
+|----------|-------------|-------------|--------------|-----------|
+| High     | 3           | 0           | 0            | 9         |
 | Medium   | 4           | 0           | 0            | 4         |
 | Low      | 3           | 0           | 0            | 1         |
-| **Total**| **10**      | **0**       | **0**        | **14**    |
+| **Total**| **10**      | **0**       | **0**        | **19**    |
 
 ---
 

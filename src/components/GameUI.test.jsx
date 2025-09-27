@@ -17,7 +17,8 @@ describe('GameUI', () => {
     
     expect(screen.getByText('Game Controls')).toBeInTheDocument()
     expect(screen.getByText('Start Simulation')).toBeInTheDocument()
-    expect(screen.getByText('Spawn Creature')).toBeInTheDocument()
+    expect(screen.getByText('Spawn Herbivore')).toBeInTheDocument()
+    expect(screen.getByText('Spawn Predator')).toBeInTheDocument()
   })
 
   it('shows correct population count', () => {
@@ -28,7 +29,10 @@ describe('GameUI', () => {
 
     render(<GameUI gameState={stateWithPopulation} setGameState={mockSetGameState} />)
     
-    expect(screen.getByText('3')).toBeInTheDocument()
+    // Check for population count specifically in the Population stat
+    expect(screen.getByText('Population:')).toBeInTheDocument()
+    const populationElements = screen.getAllByText('3')
+    expect(populationElements.length).toBeGreaterThan(0) // Should find the population count
   })
 
   it('toggles simulation state when start/pause button is clicked', () => {

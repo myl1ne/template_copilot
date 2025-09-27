@@ -50,9 +50,15 @@ export default function Creature({ creature, isSelected, onClick, populationSize
     }
   })
 
-  // Calculate creature color based on energy and base color
+  // Calculate creature color based on energy, base color, and diet
   const getCreatureColor = () => {
-    const baseColor = new THREE.Color(creature.color)
+    let baseColor = new THREE.Color(creature.color)
+    
+    // Predators get reddish tint
+    if (creature.diet === 'carnivore') {
+      baseColor = baseColor.lerp(new THREE.Color('#ff4444'), 0.3)
+    }
+    
     const energyRatio = creature.energy / 100
     
     // Darken when low energy

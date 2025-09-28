@@ -2,6 +2,7 @@ import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { getBiomeConfig, BIOME_TYPES } from './BiomeConfig'
+import SimpleTerrainSystem from './SimpleTerrainSystem'
 
 function Obstacle({ position, size, color, type = 'rock' }) {
   const meshRef = useRef()
@@ -265,32 +266,14 @@ export default function Environment({ gameState }) {
 
   return (
     <group>
-      {/* Enhanced ground plane with biome-specific material */}
-      <mesh position={[0, -0.1, 0]} receiveShadow>
-        <planeGeometry args={[60, 60]} />
-        {getGroundMaterial()}
-      </mesh>
+      {/* Enhanced terrain system */}
+      <SimpleTerrainSystem gameState={gameState} />
 
       {/* Enhanced ocean-specific water effects */}
       {biomeType === BIOME_TYPES.OCEAN && (
         <>
-          {/* Water surface */}
-          <mesh position={[0, 0.2, 0]} receiveShadow>
-            <planeGeometry args={[60, 60]} />
-            <meshStandardMaterial 
-              color="#006994" 
-              transparent 
-              opacity={0.4}
-              roughness={0.0}
-              metalness={0.8}
-              side={THREE.DoubleSide}
-              emissive="#001133"
-              emissiveIntensity={0.1}
-            />
-          </mesh>
-          
           {/* Animated water ripples */}
-          <mesh position={[0, 0.25, 0]}>
+          <mesh position={[0, 0.75, 0]}>
             <planeGeometry args={[60, 60, 32, 32]} />
             <meshStandardMaterial 
               color="#4dd0e1" 

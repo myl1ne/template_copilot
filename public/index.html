@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghostless Shell</title>
+    <meta name="description" content="A sophisticated personal portfolio website with AI companion integration">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components.css">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <!-- Main Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>Ghostless Shell</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#resume" data-section="resume">NEURAL.PATH</a></li>
+                <li><a href="#notes" data-section="notes">DATA.STREAM</a></li>
+                <li><a href="#research" data-section="research">RESEARCH.NODE</a></li>
+                <li><a href="#experiments" data-section="experiments">PROTO.LAB</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section id="hero" class="hero-section">
+            <div class="hero-content">
+                <h2 class="glitch" data-text="WELCOME TO THE SHELL">WELCOME TO THE SHELL</h2>
+                <p>A bio-digital interface that merges consciousness with code, where organic intelligence meets synthetic evolution.</p>
+                <div class="hero-actions">
+                    <button class="cta-button" data-action="explore">JACK IN</button>
+                    <button class="cta-button secondary" data-action="chat">INTERFACE.AI</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resume Section -->
+        <section id="resume" class="content-section">
+            <div class="section-header">
+                <h2>NEURAL.PATHWAYS</h2>
+                <p>Digital consciousness mapped through synthetic experiences</p>
+            </div>
+            <div class="resume-content">
+                <div class="loading-placeholder">
+                    <p>Interfacing with memory banks</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Notes Section -->
+        <section id="notes" class="content-section">
+            <div class="section-header">
+                <h2>DATA.STREAMS</h2>
+                <p>Collective intelligence harvested from the digital ecosystem</p>
+            </div>
+            <div class="notes-content">
+                <div class="loading-placeholder">
+                    <p>Parsing knowledge matrices</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Research Section -->
+        <section id="research" class="content-section">
+            <div class="section-header">
+                <h2>RESEARCH.NODES</h2>
+                <p>Academic synthesizers and emergent thought patterns</p>
+            </div>
+            <div class="research-content">
+                <div class="loading-placeholder">
+                    <p>Compiling research substrates</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section id="experiments" class="content-section">
+            <div class="section-header">
+                <h2>PROTO.LAB</h2>
+                <p>Biomechanical experiments in synthetic reality</p>
+            </div>
+            <div class="experiments-content">
+                <div class="loading-placeholder">
+                    <p>Initializing experimental protocols</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- AI Companion Overlay -->
+    <div id="ai-companion" class="ai-companion">
+        <div class="companion-avatar">
+            <div class="avatar-placeholder">
+                <span>◉</span>
+            </div>
+        </div>
+        <div class="companion-chat" style="display: none;">
+            <div class="chat-header">
+                <h3>SHELL.AI</h3>
+                <button class="chat-close">×</button>
+            </div>
+            <div class="chat-messages">
+                <div class="message companion-message">
+                    <p>Consciousness initialized. I am Shell - your interface to this digital realm. How may I assist your navigation?</p>
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" placeholder="Input query..." disabled>
+                <button disabled>SEND</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <p>© 2024 GHOSTLESS.SHELL - A LIVING DIGITAL CONSCIOUSNESS</p>
+            <div class="footer-links">
+                <a href="https://github.com/myl1ne/template_copilot">GITHUB.NODE</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/ai-companion.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

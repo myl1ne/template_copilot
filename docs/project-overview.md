@@ -1,58 +1,76 @@
-# [Project Name] - Project Overview
+# Ghostless Shell - Project Overview
 
-> **Note**: This is a template file. Replace all placeholder content with actual project information.
+A sophisticated personal portfolio website that transcends traditional static presentations through intelligent design and AI integration.
 
-## What is [Project Name]?
+## What is Ghostless Shell?
 
-[Project Name] is a [brief description of what the project does in one sentence].
+Ghostless Shell is a next-generation personal website that combines professional portfolio presentation with interactive AI assistance, creating a living digital presence that evolves and engages with visitors.
 
 ## Target Audience
 
 This project is designed for:
-- [Primary user group]
-- [Secondary user group]
-- [Any other relevant stakeholders]
+- **Professional Visitors** - Recruiters, colleagues, and collaborators seeking to understand skills and experience
+- **Academic Community** - Researchers and students interested in published work and ongoing research
+- **Tech Enthusiasts** - Developers and designers exploring innovative web experiences and interactive demos
+- **Knowledge Seekers** - Anyone interested in curated insights, notes, and experimental projects
 
 ## Key Features
 
-- **[Feature 1]**: [Brief description of the feature and its benefit]
-- **[Feature 2]**: [Brief description of the feature and its benefit]
-- **[Feature 3]**: [Brief description of the feature and its benefit]
+- **Interactive Resume**: Dynamic presentation of professional experience with contextual details and skill demonstrations
+- **Knowledge Repository**: Curated collection of notes, insights, and learning resources organized for easy exploration
+- **Research Showcase**: Academic papers and research contributions with interactive elements and accessible summaries
+- **Experimental Lab**: Modular gallery of interactive demos, prototypes, and creative experiments
+- **AI Companion**: Intelligent overlay creature that provides contextual assistance and engages in meaningful conversations
+- **Firebase Integration**: Real-time data synchronization and cloud-based content management for seamless updates
 
-## Quick Start
+## Development Setup
 
 ### Prerequisites
-- [List any required software, versions, or system requirements]
+- Node.js (v16 or higher)
+- Firebase CLI
+- Modern web browser with JavaScript enabled
+- Git for version control
 
-### Installation
+### Local Development
 ```bash
-# Replace with actual installation commands
-npm install [project-name]
-# or
-pip install [project-name]
-# or
-git clone [repository-url]
+# Clone the repository
+git clone https://github.com/myl1ne/template_copilot.git
+cd template_copilot
+
+# Install dependencies (when package.json is added)
+npm install
+
+# Start development server
+npm run dev
 ```
 
-### Basic Usage
+### Firebase Configuration
 ```bash
-# Replace with actual usage examples
-[project-name] --help
+# Login to Firebase
+firebase login
+
+# Initialize Firebase in project
+firebase init
+
+# Deploy to Firebase Hosting
+firebase deploy
 ```
 
 ## Core Benefits
 
-1. **[Primary Benefit]**: [Explain how this solves a key problem]
-2. **[Secondary Benefit]**: [Explain additional value provided]
-3. **[Tertiary Benefit]**: [Explain any other significant advantages]
+1. **Intelligent Interaction**: AI companion provides contextual assistance and creates engaging conversations that enhance the visitor experience
+2. **Modular Architecture**: Extensible system allows for easy addition of new experiments, demos, and content without disrupting existing functionality
+3. **Professional Presentation**: Sophisticated design that effectively showcases skills, experience, and research in an accessible and engaging format
+4. **Real-time Updates**: Firebase integration enables seamless content updates and real-time synchronization across all sections
 
 ## Links & Resources
 
-- **Repository**: [GitHub repository URL]
-- **Documentation**: [Link to full documentation]
-- **Issues & Support**: [Link to issue tracker]
-- **License**: [License type and link]
+- **Repository**: https://github.com/myl1ne/template_copilot
+- **Live Website**: [To be deployed]
+- **Documentation**: [This repository's docs folder]
+- **Issues & Support**: https://github.com/myl1ne/template_copilot/issues
+- **License**: MIT License
 
 ---
 
-*Last updated: [Date] | Version: [Current version]*
+*Last updated: September 2024 | Status: Development Phase - Architecture & Planning*

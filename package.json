@@ -1,0 +1,35 @@
+{
+  "name": "ghostless-shell",
+  "version": "0.1.0",
+  "description": "A sophisticated personal portfolio website with AI companion integration",
+  "main": "index.js",
+  "scripts": {
+    "dev": "live-server --host=localhost --port=3000 --open=/public",
+    "build": "echo 'Build process to be implemented'",
+    "deploy": "firebase deploy",
+    "serve": "firebase serve"
+  },
+  "keywords": [
+    "portfolio",
+    "personal-website", 
+    "ai-companion",
+    "firebase",
+    "interactive"
+  ],
+  "author": "myl1ne",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "dependencies": {
+    "firebase": "^10.4.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/myl1ne/template_copilot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/myl1ne/template_copilot/issues"
+  },
+  "homepage": "https://github.com/myl1ne/template_copilot#readme"
+}

@@ -1,0 +1,61 @@
+{
+  "name": "aria-ai-companion",
+  "version": "0.1.0-concept",
+  "description": "Aria - Your intelligent, evolving AI companion that grows with you",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
+    "format": "prettier --write src/**/*.{js,jsx,ts,tsx,json,md}"
+  },
+  "keywords": [
+    "ai",
+    "companion",
+    "virtual-pet",
+    "artificial-intelligence",
+    "personality",
+    "emotional-intelligence",
+    "chatbot",
+    "digital-friend"
+  ],
+  "author": {
+    "name": "Aria AI",
+    "email": "hello@aria-ai.dev",
+    "url": "https://github.com/myl1ne/template_copilot"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/myl1ne/template_copilot"
+  },
+  "bugs": {
+    "url": "https://github.com/myl1ne/template_copilot/issues"
+  },
+  "homepage": "https://github.com/myl1ne/template_copilot#readme",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react": "^7.32.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^4.4.0",
+    "vitest": "^0.34.0"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

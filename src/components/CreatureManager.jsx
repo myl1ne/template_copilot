@@ -2,6 +2,8 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import Creature from './Creature'
 import { getBiomeConfig, calculateBiomeFood, BIOME_TYPES } from './BiomeConfig'
+import { reproduceGenetics, expressCreatureTraits, createEnvironmentalFactors } from './GeneticsSystem'
+import { analyzeSpecializationPotential, applySpecializationEffects } from './SpecializationEngine'
 import * as THREE from 'three'
 
 export default function CreatureManager({ gameState, setGameState }) {
@@ -216,6 +218,32 @@ export default function CreatureManager({ gameState, setGameState }) {
             newCreature.aggressiveness = Math.random() * 0.3
           }
 
+          // Analyze and apply specialization (every 10 seconds to avoid performance impact)
+          if (!newCreature.lastSpecializationCheck || (newCreature.age - newCreature.lastSpecializationCheck) > 10) {
+            const populationContext = {
+              biome: gameState.currentBiome,
+              season: gameState.environment?.season || 'normal',
+              population: prev.population,
+              foodSources: prev.foodSources || []
+            }
+            
+            const specializationAnalysis = analyzeSpecializationPotential(newCreature, populationContext)
+            
+            if (specializationAnalysis.currentSpecialization) {
+              // Apply specialization effects
+              const specializedCreature = applySpecializationEffects(
+                newCreature, 
+                specializationAnalysis.currentSpecialization,
+                populationContext
+              )
+              
+              // Copy over the specialization modifications
+              Object.assign(newCreature, specializedCreature)
+            }
+            
+            newCreature.lastSpecializationCheck = newCreature.age
+          }
+
           // Random movement with some direction persistence
           if (!newCreature.direction) {
             newCreature.direction = Math.random() * Math.PI * 2
@@ -318,11 +346,12 @@ export default function CreatureManager({ gameState, setGameState }) {
             newCreature.directionChangeTime = 0
           }
 
-          // Move creature - predators move faster when hunting, biome affects speed
+          // Move creature - predators move faster when hunting, biome affects speed, specialization affects speed
           const biomeType = gameState.currentBiome || BIOME_TYPES.FOREST
           const biomeConfig = getBiomeConfig(biomeType)
           const huntingBonus = (newCreature.diet === 'carnivore' && targetPrey) ? 1.8 : 1
-          const baseSpeed = newCreature.speed * (targetFood ? 1.5 : huntingBonus) // Move faster toward food/prey
+          const effectiveSpeed = newCreature.effectiveSpeed || newCreature.speed
+          const baseSpeed = effectiveSpeed * (targetFood ? 1.5 : huntingBonus) // Move faster toward food/prey
           const moveSpeed = baseSpeed * biomeConfig.creatureSpeedMultiplier
           const moveX = Math.cos(newCreature.direction) * moveSpeed * delta
           const moveZ = Math.sin(newCreature.direction) * moveSpeed * delta
@@ -341,12 +370,14 @@ export default function CreatureManager({ gameState, setGameState }) {
             newCreature.position[2] = Math.sign(newCreature.position[2]) * bounds
           }
 
-          // Energy consumption based on efficiency, movement, environmental pressure, and biome
+          // Energy consumption based on efficiency, movement, environmental pressure, biome, and specialization
           const baseDrain = 3 * newCreature.energyEfficiency
           const movementDrain = moveSpeed * 2
           const pressureMultiplier = gameState.environment?.pressure ? (1 + gameState.environment.pressure) : 1
           const biomeMultiplier = biomeConfig.energyDrainMultiplier
-          newCreature.energy -= (baseDrain + movementDrain) * delta * pressureMultiplier * biomeMultiplier
+          const movementCostMultiplier = newCreature.movementCostMultiplier || 1.0
+          
+          newCreature.energy -= (baseDrain + movementDrain * movementCostMultiplier) * delta * pressureMultiplier * biomeMultiplier
 
           return newCreature
         }).filter(creature => creature.energy > 0 && creature.age < creature.maxAge) // Remove dead or too old creatures
@@ -357,8 +388,11 @@ export default function CreatureManager({ gameState, setGameState }) {
         updatedPopulation.forEach(creature => {
           updatedFoodSources = updatedFoodSources.map(food => {
             if (food.energy > 0 && canReachFood(creature, food.position)) {
-              // Creature eats the food
-              const energyGain = Math.min(food.energy, creature.diet === 'carnivore' ? 20 : 40) // Predators get less from plants
+              // Calculate energy gain based on specialization
+              const baseEnergyGain = creature.diet === 'carnivore' ? 20 : 40
+              const specializationMultiplier = creature.foodEnergyMultiplier || 1.0
+              const energyGain = Math.min(food.energy, baseEnergyGain * specializationMultiplier)
+              
               creature.energy = Math.min(200, creature.energy + energyGain)
               return { ...food, energy: 0, respawnTime: 10 + Math.random() * 5 } // Food consumed, will respawn
             }
@@ -372,15 +406,25 @@ export default function CreatureManager({ gameState, setGameState }) {
         
         predators.forEach(predator => {
           const nearestPrey = prey.find(p => canCatchPrey(predator, p))
-          if (nearestPrey && Math.random() < 0.1) { // 10% chance to catch prey per frame when in range
-            // Predator catches prey
-            const energyGain = Math.min(nearestPrey.energy * 0.8, 100) // Get most of prey's energy
-            predator.energy = Math.min(250, predator.energy + energyGain)
+          if (nearestPrey) {
+            // Calculate hunting success based on specialization
+            const baseHuntingChance = 0.1 // 10% base chance
+            const huntingMultiplier = predator.huntingSuccessMultiplier || 1.0
+            const huntingChance = Math.min(0.3, baseHuntingChance * huntingMultiplier) // Cap at 30%
             
-            // Remove prey from population (it dies)
-            const preyIndex = updatedPopulation.findIndex(c => c.id === nearestPrey.id)
-            if (preyIndex !== -1) {
-              updatedPopulation.splice(preyIndex, 1)
+            if (Math.random() < huntingChance) {
+              // Predator catches prey
+              const baseEnergyGain = Math.min(nearestPrey.energy * 0.8, 100)
+              const energyMultiplier = predator.foodEnergyMultiplier || 1.0
+              const energyGain = baseEnergyGain * energyMultiplier
+              
+              predator.energy = Math.min(250, predator.energy + energyGain)
+              
+              // Remove prey from population (it dies)
+              const preyIndex = updatedPopulation.findIndex(c => c.id === nearestPrey.id)
+              if (preyIndex !== -1) {
+                updatedPopulation.splice(preyIndex, 1)
+              }
             }
           }
         })
@@ -398,42 +442,135 @@ export default function CreatureManager({ gameState, setGameState }) {
           return food
         })
 
-        // Handle reproduction
+        // Handle reproduction with genetics
         const reproductionCandidates = updatedPopulation.filter(creature => 
           creature.energy > creature.reproductionThreshold
         )
 
         const newOffspring = []
-        reproductionCandidates.forEach(parent => {
-          const reproductionChance = parent.diet === 'carnivore' ? 0.01 : 0.02 // Predators reproduce less frequently
+        
+        // Find potential mates for sexual reproduction
+        reproductionCandidates.forEach(parent1 => {
+          const reproductionChance = parent1.diet === 'carnivore' ? 0.008 : 0.015 // Predators reproduce less frequently
+          
           if (Math.random() < reproductionChance) {
-            // Create offspring with mutations
-            const offspring = {
-              id: Date.now() + Math.random(),
-              type: parent.type,
-              position: [
-                parent.position[0] + (Math.random() - 0.5) * 2,
-                parent.position[1],
-                parent.position[2] + (Math.random() - 0.5) * 2
-              ],
-              velocity: [0, 0, 0],
-              energy: parent.diet === 'carnivore' ? 100 : 80, // Predator offspring start with more energy
-              size: Math.max(0.3, Math.min(1.2, parent.size + (Math.random() - 0.5) * 0.2)), // Mutate size
-              speed: Math.max(0.2, Math.min(1.5, parent.speed + (Math.random() - 0.5) * 0.2)), // Mutate speed
-              energyEfficiency: Math.max(0.5, Math.min(1.5, parent.energyEfficiency + (Math.random() - 0.5) * 0.1)), // Mutate efficiency
-              diet: parent.diet, // Inherit diet
-              aggressiveness: Math.max(0, Math.min(1, parent.aggressiveness + (Math.random() - 0.5) * 0.1)), // Mutate aggressiveness
-              color: parent.color, // Keep parent color for now
-              age: 0,
-              maxAge: Math.max(30, Math.min(120, parent.maxAge + (Math.random() - 0.5) * 20)),
-              reproductionThreshold: Math.max(100, Math.min(250, parent.reproductionThreshold + (Math.random() - 0.5) * 20))
+            // Find a suitable mate (same diet type and nearby)
+            const potentialMates = reproductionCandidates.filter(parent2 => 
+              parent2.id !== parent1.id &&
+              parent2.diet === parent1.diet &&
+              new THREE.Vector3(...parent1.position).distanceTo(new THREE.Vector3(...parent2.position)) < 3
+            )
+            
+            let parent2 = null
+            if (potentialMates.length > 0) {
+              // Sexual reproduction - choose random mate
+              parent2 = potentialMates[Math.floor(Math.random() * potentialMates.length)]
             }
             
-            // Parent loses energy from reproduction
-            parent.energy -= parent.diet === 'carnivore' ? 80 : 60 // Predators lose more energy
+            // Create offspring through genetics
+            let offspringDNA
+            let parentIds = [parent1.id]
+            
+            if (parent2 && parent1.dna && parent2.dna) {
+              // Sexual reproduction - combine DNA from both parents
+              offspringDNA = reproduceGenetics(parent1.dna, parent2.dna, 0.05) // 5% mutation rate
+              parentIds.push(parent2.id)
+            } else if (parent1.dna) {
+              // Asexual reproduction - clone with mutations
+              offspringDNA = reproduceGenetics(parent1.dna, parent1.dna, 0.1) // Higher mutation rate for asexual
+            } else {
+              // Fallback for creatures without DNA (backward compatibility)
+              offspringDNA = null
+            }
+            
+            // Generate environmental factors for trait expression
+            const environmentalFactors = createEnvironmentalFactors(
+              gameState.currentBiome,
+              gameState.environment?.season || 'normal',
+              gameState.environment?.pressure || 0
+            )
+            
+            // Express traits from genetics
+            let geneticTraits = {}
+            if (offspringDNA) {
+              geneticTraits = expressCreatureTraits(offspringDNA, environmentalFactors)
+            }
+            
+            // Create offspring with genetic traits
+            const offspring = {
+              id: Date.now() + Math.random(),
+              type: parent1.type,
+              position: [
+                parent1.position[0] + (Math.random() - 0.5) * 2,
+                parent1.position[1],
+                parent1.position[2] + (Math.random() - 0.5) * 2
+              ],
+              velocity: [0, 0, 0],
+              energy: parent1.diet === 'carnivore' ? 100 : 80,
+              
+              // Genetic traits or fallback to mutation-based inheritance
+              dna: offspringDNA,
+              size: offspringDNA ? geneticTraits.size : Math.max(0.3, Math.min(1.2, parent1.size + (Math.random() - 0.5) * 0.2)),
+              speed: offspringDNA ? geneticTraits.speed : Math.max(0.2, Math.min(1.5, parent1.speed + (Math.random() - 0.5) * 0.2)),
+              energyEfficiency: offspringDNA ? geneticTraits.energyEfficiency : Math.max(0.5, Math.min(1.5, parent1.energyEfficiency + (Math.random() - 0.5) * 0.1)),
+              maxAge: offspringDNA ? geneticTraits.lifespan : Math.max(30, Math.min(120, parent1.maxAge + (Math.random() - 0.5) * 20)),
+              reproductionThreshold: offspringDNA ? geneticTraits.reproductionRate : Math.max(100, Math.min(250, parent1.reproductionThreshold + (Math.random() - 0.5) * 20)),
+              diet: offspringDNA ? geneticTraits.diet : parent1.diet,
+              aggressiveness: offspringDNA ? geneticTraits.aggression : Math.max(0, Math.min(1, parent1.aggressiveness + (Math.random() - 0.5) * 0.1)),
+              intelligence: offspringDNA ? geneticTraits.intelligence : (parent1.intelligence || 0.5),
+              
+              // Lineage tracking
+              age: 0,
+              generation: (parent1.generation || 1) + 1,
+              parentIds: parentIds,
+              
+              // Color inheritance with variation
+              color: generateOffspringColor(parent1, parent2, geneticTraits)
+            }
+            
+            // Parents lose energy from reproduction
+            const baseCost = parent1.diet === 'carnivore' ? 70 : 50
+            const reproductionCostMultiplier1 = parent1.reproductionCostMultiplier || 1.0
+            const reproductionCost1 = baseCost * reproductionCostMultiplier1
+            
+            parent1.energy -= reproductionCost1
+            if (parent2) {
+              const reproductionCostMultiplier2 = parent2.reproductionCostMultiplier || 1.0
+              const reproductionCost2 = baseCost * reproductionCostMultiplier2
+              parent2.energy -= reproductionCost2
+            }
+            
             newOffspring.push(offspring)
           }
         })
+        
+        // Helper function to generate offspring color
+        function generateOffspringColor(parent1, parent2, geneticTraits) {
+          if (geneticTraits.diet) {
+            // Generate color based on genetic traits
+            let baseHue = 120 // Green for herbivores
+            if (geneticTraits.diet === 'carnivore') {
+              baseHue = 0 // Red for carnivores
+            } else if (geneticTraits.diet === 'omnivore') {
+              baseHue = 60 // Yellow for omnivores
+            }
+            
+            const hueVariation = (geneticTraits.size - 0.5) * 30 + (geneticTraits.speed - 0.5) * 20
+            const finalHue = (baseHue + hueVariation) % 360
+            const saturation = Math.min(100, 50 + geneticTraits.energyEfficiency * 30)
+            const lightness = Math.min(80, 40 + geneticTraits.intelligence * 30)
+            
+            return `hsl(${finalHue}, ${saturation}%, ${lightness}%)`
+          } else {
+            // Fallback color mixing for non-genetic creatures
+            if (parent2) {
+              // Mix colors from both parents with slight variation
+              return parent1.color // Simplified for now
+            } else {
+              return parent1.color
+            }
+          }
+        }
 
         return {
           ...prev,

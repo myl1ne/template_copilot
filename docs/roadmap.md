@@ -3,9 +3,9 @@
 ## Current Status
 
 ### 🎯 Current Version
-- **Version**: 0.3.1-alpha
+- **Version**: 0.4.0-alpha
 - **Release Date**: September 2024
-- **Status**: Multi-Biome System Complete - Advanced Ecosystem with Environmental Diversity
+- **Status**: Advanced Genetics & Species Specialization Complete - Ecological Roles Implemented
 
 ### ✅ What's Working Now
 - Project scaffolding and build system (Vite + React) - Fully functional
@@ -21,32 +21,28 @@
 - **Multi-biome environment system (Forest, Desert, Ocean)** - ✨ **Fully functional**
 - **Biome-specific gameplay effects and visual systems** - ✨ **Fully functional**
 - **Interactive biome selection and real-time switching** - ✨ **Fully functional**
+- **Advanced Genetics System with DNA-based inheritance** - ✨ **Fully functional**
+- **Species Specialization Engine with 10 ecological roles** - ✨ **Fully functional**
+- **Lineage Tracking with family trees and genetic analysis** - ✨ **Fully functional**
+- **Population Genetics Analytics with diversity metrics** - ✨ **Fully functional**
 
 ### 🔧 Current Focus
 - Advanced creature customization and specialization tools
-- Population migration patterns between different biomes  
-- Enhanced resource competition dynamics with biome interactions
-- Mobile compatibility and touch controls optimization
+- Environmental manipulation and disaster event controls
+- Enhanced resource competition dynamics with specialization interactions
+- WebWorker integration for background evolution calculations
 
 ---
 
 ## Long Term Roadmap
 
-### 🚀 Next Release (v0.4.0-alpha) - December 2024
-**Theme**: Advanced Genetics & Player Agency
+### 🚀 Next Release (v0.5.0-alpha) - December 2024
+**Theme**: Environmental Interaction & Advanced Analytics
 
 **Planned Features**:
 - [x] **Multi-Biome Environment System** - Different environments with unique challenges ✨ **COMPLETED**
-- [ ] **Advanced Genetics System** - Multi-trait inheritance with dominant/recessive genes
-  - DNA-based trait encoding with realistic genetic algorithms
-  - Genetic drift and population bottlenecks affecting diversity
-  - Heredity visualization showing family trees and lineages
-  - Gene expression variations based on environmental conditions
-- [ ] **Species Specialization Engine** - Creatures develop distinct ecological roles
-  - Niche specialization (herbivore specialists, apex predators, scavengers)
-  - Morphological adaptations reflected in creature appearance
-  - Behavioral specialization (territorial, nomadic, social patterns)
-  - Symbiotic relationships and co-evolution between species
+- [x] **Advanced Genetics System** - Multi-trait inheritance with dominant/recessive genes ✨ **COMPLETED**
+- [x] **Species Specialization Engine** - Creatures develop distinct ecological roles ✨ **COMPLETED**
 - [ ] **Environmental Interaction Tools** - Player can influence ecosystem dynamics
   - Climate controls (temperature, humidity, seasonal intensity)
   - Disaster events (droughts, floods, volcanic eruptions, meteor impacts)
@@ -57,12 +53,19 @@
   - Evolution timeline showing major adaptations and extinctions
   - Genetic diversity heatmaps and phylogenetic trees
   - Performance metrics (fitness curves, selection pressure indicators)
+- [ ] **Advanced Creature Behavioral Systems** - Enhanced AI and interactions
+  - Territorial behavior with scent marking and boundary defense
+  - Mating rituals and sexual selection affecting trait prevalence
+  - Cooperative behaviors (pack hunting, food sharing, nest building)
+  - Migration patterns between biomes based on environmental conditions
 
 **Technical Improvements**:
 - [x] **Performance optimization for 100+ creatures** - COMPLETED
 - [x] **Improved creature AI and behavior patterns** - COMPLETED  
 - [x] **Enhanced visual feedback and animations** - COMPLETED
 - [x] **Biome-specific lighting and terrain rendering** - COMPLETED
+- [x] **Advanced Genetics System Implementation** - COMPLETED ✨ **NEW**
+- [x] **Species Specialization Engine** - COMPLETED ✨ **NEW**
 - [ ] **WebWorker Integration** - Move evolution calculations to background threads
 - [ ] **Advanced Memory Management** - Efficient object pooling and garbage collection
 - [ ] **Procedural Animation System** - Dynamic creature animations based on traits
@@ -189,7 +192,16 @@
 
 ## Recently Completed
 
-### ✅ v0.3.1-alpha - September 2024 ✨ **NEW**
+### ✅ v0.4.0-alpha - September 2024 ✨ **NEW**
+- ✅ **Advanced Genetics System** - DNA-based inheritance with 8 gene types - Released
+- ✅ **Species Specialization Engine** - 10 ecological roles from grazers to apex predators - Released
+- ✅ **Lineage Tracking System** - Family trees and genetic history visualization - Released
+- ✅ **Population Genetics Analytics** - Real-time diversity metrics and allele frequencies - Released
+- ✅ **Environmental Gene Expression** - Epigenetic effects based on biome conditions - Released
+- ✅ **Genetic Similarity Analysis** - Breeding compatibility and relationship tracking - Released
+- ✅ **Comprehensive Test Suite** - 47 tests covering genetics and specialization systems - Released
+
+### ✅ v0.3.1-alpha - September 2024
 - ✅ **Multi-Biome Environment System** - Three distinct biomes with unique characteristics - Released
 - ✅ **Forest Biome** - Abundant resources, complex terrain, slower movement - Released
 - ✅ **Desert Biome** - Limited resources, harsh conditions, faster movement - Released  

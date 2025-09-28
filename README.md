@@ -33,21 +33,23 @@ A 3D evolution simulation game built with Three.js and React. Guide geometric li
 
 ## 🔬 Features
 
-### Current (v0.3.1-alpha)
+### Current (v0.4.0-alpha)
 - **3D Rendering**: Three.js-powered 3D environment with dynamic lighting
 - **Creature System**: Multiple creature types (sphere, cube, cylinder) with unique attributes
-- **Evolution Mechanics**: Reproduction, mutation, and natural selection
-- **Smart AI**: Food-seeking behavior with boundary detection
-- **Dynamic Environment**: Respawning food sources and obstacles
-- **Interactive UI**: Real-time statistics and creature selection
-- **Multi-Biome System**: Forest, Desert, and Ocean environments with unique challenges ✨ **NEW**
-- **Biome-Specific Effects**: Different energy drains, movement speeds, and resource availability ✨ **NEW**
+- **Advanced Genetics System**: DNA-based inheritance with dominant/recessive genes ✨ **NEW**
+- **Species Specialization Engine**: 10 ecological roles from grazers to apex predators ✨ **NEW**
+- **Smart AI**: Food-seeking behavior with specialization-based performance modifiers ✨ **ENHANCED**
+- **Dynamic Environment**: Respawning food sources and biome-specific adaptations
+- **Interactive UI**: Real-time statistics, creature selection, and genetics/lineage viewer ✨ **ENHANCED**
+- **Multi-Biome System**: Forest, Desert, and Ocean environments with unique challenges
+- **Biome-Specific Effects**: Different energy drains, movement speeds, and resource availability
+- **Lineage Tracking**: Family trees, genetic history, and population diversity analysis ✨ **NEW**
 
-### Coming Soon (v0.4.0-beta)
-- **Advanced Creature Customization**: Detailed trait selection and creature editor
-- **Population Migration**: Creatures moving between biomes based on environmental conditions
-- **Enhanced Resource Competition**: Biome-specific resource dynamics
-- **Mobile Compatibility**: Touch controls and responsive design
+### Coming Soon (v0.5.0-beta)
+- **Environmental Interaction Tools**: Player-controlled climate and disaster events
+- **Advanced Population Analytics**: Phylogenetic trees and evolution timeline visualization
+- **WebWorker Integration**: Background processing for large population calculations
+- **Procedural Animation System**: Dynamic creature animations based on genetic traits
 
 ## 🛠️ Technology Stack
 
@@ -86,6 +88,6 @@ MIT License - see LICENSE file for details
 
 ---
 
-**Current Version**: 0.3.1-alpha  
+**Current Version**: 0.4.0-alpha  
 **Last Updated**: September 28, 2024  
-**Status**: Active Development
+**Status**: Advanced Genetics & Specialization Development

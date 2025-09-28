@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CompanionAI } from '../ai/companion-ai.js';
+import { AdvancedFeaturesDemo } from './AdvancedFeaturesDemo.js';
 import type { 
   CompanionPersonality, 
   CompanionState, 
@@ -332,6 +333,9 @@ export const CompanionDemo: React.FC<CompanionDemoProps> = ({
           Send
         </button>
       </div>
+
+      {/* Advanced Features Demo */}
+      {companion && <AdvancedFeaturesDemo companion={companion} />}
 
       {/* Demo Info */}
       <div style={{

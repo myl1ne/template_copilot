@@ -25,7 +25,11 @@ export default function PopulationAnalytics({ gameState, isVisible, onClose }) {
           : 1,
         biome: gameState.currentBiome,
         foodSources: gameState.foodSources ? gameState.foodSources.length : 0,
-        environmentalConditions: gameState.environment
+        environmentalConditions: {
+          // Only include stable environmental data to avoid constant re-renders
+          season: gameState.environment?.season || 'normal',
+          pressure: gameState.environment?.pressure || 0
+        }
       }
 
       setHistoricalData(prev => {
@@ -34,7 +38,14 @@ export default function PopulationAnalytics({ gameState, isVisible, onClose }) {
         return newData.length > 100 ? newData.slice(-100) : newData
       })
     }
-  }, [gameState.population, gameState.isRunning, gameState.currentBiome, gameState.foodSources, gameState.environment])
+  }, [
+    gameState.population, 
+    gameState.isRunning, 
+    gameState.currentBiome, 
+    gameState.foodSources,
+    gameState.environment?.season,
+    gameState.environment?.pressure
+  ])
 
   // Calculate genetic diversity metrics
   const geneticMetrics = useMemo(() => {

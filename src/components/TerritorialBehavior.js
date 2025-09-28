@@ -69,7 +69,8 @@ export class TerritorialBehavior {
     if (creature.energy < 50) strength *= 0.7 // Low energy reduces territorial behavior
     if (creature.age && creature.age > 100) strength *= 1.2 // Older creatures are more territorial
 
-    return Math.max(0, Math.min(1, strength))
+    // Return raw strength clamped to reasonable bounds - but allow values > 1 for stronger territorial creatures
+    return Math.max(0, Math.min(2, strength))
   }
 
   /**

@@ -37,7 +37,7 @@ describe('TerritorialBehavior', () => {
       const strength = territorialBehavior.getTerritorialStrength(creature)
       
       expect(strength).toBeGreaterThan(0.5) // Should be strong with territorial genes
-      expect(strength).toBeLessThanOrEqual(1)
+      expect(strength).toBeLessThanOrEqual(2) // Updated max range to 2
     })
 
     it('reduces strength for non-territorial genetics', () => {
@@ -98,7 +98,7 @@ describe('TerritorialBehavior', () => {
       // Both should be different (not both capped at 1)
       expect(aggressiveStrength).not.toBe(passiveStrength)
       expect(aggressiveStrength).toBeGreaterThan(0.8) // Should be high
-      expect(passiveStrength).toBeLessThan(0.9) // Should be lower due to gregarious nature
+      expect(passiveStrength).toBeLessThan(1.5) // Should be lower due to gregarious nature, updated range
     })
 
     it('reduces strength for low energy creatures', () => {

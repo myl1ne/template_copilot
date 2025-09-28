@@ -3,12 +3,14 @@ import { BIOME_TYPES, getBiomeConfig } from './BiomeConfig'
 import { generateDNA, expressCreatureTraits, createEnvironmentalFactors } from './GeneticsSystem'
 import LineageTracker from './LineageTracker'
 import EnvironmentalControls from './EnvironmentalControls'
+import PopulationAnalytics from './PopulationAnalytics'
 import environmentalEventsManager from './EnvironmentalEventsManager'
 
 export default function GameUI({ gameState, setGameState }) {
   const [creatureType, setCreatureType] = useState('sphere')
   const [showLineageTracker, setShowLineageTracker] = useState(false)
   const [showEnvironmentalControls, setShowEnvironmentalControls] = useState(false)
+  const [showPopulationAnalytics, setShowPopulationAnalytics] = useState(false)
   const biomeConfig = getBiomeConfig(gameState.currentBiome)
 
   const changeBiome = (newBiome) => {
@@ -347,6 +349,16 @@ export default function GameUI({ gameState, setGameState }) {
             {showEnvironmentalControls ? 'Hide' : 'Show'} Environmental Controls
           </button>
         </div>
+
+        <div className="control-group">
+          <button 
+            onClick={() => setShowPopulationAnalytics(true)} 
+            className="btn"
+            style={{ backgroundColor: '#2196F3', borderColor: '#2196F3' }}
+          >
+            📊 Population Analytics
+          </button>
+        </div>
       </div>
 
       {/* Stats Panel */}
@@ -518,6 +530,13 @@ export default function GameUI({ gameState, setGameState }) {
         gameState={gameState}
         isVisible={showLineageTracker}
         onClose={() => setShowLineageTracker(false)}
+      />
+
+      {/* Population Analytics Dashboard */}
+      <PopulationAnalytics 
+        gameState={gameState}
+        isVisible={showPopulationAnalytics}
+        onClose={() => setShowPopulationAnalytics(false)}
       />
     </div>
   )

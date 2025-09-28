@@ -240,8 +240,7 @@ function calculateSoilQuality(position, terrainHeight, biomeType) {
   return baseSoilQuality * heightFactor
 }
 
-export default function PlantSystem({ gameState, terrainData, onPlantsUpdate }) {
-  const biomeType = gameState.currentBiome || BIOME_TYPES.FOREST
+export default function PlantSystem({ biomeType, season = 'normal', terrainData, onPlantsUpdate }) {
   const [plants, setPlants] = useState([])
   
   // Initialize plants when terrain data changes

@@ -134,18 +134,21 @@ export default function SimpleTerrainSystem({ gameState }) {
         const x = (i - mapSize/2) * (size / mapSize)
         const z = (j - mapSize/2) * (size / mapSize)
         
-        // Generate base terrain with multiple octaves
+        // Generate base terrain with smoother, more gentle slopes for better creature visibility
         let height = 0
         switch (biomeType) {
           case BIOME_TYPES.DESERT:
-            height = terrainNoise(x, z, 0.02, 3, 2, 42) + terrainNoise(x, z, 0.05, 1, 1, 100)
+            // Much gentler desert terrain - subtle dunes
+            height = terrainNoise(x, z, 0.01, 1.5, 2, 42) + terrainNoise(x, z, 0.03, 0.5, 1, 100)
             break
           case BIOME_TYPES.OCEAN:
-            height = terrainNoise(x, z, 0.015, 1, 1, 200) - 1
+            // Very smooth ocean floor
+            height = terrainNoise(x, z, 0.008, 0.5, 1, 200) - 0.5
             break
           case BIOME_TYPES.FOREST:
           default:
-            height = terrainNoise(x, z, 0.025, 4, 3, 0) + terrainNoise(x, z, 0.08, 1, 2, 50)
+            // Gentle rolling hills instead of sharp terrain
+            height = terrainNoise(x, z, 0.015, 2, 2, 0) + terrainNoise(x, z, 0.04, 0.8, 1, 50)
             break
         }
         

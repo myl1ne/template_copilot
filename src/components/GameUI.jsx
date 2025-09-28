@@ -7,7 +7,7 @@ import PopulationAnalytics from './PopulationAnalytics'
 import environmentalEventsManager from './EnvironmentalEventsManager'
 
 export default function GameUI({ gameState, setGameState }) {
-  const [creatureType, setCreatureType] = useState('sphere')
+  const [creatureType, setCreatureType] = useState('enhanced')
   const [showLineageTracker, setShowLineageTracker] = useState(false)
   const [showEnvironmentalControls, setShowEnvironmentalControls] = useState(false)
   const [showPopulationAnalytics, setShowPopulationAnalytics] = useState(false)
@@ -71,7 +71,7 @@ export default function GameUI({ gameState, setGameState }) {
     
     const newCreature = {
       id: Date.now(),
-      type: creatureType,
+      type: 'enhanced', // Use enhanced DNA-based rendering
       position: [
         (Math.random() - 0.5) * 15,
         1,
@@ -124,7 +124,7 @@ export default function GameUI({ gameState, setGameState }) {
     
     const predator = {
       id: Date.now() + Math.random(),
-      type: creatureType === 'sphere' ? 'cylinder' : creatureType, // Predators tend to be cylindrical
+      type: 'enhanced', // Use enhanced DNA-based rendering
       position: [
         (Math.random() - 0.5) * 15,
         1,

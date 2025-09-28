@@ -4,6 +4,8 @@ import Creature from './Creature'
 import { getBiomeConfig, calculateBiomeFood, BIOME_TYPES } from './BiomeConfig'
 import { reproduceGenetics, expressCreatureTraits, createEnvironmentalFactors } from './GeneticsSystem'
 import { analyzeSpecializationPotential, applySpecializationEffects } from './SpecializationEngine'
+import { territorialBehavior } from './TerritorialBehavior'
+import { matingBehavior } from './MatingBehavior'
 import * as THREE from 'three'
 
 export default function CreatureManager({ gameState, setGameState }) {
@@ -242,6 +244,18 @@ export default function CreatureManager({ gameState, setGameState }) {
             }
             
             newCreature.lastSpecializationCheck = newCreature.age
+          }
+
+          // Apply territorial behavior effects
+          territorialBehavior.applyTerritorialEffects(newCreature)
+
+          // Handle mating behaviors - only if not already in courtship/mating
+          if (!newCreature.matingState && newCreature.energy > 120 && Math.random() < 0.02) {
+            const potentialMates = matingBehavior.findPotentialMates(newCreature, prev.population)
+            if (potentialMates.length > 0) {
+              const bestMate = potentialMates[0] // Already sorted by compatibility
+              matingBehavior.initiateCourtship(newCreature, bestMate)
+            }
           }
 
           // Random movement with some direction persistence
@@ -578,6 +592,13 @@ export default function CreatureManager({ gameState, setGameState }) {
           foodSources: updatedFoodSources
         }
       })
+      
+      // Update territorial behaviors after population update
+      territorialBehavior.updateTerritorialBehaviors(gameState.population, delta)
+      
+      // Update mating behaviors
+      matingBehavior.updateCourtshipBehaviors(gameState.population, delta)
+      matingBehavior.cleanup(gameState.population)
     }
   })
 

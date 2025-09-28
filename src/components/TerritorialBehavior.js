@@ -353,7 +353,7 @@ export class TerritorialBehavior {
 
       if (overlapDistance > 0) {
         // Territories overlap - resolve conflict
-        this.resolveTerritorialConflict(creature, territory, otherCreatureId, otherTerritory, overlapDistance)
+        this.resolveTerritorialConflict(creature, territory, otherCreatureId, otherTerritory, overlapDistance, allCreatures)
       }
     })
   }
@@ -361,8 +361,8 @@ export class TerritorialBehavior {
   /**
    * Resolve territorial conflict between two creatures
    */
-  resolveTerritorialConflict(creature1, territory1, creature2Id, territory2, overlapDistance) {
-    const creature2 = this.findCreatureById(creature2Id)
+  resolveTerritorialConflict(creature1, territory1, creature2Id, territory2, overlapDistance, allCreatures) {
+    const creature2 = this.findCreatureById(creature2Id, allCreatures)
     if (!creature2) return
 
     const strength1 = territory1.strength
@@ -420,10 +420,8 @@ export class TerritorialBehavior {
   /**
    * Find creature by ID (helper method)
    */
-  findCreatureById(creatureId) {
-    // This would be implemented by the calling system
-    // For now, return null - will be properly integrated
-    return null
+  findCreatureById(creatureId, creatures = []) {
+    return creatures.find(c => c.id === creatureId) || null
   }
 
   /**

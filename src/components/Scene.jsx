@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { OrbitControls, Grid } from '@react-three/drei'
 import Environment from './Environment'
 import CreatureManager from './CreatureManager'
+import TerritorialVisualization from './TerritorialVisualization'
 import { getBiomeConfig, BIOME_TYPES } from './BiomeConfig'
 
 export default function Scene({ gameState, setGameState }) {
@@ -96,6 +97,13 @@ export default function Scene({ gameState, setGameState }) {
 
       {/* Creatures */}
       <CreatureManager gameState={gameState} setGameState={setGameState} />
+
+      {/* Territorial Visualization */}
+      <TerritorialVisualization 
+        population={gameState.population || []}
+        showTerritories={true}
+        showScentMarks={true}
+      />
 
       {/* Subtle grid - much less visible */}
       <Grid

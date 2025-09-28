@@ -5,6 +5,20 @@
 ## 🔥 High Priority
 
 ### Not Started
+- **Environmental Pressure Enhancement** - Strengthen biome effects on creature fitness and survival ✨ **NEW PRIORITY**
+  - **Status**: Not Started
+  - **GitHub Issue**: #26 (to be created)
+  - **Dependencies**: Evolution experiment findings, current biome system
+  - **Estimate**: 3-4 days
+  - **Context**: Experiment revealed need for stronger environmental selection pressures
+
+- **Multi-Generational Evolution Tracking** - Extended experiments across 10+ generations ✨ **NEW**
+  - **Status**: Not Started  
+  - **GitHub Issue**: #27 (to be created)
+  - **Dependencies**: Enhanced environmental pressure system
+  - **Estimate**: 2-3 days
+  - **Context**: Support long-term evolutionary analysis and trait selection observation
+
 - **Advanced Creature Customization Tools** - Detailed creature editor with trait selection
   - **Status**: Not Started
   - **GitHub Issue**: #24 (to be created)
@@ -85,6 +99,11 @@
 
 ## ✅ Recently Completed
 
+- **Evolution Experiment Framework** - Systematic testing methodology for evolutionary dynamics ✅
+  - **Completed**: 2024-09-28
+  - **GitHub Issue**: Autonomous Progress 6/n
+  - **Features**: Biome specialization pressure test, genetic diversity analysis, cross-biome fitness comparison
+  - **Results**: Documented in [evolution-experiment-results.md](evolution-experiment-results.md) - revealed integration needs
 - **Multi-Biome Environment System** - Complete biome system with Forest, Desert, and Ocean environments ✅
   - **Completed**: 2024-09-28
   - **GitHub Issue**: Autonomous Progress 3/n  
@@ -206,10 +225,10 @@
 
 | Priority | Not Started | In Progress | Under Review | Completed |
 |----------|-------------|-------------|--------------|-----------|
-| High     | 3           | 0           | 0            | 13        |
+| High     | 5           | 0           | 0            | 13        |
 | Medium   | 4           | 0           | 0            | 4         |
 | Low      | 3           | 0           | 0            | 1         |
-| **Total**| **10**      | **0**       | **0**        | **23**    |
+| **Total**| **12**      | **0**       | **0**        | **24**    |
 
 ---
 
@@ -236,7 +255,7 @@ When creating new GitHub issues, use these labels to automatically sync with thi
 
 ---
 
-*Last updated: 2024-09-27*
+*Last updated: 2024-09-28*
 *Next sync: Automatic when GitHub issues are created*
 
 *This backlog is automatically maintained based on GitHub Issues. Manual edits may be overwritten.*

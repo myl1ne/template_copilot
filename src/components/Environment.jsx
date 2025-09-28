@@ -4,6 +4,15 @@ import * as THREE from 'three'
 import { getBiomeConfig, BIOME_TYPES } from './BiomeConfig'
 
 function Obstacle({ position, size, color, type = 'rock' }) {
+  const meshRef = useRef()
+
+  // Add subtle animation to some obstacles
+  useFrame((state) => {
+    if (meshRef.current && (type === 'seaweed' || type === 'bush')) {
+      meshRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.5 + position[0]) * 0.1
+    }
+  })
+
   // Different obstacle shapes based on type
   const getGeometry = () => {
     switch (type) {
@@ -24,29 +33,82 @@ function Obstacle({ position, size, color, type = 'rock' }) {
     }
   }
 
-  const getColor = () => {
+  const getMaterial = () => {
     switch (type) {
       case 'tree':
-        return '#4a5d23'
+        return (
+          <meshStandardMaterial 
+            color="#4a5d23" 
+            roughness={0.8}
+            metalness={0.1}
+            emissive="#0a1505"
+            emissiveIntensity={0.1}
+          />
+        )
       case 'cactus':
-        return '#228B22'
+        return (
+          <meshStandardMaterial 
+            color="#228B22" 
+            roughness={0.6}
+            metalness={0.0}
+            normalScale={[0.5, 0.5]}
+          />
+        )
       case 'coral':
-        return '#FF7F50'
+        return (
+          <meshStandardMaterial 
+            color="#FF7F50" 
+            roughness={0.3}
+            metalness={0.0}
+            emissive="#331a0a"
+            emissiveIntensity={0.2}
+          />
+        )
       case 'bush':
-        return '#556B2F'
+        return (
+          <meshStandardMaterial 
+            color="#556B2F" 
+            roughness={0.9}
+            metalness={0.0}
+            emissive="#0a0f05"
+            emissiveIntensity={0.05}
+          />
+        )
       case 'dune':
-        return color || '#DAA520'
+        return (
+          <meshStandardMaterial 
+            color={color || '#DAA520'} 
+            roughness={0.95}
+            metalness={0.0}
+          />
+        )
       case 'seaweed':
-        return '#2E8B57'
+        return (
+          <meshStandardMaterial 
+            color="#2E8B57" 
+            roughness={0.4}
+            metalness={0.0}
+            transparent
+            opacity={0.8}
+            emissive="#051a0f"
+            emissiveIntensity={0.1}
+          />
+        )
       default:
-        return color || '#8B4513'
+        return (
+          <meshStandardMaterial 
+            color={color || '#8B4513'} 
+            roughness={0.7}
+            metalness={0.1}
+          />
+        )
     }
   }
 
   return (
-    <mesh position={position} castShadow receiveShadow>
+    <mesh ref={meshRef} position={position} castShadow receiveShadow>
       {getGeometry()}
-      <meshLambertMaterial color={getColor()} />
+      {getMaterial()}
     </mesh>
   )
 }
@@ -57,11 +119,12 @@ function FoodSource({ food, size = 0.3, biomeType }) {
 
   useFrame((state) => {
     if (meshRef.current && isAvailable) {
-      // Gentle bobbing animation for available food sources
+      // Enhanced bobbing animation for available food sources
       const baseY = food.position[1]
-      meshRef.current.position.y = baseY + Math.sin(state.clock.elapsedTime * 2) * 0.1
-      // Slight glow effect
-      meshRef.current.scale.setScalar(1 + Math.sin(state.clock.elapsedTime * 4) * 0.1)
+      meshRef.current.position.y = baseY + Math.sin(state.clock.elapsedTime * 2 + food.id * 0.5) * 0.15
+      // Pulsing glow effect
+      const scale = 1 + Math.sin(state.clock.elapsedTime * 3 + food.id) * 0.2
+      meshRef.current.scale.setScalar(scale)
     } else if (meshRef.current && !isAvailable) {
       // Respawning food sources are smaller and less visible
       const respawnProgress = Math.max(0, 1 - (food.respawnTime / 10))
@@ -69,34 +132,60 @@ function FoodSource({ food, size = 0.3, biomeType }) {
     }
   })
 
-  // Biome-specific food colors
-  const getFoodColor = () => {
-    if (!isAvailable) return '#666666'
+  // Enhanced biome-specific food colors and materials
+  const getFoodMaterial = () => {
+    if (!isAvailable) {
+      return (
+        <meshStandardMaterial 
+          color="#666666" 
+          transparent 
+          opacity={0.3}
+          roughness={0.8}
+        />
+      )
+    }
     
     switch (biomeType) {
       case BIOME_TYPES.DESERT:
-        return '#DAA520' // Golden for desert fruits
+        return (
+          <meshStandardMaterial 
+            color="#DAA520" 
+            emissive="#332200"
+            emissiveIntensity={0.3}
+            roughness={0.2}
+            metalness={0.1}
+          />
+        )
       case BIOME_TYPES.OCEAN:
-        return '#40E0D0' // Turquoise for plankton
+        return (
+          <meshStandardMaterial 
+            color="#40E0D0" 
+            emissive="#003333"
+            emissiveIntensity={0.4}
+            roughness={0.1}
+            metalness={0.2}
+            transparent
+            opacity={0.9}
+          />
+        )
       case BIOME_TYPES.FOREST:
       default:
-        return '#4CAF50' // Green for forest berries
+        return (
+          <meshStandardMaterial 
+            color="#4CAF50" 
+            emissive="#001100"
+            emissiveIntensity={0.2}
+            roughness={0.4}
+            metalness={0.0}
+          />
+        )
     }
   }
 
-  const emissive = isAvailable ? '#002200' : '#000000'
-  const emissiveIntensity = isAvailable ? 0.2 : 0
-
   return (
     <mesh ref={meshRef} position={food.position} castShadow>
-      <sphereGeometry args={[size, 8, 6]} />
-      <meshLambertMaterial 
-        color={getFoodColor()} 
-        emissive={emissive} 
-        emissiveIntensity={emissiveIntensity}
-        transparent={!isAvailable}
-        opacity={isAvailable ? 1 : 0.3}
-      />
+      <sphereGeometry args={[size, 12, 8]} />
+      {getFoodMaterial()}
     </mesh>
   )
 }
@@ -137,28 +226,99 @@ export default function Environment({ gameState }) {
     return obstacleList
   }, [biomeType, biomeConfig])
 
+  // Enhanced ground material
+  const getGroundMaterial = () => {
+    switch (biomeType) {
+      case BIOME_TYPES.DESERT:
+        return (
+          <meshStandardMaterial 
+            color={biomeConfig.groundColor}
+            roughness={0.9}
+            metalness={0.0}
+            emissive="#1a1100"
+            emissiveIntensity={0.05}
+          />
+        )
+      case BIOME_TYPES.OCEAN:
+        return (
+          <meshStandardMaterial 
+            color={biomeConfig.groundColor}
+            roughness={0.1}
+            metalness={0.3}
+            emissive="#001122"
+            emissiveIntensity={0.1}
+          />
+        )
+      case BIOME_TYPES.FOREST:
+      default:
+        return (
+          <meshStandardMaterial 
+            color={biomeConfig.groundColor}
+            roughness={0.8}
+            metalness={0.0}
+            emissive="#050a05"
+            emissiveIntensity={0.05}
+          />
+        )
+    }
+  }
+
   return (
     <group>
-      {/* Ground plane with biome-specific color */}
+      {/* Enhanced ground plane with biome-specific material */}
       <mesh position={[0, -0.1, 0]} receiveShadow>
-        <planeGeometry args={[50, 50]} />
-        <meshLambertMaterial color={biomeConfig.groundColor} />
+        <planeGeometry args={[60, 60]} />
+        {getGroundMaterial()}
       </mesh>
 
-      {/* Ocean-specific water effects */}
+      {/* Enhanced ocean-specific water effects */}
       {biomeType === BIOME_TYPES.OCEAN && (
-        <mesh position={[0, 0.2, 0]} receiveShadow>
-          <planeGeometry args={[50, 50]} />
-          <meshLambertMaterial 
-            color="#006994" 
-            transparent 
-            opacity={0.3}
-            side={THREE.DoubleSide}
-          />
-        </mesh>
+        <>
+          {/* Water surface */}
+          <mesh position={[0, 0.2, 0]} receiveShadow>
+            <planeGeometry args={[60, 60]} />
+            <meshStandardMaterial 
+              color="#006994" 
+              transparent 
+              opacity={0.4}
+              roughness={0.0}
+              metalness={0.8}
+              side={THREE.DoubleSide}
+              emissive="#001133"
+              emissiveIntensity={0.1}
+            />
+          </mesh>
+          
+          {/* Animated water ripples */}
+          <mesh position={[0, 0.25, 0]}>
+            <planeGeometry args={[60, 60, 32, 32]} />
+            <meshStandardMaterial 
+              color="#4dd0e1" 
+              transparent 
+              opacity={0.2}
+              wireframe={true}
+              side={THREE.DoubleSide}
+            />
+          </mesh>
+        </>
       )}
 
-      {/* Biome-specific obstacles */}
+      {/* Particle effects for desert */}
+      {biomeType === BIOME_TYPES.DESERT && (
+        <points>
+          <bufferGeometry>
+            <bufferAttribute
+              attach="attributes-position"
+              count={100}
+              array={new Float32Array(Array.from({ length: 300 }, () => (Math.random() - 0.5) * 40))}
+              itemSize={3}
+            />
+          </bufferGeometry>
+          <pointsMaterial size={0.05} color="#d4a574" transparent opacity={0.6} />
+        </points>
+      )}
+
+      {/* Biome-specific obstacles with enhanced materials */}
       {obstacles.map(obstacle => (
         <Obstacle
           key={obstacle.id}
@@ -168,7 +328,7 @@ export default function Environment({ gameState }) {
         />
       ))}
 
-      {/* Dynamic food sources */}
+      {/* Enhanced dynamic food sources */}
       {gameState.foodSources && gameState.foodSources.map(food => (
         <FoodSource
           key={food.id}

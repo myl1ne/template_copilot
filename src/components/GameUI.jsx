@@ -1,7 +1,24 @@
 import { useState } from 'react'
+import { BIOME_TYPES, getBiomeConfig } from './BiomeConfig'
 
 export default function GameUI({ gameState, setGameState }) {
   const [creatureType, setCreatureType] = useState('sphere')
+  const biomeConfig = getBiomeConfig(gameState.currentBiome)
+
+  const changeBiome = (newBiome) => {
+    setGameState(prev => ({
+      ...prev,
+      currentBiome: newBiome,
+      // Reset food sources when changing biome
+      foodSources: [],
+      // Reset environment state for new biome
+      environment: {
+        ...prev.environment,
+        pressure: 0,
+        season: 'normal'
+      }
+    }))
+  }
 
   const toggleSimulation = () => {
     setGameState(prev => ({
@@ -108,6 +125,30 @@ export default function GameUI({ gameState, setGameState }) {
         </div>
 
         <div className="control-group">
+          <label>Biome:</label>
+          <select 
+            value={gameState.currentBiome} 
+            onChange={(e) => changeBiome(e.target.value)}
+            disabled={gameState.isRunning}
+            style={{ 
+              padding: '0.5rem', 
+              borderRadius: '4px', 
+              border: '1px solid #555',
+              background: gameState.isRunning ? '#555' : '#333',
+              color: gameState.isRunning ? '#999' : 'white',
+              cursor: gameState.isRunning ? 'not-allowed' : 'pointer'
+            }}
+          >
+            <option value={BIOME_TYPES.FOREST}>🌲 Forest</option>
+            <option value={BIOME_TYPES.DESERT}>🏜️ Desert</option>
+            <option value={BIOME_TYPES.OCEAN}>🌊 Ocean</option>
+          </select>
+          <small style={{ opacity: 0.7, fontSize: '0.7rem' }}>
+            {biomeConfig.description}
+          </small>
+        </div>
+
+        <div className="control-group">
           <button onClick={spawnCreature} className="btn">
             Spawn Herbivore
           </button>
@@ -157,6 +198,15 @@ export default function GameUI({ gameState, setGameState }) {
           <div className="stat-item">
             <span>Food Sources:</span>
             <span>{gameState.foodSources ? gameState.foodSources.filter(f => f.energy > 0).length : 0}</span>
+          </div>
+          <div className="stat-item">
+            <span>Current Biome:</span>
+            <span style={{ 
+              color: gameState.currentBiome === BIOME_TYPES.FOREST ? '#51cf66' : 
+                     gameState.currentBiome === BIOME_TYPES.DESERT ? '#ffa500' : '#40e0d0'
+            }}>
+              {biomeConfig.name}
+            </span>
           </div>
           <div className="stat-item">
             <span>Status:</span>

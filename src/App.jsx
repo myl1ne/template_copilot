@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import Scene from './components/Scene'
 import GameUI from './components/GameUI'
+import { BIOME_TYPES, getBiomeConfig } from './components/BiomeConfig'
 import './App.css'
 
 function App() {
@@ -9,8 +10,11 @@ function App() {
     isRunning: false,
     population: [],
     speed: 1,
-    selectedCreature: null
+    selectedCreature: null,
+    currentBiome: BIOME_TYPES.FOREST
   })
+
+  const biomeConfig = getBiomeConfig(gameState.currentBiome)
 
   return (
     <div className="app">
@@ -23,7 +27,7 @@ function App() {
         <div className="scene-container">
           <Canvas
             camera={{ position: [10, 10, 10], fov: 75 }}
-            style={{ background: '#87CEEB' }}
+            style={{ background: biomeConfig.skyColor }}
           >
             <Scene gameState={gameState} setGameState={setGameState} />
           </Canvas>

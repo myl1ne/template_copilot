@@ -33,19 +33,21 @@ A 3D evolution simulation game built with Three.js and React. Guide geometric li
 
 ## 🔬 Features
 
-### Current (v0.3.0-alpha)
+### Current (v0.3.1-alpha)
 - **3D Rendering**: Three.js-powered 3D environment with dynamic lighting
 - **Creature System**: Multiple creature types (sphere, cube, cylinder) with unique attributes
 - **Evolution Mechanics**: Reproduction, mutation, and natural selection
 - **Smart AI**: Food-seeking behavior with boundary detection
 - **Dynamic Environment**: Respawning food sources and obstacles
 - **Interactive UI**: Real-time statistics and creature selection
+- **Multi-Biome System**: Forest, Desert, and Ocean environments with unique challenges ✨ **NEW**
+- **Biome-Specific Effects**: Different energy drains, movement speeds, and resource availability ✨ **NEW**
 
 ### Coming Soon (v0.4.0-beta)
-- **Predator-Prey System**: Multiple species with hunting behaviors
-- **Environmental Pressure**: Survival challenges affecting evolution
-- **Performance Optimization**: Support for 100+ creatures
-- **Multiple Biomes**: Different environments with unique challenges
+- **Advanced Creature Customization**: Detailed trait selection and creature editor
+- **Population Migration**: Creatures moving between biomes based on environmental conditions
+- **Enhanced Resource Competition**: Biome-specific resource dynamics
+- **Mobile Compatibility**: Touch controls and responsive design
 
 ## 🛠️ Technology Stack
 
@@ -83,6 +85,6 @@ MIT License - see LICENSE file for details
 
 ---
 
-**Current Version**: 0.3.0-alpha  
-**Last Updated**: September 27, 2024  
+**Current Version**: 0.3.1-alpha  
+**Last Updated**: September 28, 2024  
 **Status**: Active Development

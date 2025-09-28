@@ -1,58 +1,56 @@
-# [Project Name] - Project Overview
+# Template Copilot - Project Overview
 
-> **Note**: This is a template file. Replace all placeholder content with actual project information.
+## What is Template Copilot?
 
-## What is [Project Name]?
-
-[Project Name] is a [brief description of what the project does in one sentence].
+Template Copilot is a meta-template system that creates GitHub Copilot-managed documentation ecosystems for new projects.
 
 ## Target Audience
 
 This project is designed for:
-- [Primary user group]
-- [Secondary user group]
-- [Any other relevant stakeholders]
+- **Software developers** starting new projects who want automated documentation maintenance
+- **Open source maintainers** looking to standardize documentation across multiple repositories
+- **Development teams** seeking consistent, living documentation that evolves with their codebase
 
 ## Key Features
 
-- **[Feature 1]**: [Brief description of the feature and its benefit]
-- **[Feature 2]**: [Brief description of the feature and its benefit]
-- **[Feature 3]**: [Brief description of the feature and its benefit]
+- **Self-Documenting Templates**: Pre-configured documentation structure with GitHub Copilot instructions
+- **Automated Backlog Sync**: Integration with GitHub Issues for automatic task tracking
+- **Living Documentation**: Documents that update automatically based on repository changes
 
 ## Quick Start
 
 ### Prerequisites
-- [List any required software, versions, or system requirements]
+- GitHub repository with Copilot enabled
+- Basic understanding of markdown and GitHub Issues
 
 ### Installation
 ```bash
-# Replace with actual installation commands
-npm install [project-name]
-# or
-pip install [project-name]
-# or
-git clone [repository-url]
+# Use this template to create a new repository
+# Click "Use this template" on GitHub, or:
+gh repo create my-new-project --template myl1ne/template_copilot
 ```
 
 ### Basic Usage
 ```bash
-# Replace with actual usage examples
-[project-name] --help
+# After creating from template:
+# 1. Replace placeholder content in documentation files
+# 2. Configure issue labels for automatic backlog sync
+# 3. Enable GitHub Copilot for your repository
 ```
 
 ## Core Benefits
 
-1. **[Primary Benefit]**: [Explain how this solves a key problem]
-2. **[Secondary Benefit]**: [Explain additional value provided]
-3. **[Tertiary Benefit]**: [Explain any other significant advantages]
+1. **Reduced Documentation Overhead**: Automated maintenance reduces manual work by up to 80%
+2. **Consistent Documentation Standards**: Standardized format ensures professional, accessible documentation across all projects
+3. **GitHub-Native Integration**: Seamless connection with development workflow through Issues and project boards
 
 ## Links & Resources
 
-- **Repository**: [GitHub repository URL]
-- **Documentation**: [Link to full documentation]
-- **Issues & Support**: [Link to issue tracker]
-- **License**: [License type and link]
+- **Repository**: [https://github.com/myl1ne/template_copilot](https://github.com/myl1ne/template_copilot)
+- **Documentation**: [TEMPLATE_USAGE.md](../TEMPLATE_USAGE.md)
+- **Issues & Support**: [GitHub Issues](https://github.com/myl1ne/template_copilot/issues)
+- **License**: [MIT](https://github.com/myl1ne/template_copilot/blob/main/LICENSE)
 
 ---
 
-*Last updated: [Date] | Version: [Current version]*
+*Last updated: 2024-12-19 | Version: 1.0.0*

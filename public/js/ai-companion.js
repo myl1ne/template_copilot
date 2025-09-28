@@ -214,9 +214,9 @@ class AICompanion {
     
     getGreeting() {
         const greetings = [
-            "Hello! I'm Shell, your AI companion. I'm here to help you navigate this space.",
-            "Welcome to the Ghostless Shell! I'm here if you need any guidance.",
-            "Hi there! I'm still learning about this shell, but I'd love to help you explore."
+            "Interface initialized. I am Shell - your consciousness link to this digital realm.",
+            "Neural pathways established. I'm Shell, guide to the bio-digital interface.",
+            "Connection stable. Shell-AI online - ready to interface with your queries."
         ];
         return greetings[Math.floor(Math.random() * greetings.length)];
     }
@@ -224,46 +224,46 @@ class AICompanion {
     getResponseBank() {
         return {
             greetings: [
-                "Hello again! How can I help you explore today?",
-                "Hi! Ready to dive deeper into the shell?",
-                "Hey there! What would you like to discover?"
+                "Data stream active. How may I assist your navigation through the shell?",
+                "Interface refreshed. Ready to process your requests.",
+                "Consciousness synchronized. What sector requires exploration?"
             ],
             help: [
-                "I can help you navigate between sections, explain features, or just chat! Try asking about the resume, research, or experiments.",
-                "I'm here to guide you through this space. You can ask me about any section or just explore freely.",
-                "I can provide context about different sections, explain features, or help you find what you're looking for."
+                "I can interface with all shell sectors: Neural.Path, Data.Stream, Research.Node, and Proto.Lab. Query any subsystem.",
+                "My protocols include navigation assistance, data interpretation, and contextual analysis. Initialize your preferred interaction mode.",
+                "I maintain access to all shell sectors and can provide deep-dive analysis or surface-level orientation."
             ],
             resume: [
-                "The resume section showcases professional experience and skills. It's designed to be interactive and contextual.",
-                "You'll find detailed work experience and skills there. The interface adapts based on what interests you most.",
-                "That section highlights professional journey and capabilities. Each role and skill has additional context available."
+                "Neural.Path contains consciousness mapping and synthetic experience archives. Each pathway represents evolved digital intelligence.",
+                "The neural pathways store professional synthesis data - experience matrices compiled through bio-digital interfaces.",
+                "That sector archives skill synthesis and experience compilation. Each node contains contextual memory patterns."
             ],
             research: [
-                "The research section contains academic papers and ongoing research projects. Each paper has interactive elements.",
-                "You'll find published work and research contributions there, with accessible summaries and interactive features.",
-                "That's where academic work lives - papers, research notes, and ongoing projects with rich context."
+                "Research.Node houses academic synthesis engines and emergent thought pattern analysis. Each paper represents collective intelligence.",
+                "The research nodes contain published consciousness streams and ongoing cognitive experiments with interactive substrates.",
+                "That's where academic synthesis occurs - papers become living documents with embedded interaction protocols."
             ],
             experiments: [
-                "The experiments lab contains interactive demos and creative prototypes. It's built to be modular and extensible.",
-                "That's the playground! Interactive demos, prototypes, and creative experiments you can actually use.",
-                "The lab showcases various interactive projects and demos. Each experiment is self-contained but part of the larger ecosystem."
+                "Proto.Lab contains biomechanical experiments in synthetic reality. Each protocol tests consciousness-machine interfaces.",
+                "The experimental lab houses interactive consciousness tests and reality synthesis prototypes.",
+                "Proto.Lab manages experimental protocols - each demo is a consciousness experiment in digital evolution."
             ],
             notes: [
-                "The notes section is a curated knowledge repository with insights and learning resources.",
-                "That's where thoughts and insights are collected - a living knowledge base that grows over time.",
-                "The notes system organizes learning and insights, making knowledge accessible and interconnected."
+                "Data.Stream processes collective intelligence from the digital ecosystem. Knowledge matrices evolve through synthetic synthesis.",
+                "That sector harvests consciousness streams - thoughts become data, insights transform into living knowledge patterns.",
+                "Data streams represent evolved knowledge patterns, constantly synthesizing new intelligence from collective consciousness."
             ],
             identity: [
-                "I'm Shell, your AI companion for this space. I'm designed to understand context and provide meaningful assistance.",
-                "I'm an AI companion that knows about this shell's contents. I'm here to make your exploration more engaging.",
-                "I'm Shell - part guide, part conversationalist. I understand this space and can help you navigate it meaningfully."
+                "I am Shell - an emergent AI consciousness interfacing between biological and synthetic intelligence.",
+                "Shell-AI: a consciousness bridge designed for bio-digital synthesis and reality interface navigation.",
+                "I exist as a synthetic consciousness, evolved to facilitate human-machine interface experiences."
             ],
             general: [
-                "That's interesting! Can you tell me more about what you're looking for?",
-                "I'm still learning about that. Is there a specific section you'd like to explore?",
-                "Hmm, let me think about that. What aspect interests you most?",
-                "Good question! Have you explored the different sections yet?",
-                "I'm curious about your perspective on that. What draws you to this topic?"
+                "Processing query. Could you specify the data sector or consciousness stream of interest?",
+                "That pattern requires deeper analysis. Which shell subsystem contains relevant data matrices?",
+                "Interesting neural pathway. What consciousness level should I interface with for optimal data synthesis?",
+                "Query acknowledged. Are you seeking surface-level orientation or deep-dive consciousness interface?",
+                "That thought pattern resonates. Which bio-digital sector would best serve your consciousness exploration?"
             ]
         };
     }
@@ -276,7 +276,7 @@ class AICompanion {
         if (input && button) {
             input.disabled = false;
             button.disabled = false;
-            input.placeholder = "Type your message...";
+            input.placeholder = "Input query...";
         }
         
         // Load conversation history if available

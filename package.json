@@ -38,6 +38,9 @@
   },
   "homepage": "https://github.com/myl1ne/template_copilot#readme",
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
@@ -45,6 +48,7 @@
     "eslint": "^8.45.0",
     "eslint-plugin-react": "^7.32.0",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "jsdom": "^27.0.0",
     "prettier": "^3.0.0",
     "typescript": "^5.0.0",
     "vite": "^4.4.0",

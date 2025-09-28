@@ -3,6 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import Creature from './Creature'
 import { getBiomeConfig, calculateBiomeFood, BIOME_TYPES } from './BiomeConfig'
 import { reproduceGenetics, expressCreatureTraits, createEnvironmentalFactors } from './GeneticsSystem'
+import { analyzeSpecializationPotential, applySpecializationEffects } from './SpecializationEngine'
 import * as THREE from 'three'
 
 export default function CreatureManager({ gameState, setGameState }) {
@@ -217,6 +218,32 @@ export default function CreatureManager({ gameState, setGameState }) {
             newCreature.aggressiveness = Math.random() * 0.3
           }
 
+          // Analyze and apply specialization (every 10 seconds to avoid performance impact)
+          if (!newCreature.lastSpecializationCheck || (newCreature.age - newCreature.lastSpecializationCheck) > 10) {
+            const populationContext = {
+              biome: gameState.currentBiome,
+              season: gameState.environment?.season || 'normal',
+              population: prev.population,
+              foodSources: prev.foodSources || []
+            }
+            
+            const specializationAnalysis = analyzeSpecializationPotential(newCreature, populationContext)
+            
+            if (specializationAnalysis.currentSpecialization) {
+              // Apply specialization effects
+              const specializedCreature = applySpecializationEffects(
+                newCreature, 
+                specializationAnalysis.currentSpecialization,
+                populationContext
+              )
+              
+              // Copy over the specialization modifications
+              Object.assign(newCreature, specializedCreature)
+            }
+            
+            newCreature.lastSpecializationCheck = newCreature.age
+          }
+
           // Random movement with some direction persistence
           if (!newCreature.direction) {
             newCreature.direction = Math.random() * Math.PI * 2
@@ -319,11 +346,12 @@ export default function CreatureManager({ gameState, setGameState }) {
             newCreature.directionChangeTime = 0
           }
 
-          // Move creature - predators move faster when hunting, biome affects speed
+          // Move creature - predators move faster when hunting, biome affects speed, specialization affects speed
           const biomeType = gameState.currentBiome || BIOME_TYPES.FOREST
           const biomeConfig = getBiomeConfig(biomeType)
           const huntingBonus = (newCreature.diet === 'carnivore' && targetPrey) ? 1.8 : 1
-          const baseSpeed = newCreature.speed * (targetFood ? 1.5 : huntingBonus) // Move faster toward food/prey
+          const effectiveSpeed = newCreature.effectiveSpeed || newCreature.speed
+          const baseSpeed = effectiveSpeed * (targetFood ? 1.5 : huntingBonus) // Move faster toward food/prey
           const moveSpeed = baseSpeed * biomeConfig.creatureSpeedMultiplier
           const moveX = Math.cos(newCreature.direction) * moveSpeed * delta
           const moveZ = Math.sin(newCreature.direction) * moveSpeed * delta
@@ -342,12 +370,14 @@ export default function CreatureManager({ gameState, setGameState }) {
             newCreature.position[2] = Math.sign(newCreature.position[2]) * bounds
           }
 
-          // Energy consumption based on efficiency, movement, environmental pressure, and biome
+          // Energy consumption based on efficiency, movement, environmental pressure, biome, and specialization
           const baseDrain = 3 * newCreature.energyEfficiency
           const movementDrain = moveSpeed * 2
           const pressureMultiplier = gameState.environment?.pressure ? (1 + gameState.environment.pressure) : 1
           const biomeMultiplier = biomeConfig.energyDrainMultiplier
-          newCreature.energy -= (baseDrain + movementDrain) * delta * pressureMultiplier * biomeMultiplier
+          const movementCostMultiplier = newCreature.movementCostMultiplier || 1.0
+          
+          newCreature.energy -= (baseDrain + movementDrain * movementCostMultiplier) * delta * pressureMultiplier * biomeMultiplier
 
           return newCreature
         }).filter(creature => creature.energy > 0 && creature.age < creature.maxAge) // Remove dead or too old creatures
@@ -358,8 +388,11 @@ export default function CreatureManager({ gameState, setGameState }) {
         updatedPopulation.forEach(creature => {
           updatedFoodSources = updatedFoodSources.map(food => {
             if (food.energy > 0 && canReachFood(creature, food.position)) {
-              // Creature eats the food
-              const energyGain = Math.min(food.energy, creature.diet === 'carnivore' ? 20 : 40) // Predators get less from plants
+              // Calculate energy gain based on specialization
+              const baseEnergyGain = creature.diet === 'carnivore' ? 20 : 40
+              const specializationMultiplier = creature.foodEnergyMultiplier || 1.0
+              const energyGain = Math.min(food.energy, baseEnergyGain * specializationMultiplier)
+              
               creature.energy = Math.min(200, creature.energy + energyGain)
               return { ...food, energy: 0, respawnTime: 10 + Math.random() * 5 } // Food consumed, will respawn
             }
@@ -373,15 +406,25 @@ export default function CreatureManager({ gameState, setGameState }) {
         
         predators.forEach(predator => {
           const nearestPrey = prey.find(p => canCatchPrey(predator, p))
-          if (nearestPrey && Math.random() < 0.1) { // 10% chance to catch prey per frame when in range
-            // Predator catches prey
-            const energyGain = Math.min(nearestPrey.energy * 0.8, 100) // Get most of prey's energy
-            predator.energy = Math.min(250, predator.energy + energyGain)
+          if (nearestPrey) {
+            // Calculate hunting success based on specialization
+            const baseHuntingChance = 0.1 // 10% base chance
+            const huntingMultiplier = predator.huntingSuccessMultiplier || 1.0
+            const huntingChance = Math.min(0.3, baseHuntingChance * huntingMultiplier) // Cap at 30%
             
-            // Remove prey from population (it dies)
-            const preyIndex = updatedPopulation.findIndex(c => c.id === nearestPrey.id)
-            if (preyIndex !== -1) {
-              updatedPopulation.splice(preyIndex, 1)
+            if (Math.random() < huntingChance) {
+              // Predator catches prey
+              const baseEnergyGain = Math.min(nearestPrey.energy * 0.8, 100)
+              const energyMultiplier = predator.foodEnergyMultiplier || 1.0
+              const energyGain = baseEnergyGain * energyMultiplier
+              
+              predator.energy = Math.min(250, predator.energy + energyGain)
+              
+              // Remove prey from population (it dies)
+              const preyIndex = updatedPopulation.findIndex(c => c.id === nearestPrey.id)
+              if (preyIndex !== -1) {
+                updatedPopulation.splice(preyIndex, 1)
+              }
             }
           }
         })
@@ -486,10 +529,15 @@ export default function CreatureManager({ gameState, setGameState }) {
             }
             
             // Parents lose energy from reproduction
-            const reproductionCost = parent1.diet === 'carnivore' ? 70 : 50
-            parent1.energy -= reproductionCost
+            const baseCost = parent1.diet === 'carnivore' ? 70 : 50
+            const reproductionCostMultiplier1 = parent1.reproductionCostMultiplier || 1.0
+            const reproductionCost1 = baseCost * reproductionCostMultiplier1
+            
+            parent1.energy -= reproductionCost1
             if (parent2) {
-              parent2.energy -= reproductionCost
+              const reproductionCostMultiplier2 = parent2.reproductionCostMultiplier || 1.0
+              const reproductionCost2 = baseCost * reproductionCostMultiplier2
+              parent2.energy -= reproductionCost2
             }
             
             newOffspring.push(offspring)

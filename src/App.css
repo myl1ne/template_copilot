@@ -468,3 +468,128 @@
   min-width: 50px;
   text-align: right;
 }
+
+/* Specialization View Styles */
+.specialization-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.specialization-view h4 {
+  margin: 0;
+  color: #4CAF50;
+}
+
+.creature-specialization {
+  background: #333;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.creature-specialization h5 {
+  margin: 0 0 0.75rem 0;
+  color: #8b5cf6;
+}
+
+.population-specializations h5 {
+  margin: 0 0 0.75rem 0;
+  color: #ccc;
+}
+
+.specialization-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.75rem;
+}
+
+.specialization-card {
+  background: #444;
+  border: 1px solid #666;
+  border-radius: 6px;
+  padding: 0.75rem;
+  transition: all 0.2s;
+}
+
+.specialization-card:hover {
+  background: #555;
+  border-color: #8b5cf6;
+}
+
+.specialization-card.compact {
+  padding: 0.5rem;
+}
+
+.creature-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.creature-basic-info {
+  flex: 1;
+}
+
+.creature-gen {
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+.specialization-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.specialization-name {
+  font-weight: bold;
+  color: #8b5cf6;
+  text-transform: capitalize;
+}
+
+.specialization-strength {
+  font-size: 0.85rem;
+  color: #4CAF50;
+}
+
+.specialization-description {
+  font-size: 0.8rem;
+  color: #ccc;
+  margin-top: 0.25rem;
+}
+
+.no-specialization {
+  color: #999;
+}
+
+.developing-specialization {
+  font-size: 0.85rem;
+  color: #ffa500;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.progress {
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+.unspecialized {
+  font-size: 0.85rem;
+  color: #999;
+  font-style: italic;
+}
+
+.no-specializations {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2rem;
+  color: #999;
+  font-style: italic;
+  background: #333;
+  border: 1px dashed #555;
+  border-radius: 6px;
+}

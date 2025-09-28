@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react'
 import { analyzeGeneticDiversity, calculateGeneticSimilarity, GENE_TYPES } from './GeneticsSystem'
+import { analyzeSpecializationPotential, getSpecializationDescription } from './SpecializationEngine'
 
 export default function LineageTracker({ gameState, isVisible, onClose }) {
   const [selectedCreature, setSelectedCreature] = useState(null)
-  const [viewMode, setViewMode] = useState('family') // 'family', 'genetics', 'diversity'
+  const [viewMode, setViewMode] = useState('family') // 'family', 'genetics', 'diversity', 'specialization'
 
   // Calculate genetic diversity for the current population
   const geneticAnalysis = useMemo(() => {
@@ -77,6 +78,12 @@ export default function LineageTracker({ gameState, isVisible, onClose }) {
             onClick={() => setViewMode('diversity')}
           >
             Population Diversity
+          </button>
+          <button 
+            className={viewMode === 'specialization' ? 'active' : ''} 
+            onClick={() => setViewMode('specialization')}
+          >
+            Specializations
           </button>
         </div>
 
@@ -241,8 +248,104 @@ export default function LineageTracker({ gameState, isVisible, onClose }) {
               </div>
             </div>
           )}
+
+          {viewMode === 'specialization' && (
+            <div className="specialization-view">
+              <h4>Population Specializations</h4>
+              
+              {selectedCreature && selectedCreature.generation >= 2 && (
+                <div className="creature-specialization">
+                  <h5>Selected Creature Analysis:</h5>
+                  <CreatureSpecializationCard creature={selectedCreature} gameState={gameState} />
+                </div>
+              )}
+              
+              <div className="population-specializations">
+                <h5>Population Specialization Summary:</h5>
+                <div className="specialization-grid">
+                  {gameState.population
+                    .filter(c => c.energy > 0 && c.generation >= 2)
+                    .map(creature => (
+                      <CreatureSpecializationCard 
+                        key={creature.id} 
+                        creature={creature} 
+                        gameState={gameState}
+                        onClick={() => setSelectedCreature(creature)}
+                        isCompact={true}
+                      />
+                    ))
+                  }
+                  {gameState.population.filter(c => c.energy > 0 && c.generation >= 2).length === 0 && (
+                    <div className="no-specializations">
+                      <p>No specialized creatures yet. Specializations develop after generation 2.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+    </div>
+  )
+}
+
+function CreatureSpecializationCard({ creature, gameState, onClick, isCompact = false }) {
+  const populationContext = {
+    biome: gameState.currentBiome,
+    season: gameState.environment?.season || 'normal',
+    population: gameState.population,
+    foodSources: gameState.foodSources || []
+  }
+  
+  const specializationAnalysis = analyzeSpecializationPotential(creature, populationContext)
+  
+  return (
+    <div 
+      className={`specialization-card ${isCompact ? 'compact' : ''}`}
+      onClick={onClick}
+      style={{ cursor: onClick ? 'pointer' : 'default' }}
+    >
+      <div className="creature-header">
+        <div className="creature-icon" style={{ backgroundColor: creature.color }}>
+          {creature.type.charAt(0).toUpperCase()}
+        </div>
+        <div className="creature-basic-info">
+          <div className="creature-name">{creature.type} #{creature.id}</div>
+          <div className="creature-gen">Generation {creature.generation || 1}</div>
+        </div>
+      </div>
+      
+      {specializationAnalysis.currentSpecialization ? (
+        <div className="specialization-info">
+          <div className="specialization-name">
+            {specializationAnalysis.currentSpecialization.replace(/([A-Z])/g, ' $1').toLowerCase()}
+          </div>
+          <div className="specialization-strength">
+            Strength: {(specializationAnalysis.specializationStrength * 100).toFixed(0)}%
+          </div>
+          {!isCompact && (
+            <div className="specialization-description">
+              {getSpecializationDescription(specializationAnalysis.currentSpecialization)}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="no-specialization">
+          {specializationAnalysis.potentialSpecializations.length > 0 ? (
+            <div>
+              <div className="developing-specialization">
+                Developing: {specializationAnalysis.potentialSpecializations[0].type.replace(/([A-Z])/g, ' $1').toLowerCase()}
+              </div>
+              <div className="progress">
+                Progress: {(specializationAnalysis.potentialSpecializations[0].confidence * 100).toFixed(0)}%
+              </div>
+            </div>
+          ) : (
+            <div className="unspecialized">Unspecialized</div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

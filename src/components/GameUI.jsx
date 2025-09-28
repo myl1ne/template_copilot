@@ -384,6 +384,12 @@ export default function GameUI({ gameState, setGameState }) {
                 <span>✓ Genetic</span>
               </div>
             )}
+            {gameState.selectedCreature.specialization && (
+              <div className="stat-item" style={{ color: '#8b5cf6' }}>
+                <span>Specialization:</span>
+                <span>{gameState.selectedCreature.specialization.replace(/([A-Z])/g, ' $1').toLowerCase()}</span>
+              </div>
+            )}
             {gameState.selectedCreature.energy > (gameState.selectedCreature.reproductionThreshold || 150) && (
               <div className="stat-item" style={{ color: '#4CAF50' }}>
                 <span>Status:</span>

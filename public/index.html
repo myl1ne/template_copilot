@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghostless Shell</title>
+    <meta name="description" content="A sophisticated personal portfolio website with AI companion integration">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components.css">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <!-- Main Navigation -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>Ghostless Shell</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#resume" data-section="resume">Resume</a></li>
+                <li><a href="#notes" data-section="notes">Notes</a></li>
+                <li><a href="#research" data-section="research">Research</a></li>
+                <li><a href="#experiments" data-section="experiments">Experiments</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section id="hero" class="hero-section">
+            <div class="hero-content">
+                <h2>Welcome to the Shell</h2>
+                <p>A minimalist interface that feels alive without being haunted by unnecessary complexity.</p>
+                <div class="hero-actions">
+                    <button class="cta-button" data-action="explore">Explore</button>
+                    <button class="cta-button secondary" data-action="chat">Chat with AI</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resume Section -->
+        <section id="resume" class="content-section">
+            <div class="section-header">
+                <h2>Professional Experience</h2>
+                <p>Interactive showcase of skills and experience</p>
+            </div>
+            <div class="resume-content">
+                <div class="loading-placeholder">
+                    <p>Resume section loading... (Firebase integration pending)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Notes Section -->
+        <section id="notes" class="content-section">
+            <div class="section-header">
+                <h2>Knowledge Repository</h2>
+                <p>Curated insights and learning notes</p>
+            </div>
+            <div class="notes-content">
+                <div class="loading-placeholder">
+                    <p>Notes system loading... (Markdown processing pending)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Research Section -->
+        <section id="research" class="content-section">
+            <div class="section-header">
+                <h2>Research & Publications</h2>
+                <p>Academic contributions and ongoing research</p>
+            </div>
+            <div class="research-content">
+                <div class="loading-placeholder">
+                    <p>Research showcase loading... (Paper integration pending)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section id="experiments" class="content-section">
+            <div class="section-header">
+                <h2>Interactive Lab</h2>
+                <p>Modular experiments and creative prototypes</p>
+            </div>
+            <div class="experiments-content">
+                <div class="loading-placeholder">
+                    <p>Experiments lab loading... (Modular system pending)</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- AI Companion Overlay -->
+    <div id="ai-companion" class="ai-companion">
+        <div class="companion-avatar">
+            <div class="avatar-placeholder">
+                <p>🤖</p>
+            </div>
+        </div>
+        <div class="companion-chat" style="display: none;">
+            <div class="chat-header">
+                <h3>AI Companion</h3>
+                <button class="chat-close">×</button>
+            </div>
+            <div class="chat-messages">
+                <div class="message companion-message">
+                    <p>Hello! I'm your AI companion. I'm still learning about this shell... How can I help you explore?</p>
+                </div>
+            </div>
+            <div class="chat-input">
+                <input type="text" placeholder="Type your message..." disabled>
+                <button disabled>Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <p>&copy; 2024 Ghostless Shell - A living digital presence</p>
+            <div class="footer-links">
+                <a href="https://github.com/myl1ne/template_copilot">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/ai-companion.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

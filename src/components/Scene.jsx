@@ -1,14 +1,17 @@
-import { useRef, useEffect } from 'react'
+import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { OrbitControls, Grid } from '@react-three/drei'
 import Environment from './Environment'
 import CreatureManager from './CreatureManager'
+import { getBiomeConfig, BIOME_TYPES } from './BiomeConfig'
 
 export default function Scene({ gameState, setGameState }) {
   const controlsRef = useRef()
+  const biomeType = gameState.currentBiome || BIOME_TYPES.FOREST
+  const biomeConfig = getBiomeConfig(biomeType)
 
   // Game loop - runs every frame
-  useFrame((state, delta) => {
+  useFrame(() => {
     if (gameState.isRunning) {
       // Update game state here
       // This will be expanded as we add more systems
@@ -17,11 +20,11 @@ export default function Scene({ gameState, setGameState }) {
 
   return (
     <>
-      {/* Lighting */}
-      <ambientLight intensity={0.4} />
+      {/* Biome-specific lighting */}
+      <ambientLight intensity={biomeConfig.ambientLight} />
       <directionalLight 
         position={[10, 10, 5]} 
-        intensity={1}
+        intensity={biomeConfig.directionalLight}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}

@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import Creature from './Creature'
+import { getBiomeConfig, calculateBiomeFood, BIOME_TYPES } from './BiomeConfig'
 import * as THREE from 'three'
 
 export default function CreatureManager({ gameState, setGameState }) {
@@ -157,12 +158,13 @@ export default function CreatureManager({ gameState, setGameState }) {
 
   // Generate food sources if needed
   const ensureFoodSources = () => {
-    const targetFoodCount = gameState.environment?.season === 'drought' ? 8 : (gameState.environment?.season === 'abundance' ? 20 : 15)
+    const biomeType = gameState.currentBiome || BIOME_TYPES.FOREST
+    const season = gameState.environment?.season || 'normal'
+    const { count: targetFoodCount, energy: baseEnergy } = calculateBiomeFood(biomeType, season)
     
     if (!gameState.foodSources || gameState.foodSources.length < targetFoodCount) {
       const newFoodSources = []
       for (let i = 0; i < targetFoodCount; i++) {
-        const baseEnergy = gameState.environment?.season === 'drought' ? 30 : (gameState.environment?.season === 'abundance' ? 70 : 50)
         newFoodSources.push({
           id: i,
           position: [
@@ -316,9 +318,12 @@ export default function CreatureManager({ gameState, setGameState }) {
             newCreature.directionChangeTime = 0
           }
 
-          // Move creature - predators move faster when hunting
+          // Move creature - predators move faster when hunting, biome affects speed
+          const biomeType = gameState.currentBiome || BIOME_TYPES.FOREST
+          const biomeConfig = getBiomeConfig(biomeType)
           const huntingBonus = (newCreature.diet === 'carnivore' && targetPrey) ? 1.8 : 1
-          const moveSpeed = newCreature.speed * (targetFood ? 1.5 : huntingBonus) // Move faster toward food/prey
+          const baseSpeed = newCreature.speed * (targetFood ? 1.5 : huntingBonus) // Move faster toward food/prey
+          const moveSpeed = baseSpeed * biomeConfig.creatureSpeedMultiplier
           const moveX = Math.cos(newCreature.direction) * moveSpeed * delta
           const moveZ = Math.sin(newCreature.direction) * moveSpeed * delta
 
@@ -336,11 +341,12 @@ export default function CreatureManager({ gameState, setGameState }) {
             newCreature.position[2] = Math.sign(newCreature.position[2]) * bounds
           }
 
-          // Energy consumption based on efficiency, movement, and environmental pressure
+          // Energy consumption based on efficiency, movement, environmental pressure, and biome
           const baseDrain = 3 * newCreature.energyEfficiency
           const movementDrain = moveSpeed * 2
           const pressureMultiplier = gameState.environment?.pressure ? (1 + gameState.environment.pressure) : 1
-          newCreature.energy -= (baseDrain + movementDrain) * delta * pressureMultiplier
+          const biomeMultiplier = biomeConfig.energyDrainMultiplier
+          newCreature.energy -= (baseDrain + movementDrain) * delta * pressureMultiplier * biomeMultiplier
 
           return newCreature
         }).filter(creature => creature.energy > 0 && creature.age < creature.maxAge) // Remove dead or too old creatures

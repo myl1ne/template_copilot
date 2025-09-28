@@ -4,6 +4,8 @@ import { OrbitControls, Grid } from '@react-three/drei'
 import Environment from './Environment'
 import CreatureManager from './CreatureManager'
 import TerritorialVisualization from './TerritorialVisualization'
+import PlantSystem from './PlantSystem'
+import WaterCycleSystem from './WaterCycleSystem'
 import { getBiomeConfig, BIOME_TYPES } from './BiomeConfig'
 
 export default function Scene({ gameState, setGameState }) {
@@ -103,6 +105,21 @@ export default function Scene({ gameState, setGameState }) {
         population={gameState.population || []}
         showTerritories={true}
         showScentMarks={true}
+      />
+
+      {/* Enhanced Plant System */}
+      <PlantSystem 
+        biomeType={biomeType}
+        gameState={gameState} 
+        setGameState={setGameState}
+        season={gameState.environment?.season || 'normal'}
+      />
+
+      {/* Advanced Water Cycle System */}
+      <WaterCycleSystem 
+        biomeType={biomeType}
+        season={gameState.environment?.season || 'normal'}
+        weatherIntensity={gameState.environment?.pressure || 0}
       />
 
       {/* Subtle grid - much less visible */}

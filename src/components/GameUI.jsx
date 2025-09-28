@@ -38,6 +38,10 @@ export default function GameUI({ gameState, setGameState }) {
   const spawnCreature = () => {
     // Generate DNA and environmental factors
     const dna = generateDNA()
+    // Force herbivore diet for herbivores (similar to how predators force carnivore)
+    dna.dietPreference.allele1 = 'herbivore'
+    dna.dietPreference.allele2 = 'herbivore'
+    
     const environmentalFactors = createEnvironmentalFactors(
       gameState.currentBiome, 
       gameState.environment?.season || 'normal',
@@ -46,6 +50,24 @@ export default function GameUI({ gameState, setGameState }) {
     
     // Express traits from genetics
     const geneticTraits = expressCreatureTraits(dna, environmentalFactors)
+    
+    // Helper function to generate color for herbivores
+    function generateHerbivoreColor(traits) {
+      // Base hue for herbivores (green)
+      let baseHue = 120
+      
+      // Adjust hue based on size and speed
+      const hueVariation = (traits.size - 0.5) * 30 + (traits.speed - 0.5) * 20
+      const finalHue = (baseHue + hueVariation) % 360
+      
+      // Saturation based on energy efficiency
+      const saturation = Math.min(100, 50 + traits.energyEfficiency * 30)
+      
+      // Lightness based on intelligence
+      const lightness = Math.min(80, 40 + traits.intelligence * 30)
+      
+      return `hsl(${finalHue}, ${saturation}%, ${lightness}%)`
+    }
     
     const newCreature = {
       id: Date.now(),
@@ -65,7 +87,7 @@ export default function GameUI({ gameState, setGameState }) {
       energyEfficiency: geneticTraits.energyEfficiency,
       maxAge: geneticTraits.lifespan,
       reproductionThreshold: geneticTraits.reproductionRate,
-      diet: geneticTraits.diet,
+      diet: 'herbivore', // Explicitly set diet for herbivores
       aggressiveness: geneticTraits.aggression,
       intelligence: geneticTraits.intelligence,
       
@@ -74,31 +96,8 @@ export default function GameUI({ gameState, setGameState }) {
       generation: 1,
       parentIds: [], // No parents for spawned creatures
       
-      // Color based on genetic traits
-      color: generateCreatureColor(geneticTraits)
-    }
-
-    // Helper function to generate color from genetic traits
-    function generateCreatureColor(traits) {
-      // Base hue depends on diet preference
-      let baseHue = 120 // Green for herbivores
-      if (traits.diet === 'carnivore') {
-        baseHue = 0 // Red for carnivores
-      } else if (traits.diet === 'omnivore') {
-        baseHue = 60 // Yellow for omnivores
-      }
-      
-      // Adjust hue based on size and speed
-      const hueVariation = (traits.size - 0.5) * 30 + (traits.speed - 0.5) * 20
-      const finalHue = (baseHue + hueVariation) % 360
-      
-      // Saturation based on energy efficiency
-      const saturation = Math.min(100, 50 + traits.energyEfficiency * 30)
-      
-      // Lightness based on intelligence
-      const lightness = Math.min(80, 40 + traits.intelligence * 30)
-      
-      return `hsl(${finalHue}, ${saturation}%, ${lightness}%)`
+      // Color based on genetic traits and herbivore diet
+      color: generateHerbivoreColor(geneticTraits)
     }
 
     setGameState(prev => ({

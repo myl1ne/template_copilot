@@ -264,17 +264,12 @@ export default function GameUI({ gameState, setGameState }) {
           <select 
             value={creatureType} 
             onChange={(e) => setCreatureType(e.target.value)}
-            style={{ 
-              padding: '0.5rem', 
-              borderRadius: '4px', 
-              border: '1px solid #555',
-              background: '#333',
-              color: 'white'
-            }}
+            className="enhanced-select"
           >
             <option value="sphere">Sphere</option>
             <option value="cube">Cube</option>
             <option value="cylinder">Cylinder</option>
+            <option value="enhanced">Enhanced DNA-Based</option>
           </select>
         </div>
 
@@ -284,20 +279,13 @@ export default function GameUI({ gameState, setGameState }) {
             value={gameState.currentBiome} 
             onChange={(e) => changeBiome(e.target.value)}
             disabled={gameState.isRunning}
-            style={{ 
-              padding: '0.5rem', 
-              borderRadius: '4px', 
-              border: '1px solid #555',
-              background: gameState.isRunning ? '#555' : '#333',
-              color: gameState.isRunning ? '#999' : 'white',
-              cursor: gameState.isRunning ? 'not-allowed' : 'pointer'
-            }}
+            className="enhanced-select"
           >
             <option value={BIOME_TYPES.FOREST}>🌲 Forest</option>
             <option value={BIOME_TYPES.DESERT}>🏜️ Desert</option>
             <option value={BIOME_TYPES.OCEAN}>🌊 Ocean</option>
           </select>
-          <small style={{ opacity: 0.7, fontSize: '0.7rem' }}>
+          <small className="biome-description">
             {biomeConfig.description}
           </small>
         </div>

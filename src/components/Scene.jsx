@@ -97,17 +97,18 @@ export default function Scene({ gameState, setGameState }) {
       {/* Creatures */}
       <CreatureManager gameState={gameState} setGameState={setGameState} />
 
-      {/* Enhanced grid with biome-specific styling */}
+      {/* Subtle grid - much less visible */}
       <Grid
         infiniteGrid
         size={1}
         sectionColor={biomeType === BIOME_TYPES.OCEAN ? '#2196f3' : 
                      biomeType === BIOME_TYPES.DESERT ? '#ff9800' : '#4caf50'}
-        sectionThickness={0.8}
-        fadeDistance={40}
-        fadeStrength={0.3}
+        sectionThickness={0.1}
+        fadeDistance={20}
+        fadeStrength={0.8}
         cellColor="#666666"
-        cellThickness={0.3}
+        cellThickness={0.05}
+        visible={false}
       />
     </Suspense>
   )

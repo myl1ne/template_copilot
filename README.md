@@ -62,6 +62,7 @@ A 3D evolution simulation game built with Three.js and React. Guide geometric li
 - **[Project Overview](docs/project-overview.md)** - Comprehensive project summary
 - **[Development Roadmap](docs/roadmap.md)** - Current status and future plans
 - **[Current Backlog](docs/backlog.md)** - Task tracking and development priorities
+- **[Feature Specifications](docs/feature-specifications.md)** - Detailed technical plans for upcoming features
 
 ## 🧪 Development
 

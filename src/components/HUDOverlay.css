@@ -31,29 +31,243 @@
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
-/* Panel Positioning */
-.top-left {
+/* Minimal HUD Panel Positioning */
+.top-center {
   top: 20px;
-  left: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 110;
 }
 
-.top-right {
+.top-right-minimal {
   top: 20px;
   right: 20px;
   z-index: 110;
+  padding: 8px 12px;
+  min-width: auto;
+  max-width: auto;
 }
 
-.bottom-left {
+.bottom-center-minimal {
   bottom: 20px;
-  left: 20px;
-  z-index: 105; /* Lower z-index to avoid interfering with controls */
-}
-
-.bottom-right {
-  bottom: 20px;
-  right: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 110;
+  padding: 8px 16px;
+  min-width: auto;
+  max-width: auto;
+}
+
+/* Minimal HUD Content */
+.hud-content-minimal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+}
+
+.spawn-controls {
+  display: flex;
+  gap: 6px;
+}
+
+/* Minimal Buttons */
+.hud-btn-minimal {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hud-btn-minimal:hover {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.hud-btn-minimal.primary.active {
+  background: rgba(33, 150, 243, 0.8);
+  border-color: #2196F3;
+}
+
+.hud-btn-minimal.success {
+  background: rgba(76, 175, 80, 0.7);
+  border-color: rgba(76, 175, 80, 0.5);
+}
+
+.hud-btn-minimal.danger {
+  background: rgba(244, 67, 54, 0.7);
+  border-color: rgba(244, 67, 54, 0.5);
+}
+
+/* Minimal Biome Select */
+.biome-select-minimal {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 60px;
+}
+
+.biome-select-minimal:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Minimal Stats */
+.stats-minimal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pop-count {
+  font-size: 18px;
+  font-weight: bold;
+  color: #4CAF50;
+  min-width: 30px;
+  text-align: center;
+}
+
+.stats-toggle {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stats-toggle:hover {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Compact Stats Grid */
+.stat-grid-compact {
+  display: flex;
+  gap: 12px;
+}
+
+.stat-grid-compact .stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  min-width: 50px;
+}
+
+.stat-grid-compact .stat-value {
+  font-size: 16px;
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+.stat-grid-compact .stat-label {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Tool Buttons */
+.tool-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.tool-btn {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.tool-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.tool-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Minimal Creature Info */
+.creature-info-minimal {
+  position: absolute;
+  top: 70px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(76, 175, 80, 0.4);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideInRight 0.3s ease;
+  z-index: 110;
+}
+
+.creature-icon-minimal {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.creature-stats-minimal {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.close-creature {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.close-creature:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
 /* HUD Header */

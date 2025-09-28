@@ -5,7 +5,7 @@ import './HUDOverlay.css'
 
 export default function HUDOverlay({ gameState, setGameState, onShowPanel }) {
   const [showControls, setShowControls] = useState(true)
-  const [showStats, setShowStats] = useState(true)
+  const [showStats, setShowStats] = useState(false) // Hidden by default
   const biomeConfig = getBiomeConfig(gameState.currentBiome)
 
   const changeBiome = (newBiome) => {
@@ -134,201 +134,127 @@ export default function HUDOverlay({ gameState, setGameState, onShowPanel }) {
 
   return (
     <div className="hud-overlay">
-      {/* Top Left - Main Controls */}
-      <div className="hud-panel top-left">
-        <div className="hud-header">
-          <h3>🎮 Controls</h3>
+      {/* Minimal Top Bar - Essential Controls Only */}
+      <div className="hud-panel top-center">
+        <div className="hud-content-minimal">
           <button 
-            className="toggle-btn"
-            onClick={() => setShowControls(!showControls)}
+            onClick={toggleSimulation}
+            className={`hud-btn-minimal primary ${gameState.isRunning ? 'active' : ''}`}
           >
-            {showControls ? '−' : '+'}
+            {gameState.isRunning ? '⏸️' : '▶️'}
           </button>
-        </div>
-        
-        {showControls && (
-          <div className="hud-content">
-            <button 
-              onClick={toggleSimulation}
-              className={`hud-btn primary ${gameState.isRunning ? 'active' : ''}`}
-            >
-              {gameState.isRunning ? '⏸️ Pause' : '▶️ Start'}
+          
+          <div className="spawn-controls">
+            <button onClick={spawnCreature} className="hud-btn-minimal success">
+              🌱
             </button>
-            
-            <div className="control-row">
-              <button onClick={spawnCreature} className="hud-btn success">
-                🌱 Herbivore
-              </button>
-              <button onClick={spawnPredator} className="hud-btn danger">
-                🦷 Predator
-              </button>
-            </div>
-            
-            <button 
-              onClick={clearPopulation} 
-              className="hud-btn secondary"
-              disabled={gameState.population.length === 0}
-            >
-              🧹 Clear All
+            <button onClick={spawnPredator} className="hud-btn-minimal danger">
+              🦷
             </button>
-          </div>
-        )}
-      </div>
-
-      {/* Top Right - Environment Controls */}
-      <div className="hud-panel top-right">
-        <div className="hud-header">
-          <h3>🌍 Environment</h3>
-        </div>
-        
-        <div className="hud-content">
-          <div className="biome-selector">
-            <select 
-              value={gameState.currentBiome} 
-              onChange={(e) => changeBiome(e.target.value)}
-              disabled={gameState.isRunning}
-              className="hud-select"
-            >
-              <option value={BIOME_TYPES.FOREST}>🌲 Forest</option>
-              <option value={BIOME_TYPES.DESERT}>🏜️ Desert</option>
-              <option value={BIOME_TYPES.OCEAN}>🌊 Ocean</option>
-            </select>
           </div>
           
-          <div className="environment-tools">
-            <button 
-              onClick={() => onShowPanel('environmental')} 
-              className="hud-btn info"
-            >
-              🌦️ Weather
-            </button>
-            <button 
-              onClick={() => onShowPanel('terrain')} 
-              className="hud-btn info"
-            >
-              🏔️ Terrain
-            </button>
-          </div>
+          <select 
+            value={gameState.currentBiome} 
+            onChange={(e) => changeBiome(e.target.value)}
+            disabled={gameState.isRunning}
+            className="biome-select-minimal"
+          >
+            <option value={BIOME_TYPES.FOREST}>🌲</option>
+            <option value={BIOME_TYPES.DESERT}>🏜️</option>
+            <option value={BIOME_TYPES.OCEAN}>🌊</option>
+          </select>
         </div>
       </div>
 
-      {/* Bottom Left - Statistics */}
-      <div className="hud-panel bottom-left">
-        <div className="hud-header">
-          <h3>📊 Stats</h3>
+      {/* Minimal Stats Corner - Only Population */}
+      <div className="hud-panel top-right-minimal">
+        <div className="stats-minimal">
+          <span className="pop-count">{gameState.population.length}</span>
           <button 
-            className="toggle-btn"
+            className="stats-toggle"
             onClick={() => setShowStats(!showStats)}
           >
-            {showStats ? '−' : '+'}
-          </button>
-        </div>
-        
-        {showStats && (
-          <div className="hud-content">
-            <div className="stat-grid">
-              <div className="stat-item">
-                <span className="stat-label">Population</span>
-                <span className="stat-value">{gameState.population.length}</span>
-              </div>
-              <div className="stat-item herbivore">
-                <span className="stat-label">🌱 Herbivores</span>
-                <span className="stat-value">
-                  {gameState.population.filter(c => c.diet !== 'carnivore').length}
-                </span>
-              </div>
-              <div className="stat-item predator">
-                <span className="stat-label">🦷 Predators</span>
-                <span className="stat-value">
-                  {gameState.population.filter(c => c.diet === 'carnivore').length}
-                </span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">🍃 Food</span>
-                <span className="stat-value">
-                  {gameState.foodSources ? gameState.foodSources.filter(f => f.energy > 0).length : 0}
-                </span>
-              </div>
-            </div>
-            
-            <div className="status-row">
-              <span className="status-item">
-                Biome: <strong>{biomeConfig.name}</strong>
-              </span>
-              <span className={`status-item ${gameState.isRunning ? 'running' : 'paused'}`}>
-                {gameState.isRunning ? '🟢 Running' : '🔴 Paused'}
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Bottom Right - Advanced Controls */}
-      <div className="hud-panel bottom-right">
-        <div className="hud-header">
-          <h3>🔬 Analysis</h3>
-        </div>
-        
-        <div className="hud-content">
-          <button 
-            onClick={() => onShowPanel('genetics')} 
-            className="hud-btn purple"
-            disabled={gameState.population.length === 0}
-          >
-            🧬 Genetics
-          </button>
-          <button 
-            onClick={() => onShowPanel('analytics')} 
-            className="hud-btn blue"
-          >
-            📈 Analytics
+            📊
           </button>
         </div>
       </div>
 
-      {/* Selected Creature Info - Floating */}
-      {gameState.selectedCreature && (
-        <div className="creature-info-panel">
-          <div className="creature-header">
-            <h4>🔍 Selected Creature</h4>
+      {/* Expandable Stats Panel - Hidden by default */}
+      {showStats && (
+        <div className="hud-panel top-right">
+          <div className="hud-header">
+            <h3>📊 Stats</h3>
             <button 
-              className="close-btn"
-              onClick={() => setGameState(prev => ({ ...prev, selectedCreature: null }))}
+              className="toggle-btn"
+              onClick={() => setShowStats(false)}
             >
               ×
             </button>
           </div>
           
-          <div className="creature-details">
-            <div className="creature-icon" style={{ backgroundColor: gameState.selectedCreature.color }}>
-              {gameState.selectedCreature.diet === 'carnivore' ? '🦷' : '🌱'}
-            </div>
-            
-            <div className="creature-stats">
-              <div className="stat-row">
-                <span>Energy:</span>
-                <span>{Math.round(gameState.selectedCreature.energy)}</span>
+          <div className="hud-content">
+            <div className="stat-grid-compact">
+              <div className="stat-item">
+                <span className="stat-value">{gameState.population.filter(c => c.diet !== 'carnivore').length}</span>
+                <span className="stat-label">🌱</span>
               </div>
-              <div className="stat-row">
-                <span>Age:</span>
-                <span>{Math.round(gameState.selectedCreature.age || 0)}s</span>
+              <div className="stat-item">
+                <span className="stat-value">{gameState.population.filter(c => c.diet === 'carnivore').length}</span>
+                <span className="stat-label">🦷</span>
               </div>
-              <div className="stat-row">
-                <span>Size:</span>
-                <span>{(gameState.selectedCreature.size || 0).toFixed(2)}</span>
+              <div className="stat-item">
+                <span className="stat-value">{gameState.foodSources ? gameState.foodSources.filter(f => f.energy > 0).length : 0}</span>
+                <span className="stat-label">🍃</span>
               </div>
-              <div className="stat-row">
-                <span>Speed:</span>
-                <span>{(gameState.selectedCreature.speed || 0).toFixed(2)}</span>
-              </div>
-              
-              {gameState.selectedCreature.energy > (gameState.selectedCreature.reproductionThreshold || 150) && (
-                <div className="reproduction-ready">
-                  ✨ Ready to Reproduce!
-                </div>
-              )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Bottom Tools - Minimal */}
+      <div className="hud-panel bottom-center-minimal">
+        <div className="tool-buttons">
+          <button 
+            onClick={() => onShowPanel('analytics')} 
+            className="tool-btn"
+            title="Analytics"
+          >
+            📈
+          </button>
+          <button 
+            onClick={() => onShowPanel('genetics')} 
+            className="tool-btn"
+            disabled={gameState.population.length === 0}
+            title="Genetics"
+          >
+            🧬
+          </button>
+          <button 
+            onClick={() => onShowPanel('terrain')} 
+            className="tool-btn"
+            title="Terrain Editor"
+          >
+            🏔️
+          </button>
+        </div>
+      </div>
+
+      {/* Selected Creature Info - Only when selected */}
+      {gameState.selectedCreature && (
+        <div className="creature-info-minimal">
+          <div className="creature-icon-minimal" style={{ backgroundColor: gameState.selectedCreature.color }}>
+            {gameState.selectedCreature.diet === 'carnivore' ? '🦷' : '🌱'}
+          </div>
+          <div className="creature-stats-minimal">
+            <span>E: {Math.round(gameState.selectedCreature.energy)}</span>
+            <span>A: {Math.round(gameState.selectedCreature.age || 0)}s</span>
+          </div>
+          <button 
+            className="close-creature"
+            onClick={() => setGameState(prev => ({ ...prev, selectedCreature: null }))}
+          >
+            ×
+          </button>
         </div>
       )}
     </div>

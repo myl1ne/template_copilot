@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import Creature from './Creature'
+import EnhancedCreature from './EnhancedCreature'
 import { getBiomeConfig, calculateBiomeFood, BIOME_TYPES } from './BiomeConfig'
 import { reproduceGenetics, expressCreatureTraits, createEnvironmentalFactors } from './GeneticsSystem'
 import { analyzeSpecializationPotential, applySpecializationEffects } from './SpecializationEngine'
@@ -612,12 +612,11 @@ export default function CreatureManager({ gameState, setGameState }) {
   return (
     <group>
       {gameState.population.map(creature => (
-        <Creature
+        <EnhancedCreature
           key={creature.id}
           creature={creature}
           isSelected={gameState.selectedCreature?.id === creature.id}
           onClick={() => handleCreatureClick(creature)}
-          populationSize={gameState.population.length}
         />
       ))}
     </group>

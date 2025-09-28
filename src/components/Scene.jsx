@@ -1,4 +1,4 @@
-import { useRef, Suspense } from 'react'
+import { useRef, Suspense, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { OrbitControls, Grid } from '@react-three/drei'
 import Environment from './Environment'
@@ -7,17 +7,29 @@ import TerritorialVisualization from './TerritorialVisualization'
 import PlantSystem from './PlantSystem'
 import WaterCycleSystem from './WaterCycleSystem'
 import { getBiomeConfig, BIOME_TYPES } from './BiomeConfig'
+import ecosystemBalance from './EcosystemBalance'
 
 export default function Scene({ gameState, setGameState }) {
   const controlsRef = useRef()
   const biomeType = gameState.currentBiome || BIOME_TYPES.FOREST
   const biomeConfig = getBiomeConfig(biomeType)
 
+  // Handle emergency spawning from ecosystem balance
+  useEffect(() => {
+    if (gameState.environment?.needsEmergencySpawn) {
+      ecosystemBalance.spawnEmergencyCreatures(
+        gameState, 
+        setGameState, 
+        gameState.environment.needsEmergencySpawn
+      )
+    }
+  }, [gameState.environment?.needsEmergencySpawn, gameState, setGameState])
+
   // Game loop - runs every frame
-  useFrame(() => {
+  useFrame((state, deltaTime) => {
     if (gameState.isRunning) {
-      // Update game state here
-      // This will be expanded as we add more systems
+      // Run ecosystem balance system
+      ecosystemBalance.balanceEcosystem(gameState, setGameState, deltaTime)
     }
   })
 

@@ -21,7 +21,9 @@ export const EnvironmentalControls = ({
   onDisasterTrigger, 
   onResourceManipulation,
   currentBiome,
-  isSimulationRunning 
+  isSimulationRunning,
+  isVisible,
+  onClose
 }) => {
   const [climateSettings, setClimateSettings] = useState({
     temperature: 50, // 0-100 scale (0=freezing, 50=normal, 100=scorching)
@@ -84,30 +86,36 @@ export const EnvironmentalControls = ({
     return '';
   };
 
+  // Don't render if not visible
+  if (!isVisible) return null;
+
   return (
-    <div className="environmental-controls">
+    <div className="environmental-controls-overlay">
+      <div className="environmental-controls">
       <div className="control-header">
         <h3>🌍 Environmental Controls</h3>
-        <div className="panel-tabs">
-          <button 
-            className={activePanel === 'climate' ? 'active' : ''}
-            onClick={() => setActivePanel('climate')}
-          >
-            🌡️ Climate
-          </button>
-          <button 
-            className={activePanel === 'disasters' ? 'active' : ''}
-            onClick={() => setActivePanel('disasters')}
-          >
-            ⚡ Disasters
-          </button>
-          <button 
-            className={activePanel === 'resources' ? 'active' : ''}
-            onClick={() => setActivePanel('resources')}
-          >
-            🍃 Resources
-          </button>
-        </div>
+        <button className="close-btn" onClick={onClose}>×</button>
+      </div>
+      <div className="panel-tabs">
+        <button 
+          className={activePanel === 'climate' ? 'active' : ''}
+          onClick={() => setActivePanel('climate')}
+        >
+          🌡️ Climate
+        </button>
+        <button 
+          className={activePanel === 'disasters' ? 'active' : ''}
+          onClick={() => setActivePanel('disasters')}
+        >
+          ⚡ Disasters
+        </button>
+        <button 
+          className={activePanel === 'resources' ? 'active' : ''}
+          onClick={() => setActivePanel('resources')}
+        >
+          🍃 Resources
+        </button>
+      </div>
       </div>
 
       {activePanel === 'climate' && (

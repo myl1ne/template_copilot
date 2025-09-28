@@ -2,10 +2,13 @@ import { useState } from 'react'
 import { BIOME_TYPES, getBiomeConfig } from './BiomeConfig'
 import { generateDNA, expressCreatureTraits, createEnvironmentalFactors } from './GeneticsSystem'
 import LineageTracker from './LineageTracker'
+import EnvironmentalControls from './EnvironmentalControls'
+import environmentalEventsManager from './EnvironmentalEventsManager'
 
 export default function GameUI({ gameState, setGameState }) {
   const [creatureType, setCreatureType] = useState('sphere')
   const [showLineageTracker, setShowLineageTracker] = useState(false)
+  const [showEnvironmentalControls, setShowEnvironmentalControls] = useState(false)
   const biomeConfig = getBiomeConfig(gameState.currentBiome)
 
   const changeBiome = (newBiome) => {
@@ -162,6 +165,84 @@ export default function GameUI({ gameState, setGameState }) {
     }))
   }
 
+  // Environmental Controls handlers
+  const handleClimateChange = (newClimateSettings) => {
+    environmentalEventsManager.updateClimate(newClimateSettings)
+    
+    // Update game state with environmental effects
+    const effects = environmentalEventsManager.getEnvironmentalEffects()
+    setGameState(prev => ({
+      ...prev,
+      environment: {
+        ...prev.environment,
+        climateSettings: newClimateSettings,
+        effects: effects
+      }
+    }))
+  }
+
+  const handleDisasterTrigger = (disasterConfig) => {
+    const disasterId = environmentalEventsManager.triggerDisaster(disasterConfig)
+    
+    // Update game state to track active disaster
+    setGameState(prev => ({
+      ...prev,
+      environment: {
+        ...prev.environment,
+        activeDisasters: [...(prev.environment?.activeDisasters || []), disasterId]
+      }
+    }))
+  }
+
+  const handleResourceManipulation = (action) => {
+    environmentalEventsManager.manipulateResources(action)
+    
+    // Apply resource changes to game state
+    setGameState(prev => {
+      let newState = { ...prev }
+      
+      switch (action.action) {
+        case 'add_food':
+          const newFoodSources = []
+          for (let i = 0; i < action.amount; i++) {
+            newFoodSources.push({
+              id: `env_food_${Date.now()}_${i}`,
+              position: [
+                (Math.random() - 0.5) * 20,
+                0.5,
+                (Math.random() - 0.5) * 20
+              ],
+              energy: 50 + Math.random() * 30,
+              maxEnergy: 80
+            })
+          }
+          newState.foodSources = [...(prev.foodSources || []), ...newFoodSources]
+          break
+          
+        case 'remove_food':
+          if (prev.foodSources && prev.foodSources.length > 0) {
+            const toRemove = Math.min(action.amount, prev.foodSources.length)
+            newState.foodSources = prev.foodSources.slice(toRemove)
+          }
+          break
+          
+        case 'add_water':
+          // Add water body effect (visual enhancement)
+          newState.environment = {
+            ...prev.environment,
+            waterBodies: [...(prev.environment?.waterBodies || []), action.area]
+          }
+          break
+          
+        // Add more resource manipulation cases as needed
+        default:
+          console.log(`Environmental action: ${action.action}`, action)
+      }
+      
+      return newState
+    })
+  }
+
   return (
     <div className="game-ui">
       {/* Control Panel */}
@@ -254,6 +335,16 @@ export default function GameUI({ gameState, setGameState }) {
             disabled={gameState.population.length === 0}
           >
             View Genetics & Lineage
+          </button>
+        </div>
+
+        <div className="control-group">
+          <button 
+            onClick={() => setShowEnvironmentalControls(!showEnvironmentalControls)} 
+            className="btn"
+            style={{ backgroundColor: '#059669', borderColor: '#059669' }}
+          >
+            {showEnvironmentalControls ? 'Hide' : 'Show'} Environmental Controls
           </button>
         </div>
       </div>
@@ -410,6 +501,17 @@ export default function GameUI({ gameState, setGameState }) {
           <p>• Click creature: Select</p>
         </div>
       </div>
+
+      {/* Environmental Controls */}
+      {showEnvironmentalControls && (
+        <EnvironmentalControls
+          onClimateChange={handleClimateChange}
+          onDisasterTrigger={handleDisasterTrigger}
+          onResourceManipulation={handleResourceManipulation}
+          currentBiome={gameState.currentBiome}
+          isSimulationRunning={gameState.isRunning}
+        />
+      )}
 
       {/* Lineage Tracker Modal */}
       <LineageTracker 

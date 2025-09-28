@@ -33,11 +33,12 @@ A 3D evolution simulation game built with Three.js and React. Guide geometric li
 
 ## 🔬 Features
 
-### Current (v0.4.0-alpha)
+### Current (v0.4.2-alpha)
 - **3D Rendering**: Three.js-powered 3D environment with dynamic lighting
 - **Creature System**: Multiple creature types (sphere, cube, cylinder) with unique attributes
 - **Advanced Genetics System**: DNA-based inheritance with dominant/recessive genes ✨ **NEW**
 - **Species Specialization Engine**: 10 ecological roles from grazers to apex predators ✨ **NEW**
+- **Environmental Interaction Tools**: Player-controlled climate, disasters, and resource manipulation ✨ **NEW**
 - **Smart AI**: Food-seeking behavior with specialization-based performance modifiers ✨ **ENHANCED**
 - **Dynamic Environment**: Respawning food sources and biome-specific adaptations
 - **Interactive UI**: Real-time statistics, creature selection, and genetics/lineage viewer ✨ **ENHANCED**
@@ -88,6 +89,6 @@ MIT License - see LICENSE file for details
 
 ---
 
-**Current Version**: 0.4.0-alpha  
+**Current Version**: 0.4.2-alpha  
 **Last Updated**: September 28, 2024  
-**Status**: Advanced Genetics & Specialization Development
+**Status**: Environmental Interaction Tools Development

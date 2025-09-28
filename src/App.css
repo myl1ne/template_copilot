@@ -112,3 +112,359 @@
 .stat-item:last-child {
   margin-bottom: 0;
 }
+
+/* Lineage Tracker Styles */
+.lineage-tracker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.lineage-tracker-panel {
+  background: #2a2a2a;
+  border: 2px solid #4a4a4a;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 1000px;
+  height: 80%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lineage-header {
+  background: #333;
+  padding: 1rem;
+  border-bottom: 1px solid #555;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lineage-header h3 {
+  margin: 0;
+  color: #4CAF50;
+}
+
+.close-button {
+  background: #ff4444;
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.close-button:hover {
+  background: #ff6666;
+}
+
+.lineage-controls {
+  background: #333;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #555;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.lineage-controls button {
+  background: #555;
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.lineage-controls button:hover {
+  background: #666;
+}
+
+.lineage-controls button.active {
+  background: #8b5cf6;
+}
+
+.lineage-content {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.creature-selector {
+  margin-bottom: 1rem;
+}
+
+.creature-selector h4 {
+  margin: 0 0 0.5rem 0;
+  color: #ccc;
+}
+
+.creature-selector select {
+  width: 100%;
+  padding: 0.5rem;
+  background: #333;
+  border: 1px solid #555;
+  color: white;
+  border-radius: 4px;
+}
+
+.family-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.family-section {
+  background: #333;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #555;
+}
+
+.family-section h5 {
+  margin: 0 0 0.5rem 0;
+  color: #8b5cf6;
+}
+
+.family-members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.creature-card {
+  background: #444;
+  border: 1px solid #666;
+  border-radius: 6px;
+  padding: 0.75rem;
+  min-width: 200px;
+  transition: all 0.2s;
+}
+
+.creature-card:hover {
+  background: #555;
+  border-color: #8b5cf6;
+}
+
+.creature-card.selected {
+  border-color: #4CAF50;
+  background: #3a4a3a;
+}
+
+.creature-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.creature-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+}
+
+.creature-details {
+  flex: 1;
+}
+
+.creature-name {
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+  color: #fff;
+}
+
+.creature-stats {
+  font-size: 0.8rem;
+  color: #ccc;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.creature-traits {
+  font-size: 0.75rem;
+  color: #aaa;
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.similar-creatures {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.similar-creature {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #3a3a3a;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.similarity-score {
+  font-size: 0.8rem;
+  color: #8b5cf6;
+  font-weight: bold;
+}
+
+.genetics-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.genetics-view h4 {
+  margin: 0;
+  color: #4CAF50;
+}
+
+.genetic-traits {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.75rem;
+}
+
+.gene-info {
+  background: #333;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+
+.gene-name {
+  font-weight: bold;
+  color: #8b5cf6;
+  margin-bottom: 0.5rem;
+  text-transform: capitalize;
+}
+
+.genotype {
+  font-family: monospace;
+  background: #444;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.phenotype {
+  color: #ccc;
+  font-size: 0.85rem;
+}
+
+.diversity-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.diversity-view h4 {
+  margin: 0;
+  color: #4CAF50;
+}
+
+.diversity-stats {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #8b5cf6;
+}
+
+.allele-frequencies {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.allele-frequencies h5 {
+  margin: 0;
+  color: #ccc;
+}
+
+.gene-frequency {
+  background: #333;
+  border: 1px solid #555;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.gene-frequency h6 {
+  margin: 0 0 0.75rem 0;
+  color: #8b5cf6;
+  text-transform: capitalize;
+}
+
+.frequency-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.frequency-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.allele-name {
+  min-width: 80px;
+  font-size: 0.85rem;
+  color: #ccc;
+  text-transform: capitalize;
+}
+
+.bar-container {
+  flex: 1;
+  height: 20px;
+  background: #444;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #4CAF50);
+  transition: width 0.3s ease;
+}
+
+.frequency-value {
+  font-size: 0.8rem;
+  color: #8b5cf6;
+  font-weight: bold;
+  min-width: 50px;
+  text-align: right;
+}

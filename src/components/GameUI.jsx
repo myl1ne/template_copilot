@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { BIOME_TYPES, getBiomeConfig } from './BiomeConfig'
+import { generateDNA, expressCreatureTraits, createEnvironmentalFactors } from './GeneticsSystem'
+import LineageTracker from './LineageTracker'
 
 export default function GameUI({ gameState, setGameState }) {
   const [creatureType, setCreatureType] = useState('sphere')
+  const [showLineageTracker, setShowLineageTracker] = useState(false)
   const biomeConfig = getBiomeConfig(gameState.currentBiome)
 
   const changeBiome = (newBiome) => {
@@ -28,6 +31,17 @@ export default function GameUI({ gameState, setGameState }) {
   }
 
   const spawnCreature = () => {
+    // Generate DNA and environmental factors
+    const dna = generateDNA()
+    const environmentalFactors = createEnvironmentalFactors(
+      gameState.currentBiome, 
+      gameState.environment?.season || 'normal',
+      gameState.environment?.pressure || 0
+    )
+    
+    // Express traits from genetics
+    const geneticTraits = expressCreatureTraits(dna, environmentalFactors)
+    
     const newCreature = {
       id: Date.now(),
       type: creatureType,
@@ -38,15 +52,48 @@ export default function GameUI({ gameState, setGameState }) {
       ],
       velocity: [0, 0, 0],
       energy: 100,
-      size: 0.5 + Math.random() * 0.5,
-      speed: 0.5 + Math.random() * 0.5,
-      energyEfficiency: 0.8 + Math.random() * 0.4,
+      
+      // Genetic traits
+      dna: dna,
+      size: geneticTraits.size,
+      speed: geneticTraits.speed,
+      energyEfficiency: geneticTraits.energyEfficiency,
+      maxAge: geneticTraits.lifespan,
+      reproductionThreshold: geneticTraits.reproductionRate,
+      diet: geneticTraits.diet,
+      aggressiveness: geneticTraits.aggression,
+      intelligence: geneticTraits.intelligence,
+      
+      // Calculated from genetics
       age: 0,
-      maxAge: 60 + Math.random() * 40,
-      reproductionThreshold: 150,
-      diet: 'herbivore', // Default diet type
-      aggressiveness: Math.random() * 0.3, // Low for herbivores
-      color: `hsl(${Math.random() * 360}, 70%, 60%)`
+      generation: 1,
+      parentIds: [], // No parents for spawned creatures
+      
+      // Color based on genetic traits
+      color: generateCreatureColor(geneticTraits)
+    }
+
+    // Helper function to generate color from genetic traits
+    function generateCreatureColor(traits) {
+      // Base hue depends on diet preference
+      let baseHue = 120 // Green for herbivores
+      if (traits.diet === 'carnivore') {
+        baseHue = 0 // Red for carnivores
+      } else if (traits.diet === 'omnivore') {
+        baseHue = 60 // Yellow for omnivores
+      }
+      
+      // Adjust hue based on size and speed
+      const hueVariation = (traits.size - 0.5) * 30 + (traits.speed - 0.5) * 20
+      const finalHue = (baseHue + hueVariation) % 360
+      
+      // Saturation based on energy efficiency
+      const saturation = Math.min(100, 50 + traits.energyEfficiency * 30)
+      
+      // Lightness based on intelligence
+      const lightness = Math.min(80, 40 + traits.intelligence * 30)
+      
+      return `hsl(${finalHue}, ${saturation}%, ${lightness}%)`
     }
 
     setGameState(prev => ({
@@ -56,6 +103,21 @@ export default function GameUI({ gameState, setGameState }) {
   }
 
   const spawnPredator = () => {
+    // Generate DNA with carnivore bias
+    const dna = generateDNA()
+    // Force carnivore diet for predators
+    dna.dietPreference.allele1 = 'carnivore'
+    dna.dietPreference.allele2 = 'carnivore'
+    
+    const environmentalFactors = createEnvironmentalFactors(
+      gameState.currentBiome, 
+      gameState.environment?.season || 'normal',
+      gameState.environment?.pressure || 0
+    )
+    
+    // Express traits from genetics
+    const geneticTraits = expressCreatureTraits(dna, environmentalFactors)
+    
     const predator = {
       id: Date.now() + Math.random(),
       type: creatureType === 'sphere' ? 'cylinder' : creatureType, // Predators tend to be cylindrical
@@ -66,14 +128,24 @@ export default function GameUI({ gameState, setGameState }) {
       ],
       velocity: [0, 0, 0],
       energy: 120, // Start with higher energy
-      size: 0.7 + Math.random() * 0.4, // Slightly larger
-      speed: 0.8 + Math.random() * 0.4, // Faster
-      energyEfficiency: 0.6 + Math.random() * 0.3, // Less efficient but stronger
-      age: 0,
-      maxAge: 80 + Math.random() * 40, // Live longer
-      reproductionThreshold: 200, // Need more energy to reproduce
+      
+      // Genetic traits (enhanced for predator role)
+      dna: dna,
+      size: Math.max(0.6, geneticTraits.size), // Ensure minimum predator size
+      speed: Math.max(0.7, geneticTraits.speed), // Ensure minimum predator speed
+      energyEfficiency: geneticTraits.energyEfficiency * 0.8, // Predators are less efficient
+      maxAge: geneticTraits.lifespan + 20, // Predators live longer
+      reproductionThreshold: geneticTraits.reproductionRate + 50, // Need more energy to reproduce
       diet: 'carnivore',
-      aggressiveness: 0.7 + Math.random() * 0.3, // High aggression
+      aggressiveness: Math.max(0.7, geneticTraits.aggression), // High aggression
+      intelligence: Math.max(0.6, geneticTraits.intelligence), // Smart hunters
+      
+      // Calculated from genetics
+      age: 0,
+      generation: 1,
+      parentIds: [], // No parents for spawned creatures
+      
+      // Predator-specific color (reddish tones)
       color: `hsl(${Math.random() * 60}, 80%, 45%)` // Reddish colors
     }
 
@@ -171,6 +243,17 @@ export default function GameUI({ gameState, setGameState }) {
             disabled={gameState.population.length === 0}
           >
             Clear All
+          </button>
+        </div>
+
+        <div className="control-group">
+          <button 
+            onClick={() => setShowLineageTracker(true)} 
+            className="btn"
+            style={{ backgroundColor: '#8b5cf6', borderColor: '#8b5cf6' }}
+            disabled={gameState.population.length === 0}
+          >
+            View Genetics & Lineage
           </button>
         </div>
       </div>
@@ -277,6 +360,30 @@ export default function GameUI({ gameState, setGameState }) {
               <span>Aggression:</span>
               <span>{((gameState.selectedCreature.aggressiveness || 0) * 100).toFixed(0)}%</span>
             </div>
+            {gameState.selectedCreature.intelligence && (
+              <div className="stat-item">
+                <span>Intelligence:</span>
+                <span>{(gameState.selectedCreature.intelligence * 100).toFixed(0)}%</span>
+              </div>
+            )}
+            {gameState.selectedCreature.generation && (
+              <div className="stat-item">
+                <span>Generation:</span>
+                <span>{gameState.selectedCreature.generation}</span>
+              </div>
+            )}
+            {gameState.selectedCreature.parentIds && gameState.selectedCreature.parentIds.length > 0 && (
+              <div className="stat-item">
+                <span>Parents:</span>
+                <span>{gameState.selectedCreature.parentIds.length}</span>
+              </div>
+            )}
+            {gameState.selectedCreature.dna && (
+              <div className="stat-item" style={{ color: '#8b5cf6' }}>
+                <span>Has DNA:</span>
+                <span>✓ Genetic</span>
+              </div>
+            )}
             {gameState.selectedCreature.energy > (gameState.selectedCreature.reproductionThreshold || 150) && (
               <div className="stat-item" style={{ color: '#4CAF50' }}>
                 <span>Status:</span>
@@ -297,6 +404,13 @@ export default function GameUI({ gameState, setGameState }) {
           <p>• Click creature: Select</p>
         </div>
       </div>
+
+      {/* Lineage Tracker Modal */}
+      <LineageTracker 
+        gameState={gameState}
+        isVisible={showLineageTracker}
+        onClose={() => setShowLineageTracker(false)}
+      />
     </div>
   )
 }

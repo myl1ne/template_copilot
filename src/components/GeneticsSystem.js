@@ -1,15 +1,27 @@
 // Advanced Genetics System for Ecosystem Sandbox
 // Implements realistic DNA-based trait inheritance with dominant/recessive genes
+// Extended with behavioral genetics for evolved behaviors
 
 // Gene types and their possible alleles
 export const GENE_TYPES = {
+  // Physical traits
   SIZE: 'size',
   SPEED: 'speed', 
   ENERGY_EFFICIENCY: 'energyEfficiency',
   LIFESPAN: 'lifespan',
   REPRODUCTION_RATE: 'reproductionRate',
+  
+  // Behavioral traits - NEW
   AGGRESSION: 'aggression',
   INTELLIGENCE: 'intelligence',
+  SOCIAL_BEHAVIOR: 'socialBehavior',
+  EXPLORATION_TENDENCY: 'explorationTendency',
+  RISK_TOLERANCE: 'riskTolerance',
+  COOPERATION_LEVEL: 'cooperationLevel',
+  TERRITORIALITY: 'territoriality',
+  MATING_STRATEGY: 'matingStrategy',
+  
+  // Metabolic traits
   DIET_PREFERENCE: 'dietPreference'
 }
 
@@ -18,7 +30,8 @@ export const TRAIT_CATEGORIES = {
   PHYSICAL: 'physical',
   BEHAVIORAL: 'behavioral', 
   METABOLIC: 'metabolic',
-  COGNITIVE: 'cognitive'
+  COGNITIVE: 'cognitive',
+  SOCIAL: 'social'      // NEW category
 }
 
 // Gene dominance relationships (true = dominant, false = recessive)
@@ -57,6 +70,37 @@ export const GENE_DOMINANCE = {
     smart: true,
     normal: false,
     simple: false
+  },
+  // NEW behavioral genes
+  [GENE_TYPES.SOCIAL_BEHAVIOR]: {
+    gregarious: true,    // Seeks groups
+    normal: false,
+    solitary: false      // Avoids groups
+  },
+  [GENE_TYPES.EXPLORATION_TENDENCY]: {
+    explorer: true,      // Seeks new areas
+    normal: false,
+    homebody: false      // Stays in familiar areas
+  },
+  [GENE_TYPES.RISK_TOLERANCE]: {
+    reckless: true,      // Takes high risks for rewards
+    normal: false,
+    cautious: false      // Avoids risky situations
+  },
+  [GENE_TYPES.COOPERATION_LEVEL]: {
+    cooperative: true,   // Helps others, shares resources
+    normal: false,
+    competitive: false   // Competes aggressively
+  },
+  [GENE_TYPES.TERRITORIALITY]: {
+    territorial: true,   // Defends territory
+    normal: false,
+    wanderer: false      // No territorial behavior
+  },
+  [GENE_TYPES.MATING_STRATEGY]: {
+    monogamous: true,    // Bonds with one mate
+    normal: false,
+    promiscuous: false   // Mates with many partners
   },
   [GENE_TYPES.DIET_PREFERENCE]: {
     carnivore: true,
@@ -101,6 +145,37 @@ export const GENE_EXPRESSION = {
     smart: { min: 0.8, max: 1.0 },
     normal: { min: 0.5, max: 0.8 },
     simple: { min: 0.2, max: 0.5 }
+  },
+  // Behavioral trait expressions (0.0 to 1.0 scales)
+  [GENE_TYPES.SOCIAL_BEHAVIOR]: {
+    gregarious: { min: 0.8, max: 1.0 },  // High social seeking
+    normal: { min: 0.4, max: 0.6 },
+    solitary: { min: 0.0, max: 0.2 }     // Avoids others
+  },
+  [GENE_TYPES.EXPLORATION_TENDENCY]: {
+    explorer: { min: 0.8, max: 1.0 },    // Seeks new areas
+    normal: { min: 0.4, max: 0.6 },
+    homebody: { min: 0.0, max: 0.2 }     // Stays local
+  },
+  [GENE_TYPES.RISK_TOLERANCE]: {
+    reckless: { min: 0.8, max: 1.0 },    // High risk taking
+    normal: { min: 0.4, max: 0.6 },
+    cautious: { min: 0.0, max: 0.2 }     // Risk averse
+  },
+  [GENE_TYPES.COOPERATION_LEVEL]: {
+    cooperative: { min: 0.8, max: 1.0 }, // Helps others
+    normal: { min: 0.4, max: 0.6 },
+    competitive: { min: 0.0, max: 0.2 }  // Competes aggressively
+  },
+  [GENE_TYPES.TERRITORIALITY]: {
+    territorial: { min: 0.8, max: 1.0 }, // Defends territory
+    normal: { min: 0.4, max: 0.6 },
+    wanderer: { min: 0.0, max: 0.2 }     // No territorial behavior
+  },
+  [GENE_TYPES.MATING_STRATEGY]: {
+    monogamous: { min: 0.8, max: 1.0 },  // Bonds with one mate
+    normal: { min: 0.4, max: 0.6 },
+    promiscuous: { min: 0.0, max: 0.2 }  // Multiple mates
   }
 }
 

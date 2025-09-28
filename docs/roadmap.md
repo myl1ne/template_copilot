@@ -27,12 +27,11 @@
 - **Population Genetics Analytics with diversity metrics** - ✨ **Fully functional**
 
 ### 🔧 Current Focus
-- **Environmental Pressure Enhancement** - Strengthening biome effects on creature fitness and survival rates
-- **Multi-Generational Evolution Analysis** - Extended experiments to observe trait selection over time
 - **Advanced creature customization and specialization tools** - Building on validated genetics framework
+- **Multi-Generational Evolution Analysis** - Extended experiments to observe trait selection over time
 - **Environmental manipulation and disaster event controls** - Player-controlled ecological challenges
-- **Enhanced resource competition dynamics with specialization interactions** - Population-level evolutionary pressure
 - **WebWorker integration for background evolution calculations** - Performance optimization for complex simulations
+- **Audio System Integration** - Environmental sounds and creature vocalizations for enhanced immersion
 
 ---
 
@@ -194,7 +193,14 @@
 
 ## Recently Completed
 
-### ✅ v0.4.0-alpha - September 2024 ✨ **NEW**
+### ✅ v0.4.1-alpha - September 2024 ✨ **LATEST**
+- ✅ **Enhanced Environmental Pressure System** - Comprehensive fitness calculation with biome-specific selection pressures - Released ✨ **NEW**
+- ✅ **Behavioral Genetics Integration** - 6 new behavioral genes (social, exploration, risk, cooperation, territoriality, mating) - Released ✨ **NEW**
+- ✅ **Advanced Selection Pressure Mechanisms** - Population-based fitness calculation and survivor selection - Released ✨ **NEW**
+- ✅ **Cross-Biome Behavioral Analysis** - Demonstrated differential archetype success across environments - Completed ✨ **NEW**
+- ✅ **Environmental Pressure Documentation** - Comprehensive system documentation with experimental validation - Completed ✨ **NEW**
+
+### ✅ v0.4.0-alpha - September 2024 ✨ **ENHANCED**
 - ✅ **Advanced Genetics System** - DNA-based inheritance with 8 gene types - Released
 - ✅ **Species Specialization Engine** - 10 ecological roles from grazers to apex predators - Released
 - ✅ **Lineage Tracking System** - Family trees and genetic history visualization - Released

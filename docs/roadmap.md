@@ -3,9 +3,9 @@
 ## Current Status
 
 ### 🎯 Current Version
-- **Version**: 0.4.0-alpha
+- **Version**: 0.4.2-alpha
 - **Release Date**: September 2024
-- **Status**: Advanced Genetics & Species Specialization Complete - Ecological Roles Implemented
+- **Status**: Environmental Interaction Tools Implemented - Advanced Ecosystem Controls Available
 
 ### ✅ What's Working Now
 - Project scaffolding and build system (Vite + React) - Fully functional
@@ -25,11 +25,12 @@
 - **Species Specialization Engine with 10 ecological roles** - ✨ **Fully functional**
 - **Lineage Tracking with family trees and genetic analysis** - ✨ **Fully functional**
 - **Population Genetics Analytics with diversity metrics** - ✨ **Fully functional**
+- **Environmental Interaction Tools with climate & disaster controls** - ✨ **Fully functional**
 
 ### 🔧 Current Focus
 - **Advanced creature customization and specialization tools** - Building on validated genetics framework
 - **Multi-Generational Evolution Analysis** - Extended experiments to observe trait selection over time
-- **Environmental manipulation and disaster event controls** - Player-controlled ecological challenges
+- **Population Analytics Dashboard** - Real-time evolution tracking with comprehensive visualizations
 - **WebWorker integration for background evolution calculations** - Performance optimization for complex simulations
 - **Audio System Integration** - Environmental sounds and creature vocalizations for enhanced immersion
 
@@ -44,11 +45,11 @@
 - [x] **Multi-Biome Environment System** - Different environments with unique challenges ✨ **COMPLETED**
 - [x] **Advanced Genetics System** - Multi-trait inheritance with dominant/recessive genes ✨ **COMPLETED**
 - [x] **Species Specialization Engine** - Creatures develop distinct ecological roles ✨ **COMPLETED**
-- [ ] **Environmental Interaction Tools** - Player can influence ecosystem dynamics
-  - Climate controls (temperature, humidity, seasonal intensity)
-  - Disaster events (droughts, floods, volcanic eruptions, meteor impacts)
-  - Resource manipulation (add/remove food sources, water bodies)
-  - Terrain modification tools for creating custom landscapes
+- [x] **Environmental Interaction Tools** - Player can influence ecosystem dynamics ✨ **COMPLETED**
+  - ✅ Climate controls (temperature, humidity, seasonal intensity)
+  - ✅ Disaster events (droughts, floods, volcanic eruptions, meteor impacts, ice ages, heat waves)
+  - ✅ Resource manipulation (add/remove food sources, water bodies, obstacles)
+  - ✅ Terrain modification tools for creating custom landscapes
 - [ ] **Population Analytics Dashboard** - Comprehensive evolution tracking
   - Real-time population graphs with species diversity metrics
   - Evolution timeline showing major adaptations and extinctions
@@ -193,7 +194,17 @@
 
 ## Recently Completed
 
-### ✅ v0.4.1-alpha - September 2024 ✨ **LATEST**
+### ✅ v0.4.2-alpha - September 2024 ✨ **LATEST**
+- ✅ **Environmental Interaction Tools** - Complete player ecosystem manipulation system - Released ✨ **NEW**
+  - ✅ Climate Controls Interface with temperature, humidity, and seasonal intensity sliders
+  - ✅ Disaster Event System with 6 disaster types (drought, flood, volcanic eruption, meteor impact, ice age, heat wave)
+  - ✅ Resource Manipulation Tools for adding/removing food sources, water bodies, and obstacles
+  - ✅ Terrain Modification System for raising, lowering, and smoothing terrain
+  - ✅ Environmental Events Manager with real-time effect calculations and event handling
+  - ✅ Advanced UI with tabbed panels and responsive design
+  - ✅ Comprehensive test suite with 24 additional tests covering all environmental systems
+
+### ✅ v0.4.1-alpha - September 2024
 - ✅ **Enhanced Environmental Pressure System** - Comprehensive fitness calculation with biome-specific selection pressures - Released ✨ **NEW**
 - ✅ **Behavioral Genetics Integration** - 6 new behavioral genes (social, exploration, risk, cooperation, territoriality, mating) - Released ✨ **NEW**
 - ✅ **Advanced Selection Pressure Mechanisms** - Population-based fitness calculation and survivor selection - Released ✨ **NEW**

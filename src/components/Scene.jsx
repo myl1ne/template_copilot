@@ -81,17 +81,22 @@ export default function Scene({ gameState, setGameState }) {
         color={biomeType === BIOME_TYPES.DESERT ? '#ffab40' : '#81c784'}
       />
 
-      {/* Camera Controls */}
+      {/* Enhanced Camera Controls for better creature viewing */}
       <OrbitControls
         ref={controlsRef}
         enablePan={true}
         enableZoom={true}
         enableRotate={true}
-        minDistance={5}
-        maxDistance={50}
-        maxPolarAngle={Math.PI / 2}
+        minDistance={3}
+        maxDistance={25}
+        maxPolarAngle={Math.PI / 2.2}
+        minPolarAngle={Math.PI / 6}
+        target={[0, 1, 0]}
         enableDamping
-        dampingFactor={0.05}
+        dampingFactor={0.08}
+        zoomSpeed={0.8}
+        rotateSpeed={0.5}
+        panSpeed={0.8}
       />
 
       {/* Environment */}

@@ -206,8 +206,7 @@ function River({ path, flow }) {
   )
 }
 
-export default function WaterCycleSystem({ gameState, terrainData, onWaterUpdate }) {
-  const biomeType = gameState.currentBiome || BIOME_TYPES.FOREST
+export default function WaterCycleSystem({ biomeType, season = 'normal', weatherIntensity = 0, terrainData, onWaterUpdate }) {
   
   // Water cycle state
   const [weatherState, setWeatherState] = useState({

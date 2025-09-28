@@ -1,7 +1,11 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { getBiomeConfig, BIOME_TYPES } from './BiomeConfig'
+import TerrainSystem from './TerrainSystem'
+import PlantSystem from './PlantSystem'
+import WaterCycleSystem from './WaterCycleSystem'
+import { physicsSystem } from './PhysicsSystem'
 
 function Obstacle({ position, size, color, type = 'rock' }) {
   const meshRef = useRef()
@@ -193,6 +197,25 @@ function FoodSource({ food, size = 0.3, biomeType }) {
 export default function Environment({ gameState }) {
   const biomeType = gameState.currentBiome || BIOME_TYPES.FOREST
   const biomeConfig = getBiomeConfig(biomeType)
+  const [terrainData, setTerrainData] = useState(null)
+
+  // Handle terrain data updates
+  const handleTerrainData = (data) => {
+    setTerrainData(data)
+    physicsSystem.setTerrainData(data)
+  }
+
+  // Handle plant updates
+  const handlePlantsUpdate = (plantsData) => {
+    // Store plants data for future use
+    console.log('Plants updated:', plantsData.length)
+  }
+
+  // Handle water cycle updates
+  const handleWaterUpdate = (waterInfo) => {
+    // Store water data for future use
+    console.log('Water updated:', waterInfo)
+  }
 
   // Generate biome-specific obstacles
   const obstacles = useMemo(() => {
@@ -265,61 +288,28 @@ export default function Environment({ gameState }) {
 
   return (
     <group>
-      {/* Enhanced ground plane with biome-specific material */}
-      <mesh position={[0, -0.1, 0]} receiveShadow>
-        <planeGeometry args={[60, 60]} />
-        {getGroundMaterial()}
-      </mesh>
+      {/* New Terrain System with Physics */}
+      <TerrainSystem 
+        gameState={gameState} 
+        onTerrainData={handleTerrainData}
+      />
+      
+      {/* Plant System */}
+      <PlantSystem
+        gameState={gameState}
+        terrainData={terrainData}
+        onPlantsUpdate={handlePlantsUpdate}
+      />
+      
+      {/* Water Cycle System */}
+      <WaterCycleSystem
+        gameState={gameState}
+        terrainData={terrainData}
+        onWaterUpdate={handleWaterUpdate}
+      />
 
-      {/* Enhanced ocean-specific water effects */}
-      {biomeType === BIOME_TYPES.OCEAN && (
-        <>
-          {/* Water surface */}
-          <mesh position={[0, 0.2, 0]} receiveShadow>
-            <planeGeometry args={[60, 60]} />
-            <meshStandardMaterial 
-              color="#006994" 
-              transparent 
-              opacity={0.4}
-              roughness={0.0}
-              metalness={0.8}
-              side={THREE.DoubleSide}
-              emissive="#001133"
-              emissiveIntensity={0.1}
-            />
-          </mesh>
-          
-          {/* Animated water ripples */}
-          <mesh position={[0, 0.25, 0]}>
-            <planeGeometry args={[60, 60, 32, 32]} />
-            <meshStandardMaterial 
-              color="#4dd0e1" 
-              transparent 
-              opacity={0.2}
-              wireframe={true}
-              side={THREE.DoubleSide}
-            />
-          </mesh>
-        </>
-      )}
-
-      {/* Particle effects for desert */}
-      {biomeType === BIOME_TYPES.DESERT && (
-        <points>
-          <bufferGeometry>
-            <bufferAttribute
-              attach="attributes-position"
-              count={100}
-              array={new Float32Array(Array.from({ length: 300 }, () => (Math.random() - 0.5) * 40))}
-              itemSize={3}
-            />
-          </bufferGeometry>
-          <pointsMaterial size={0.05} color="#d4a574" transparent opacity={0.6} />
-        </points>
-      )}
-
-      {/* Biome-specific obstacles with enhanced materials */}
-      {obstacles.map(obstacle => (
+      {/* Legacy biome-specific obstacles (reduced for new terrain) */}
+      {obstacles.slice(0, Math.floor(obstacles.length / 2)).map(obstacle => (
         <Obstacle
           key={obstacle.id}
           position={obstacle.position}

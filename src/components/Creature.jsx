@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import EnhancedCreature, { generateVisualTraits } from './CreatureGeometryV2'
+import { physicsSystem } from './PhysicsSystem'
 
 function CreatureGeometry({ type, size, isLowDetail = false }) {
   // Use lower poly versions when there are many creatures for performance
@@ -60,20 +61,28 @@ export default function Creature({ creature, isSelected, onClick, populationSize
 function AnimatedCreatureWrapper({ creature, children }) {
   const groupRef = useRef()
   
-  useFrame((state) => {
+  useFrame((state, deltaTime) => {
     if (groupRef.current) {
+      // Apply physics to creature
+      if (!creature.velocity) {
+        creature.velocity = [0, 0, 0]
+      }
+      physicsSystem.applyPhysics(creature, deltaTime)
+      
       // Enhanced floating animation with variation based on creature DNA
       const visualTraits = generateVisualTraits(creature)
-      const baseY = creature.position[1]
-      
       let floatVariation = 0.06
       if (visualTraits.bodyShape === 'dart') floatVariation = 0.10
       else if (visualTraits.bodyShape === 'bulky') floatVariation = 0.03
       else if (visualTraits.bodyShape === 'torpedo') floatVariation = 0.08
       
+      // Reduce floating effect if creature is on ground or in water
+      if (creature.onGround) floatVariation *= 0.3
+      if (creature.inWater) floatVariation *= 0.5
+      
       groupRef.current.position.set(
         creature.position[0],
-        baseY + Math.sin(state.clock.elapsedTime * 2.5 + creature.id * 0.1) * floatVariation,
+        creature.position[1] + Math.sin(state.clock.elapsedTime * 2.5 + creature.id * 0.1) * floatVariation,
         creature.position[2]
       )
 
@@ -89,7 +98,7 @@ function AnimatedCreatureWrapper({ creature, children }) {
       // Enhanced scale based on size and energy with breathing effect
       const energyScale = Math.max(0.5, creature.energy / 100)
       const breathingEffect = 1 + Math.sin(state.clock.elapsedTime * 1.8 + creature.id) * 0.02
-      const scale = creature.size * energyScale * breathingEffect
+      const scale = creature.size * energyScale * breathingEffect * (creature.speedMultiplier || 1)
       groupRef.current.scale.set(scale, scale, scale)
     }
   })
@@ -106,8 +115,14 @@ function LegacyCreature({ creature, isSelected, onClick, populationSize, meshRef
   // Use low detail when population is large for performance
   const isLowDetail = populationSize > 30
 
-  useFrame((state) => {
+  useFrame((state, deltaTime) => {
     if (meshRef.current) {
+      // Apply physics to creature
+      if (!creature.velocity) {
+        creature.velocity = [0, 0, 0]
+      }
+      physicsSystem.applyPhysics(creature, deltaTime)
+      
       // Update position
       meshRef.current.position.set(
         creature.position[0],
@@ -116,10 +131,14 @@ function LegacyCreature({ creature, isSelected, onClick, populationSize, meshRef
       )
 
       // Enhanced floating animation with variation based on creature type
-      const baseY = creature.position[1]
-      const floatVariation = creature.type === 'sphere' ? 0.08 : 
+      let floatVariation = creature.type === 'sphere' ? 0.08 : 
                            creature.type === 'cube' ? 0.04 : 0.06
-      meshRef.current.position.y = baseY + Math.sin(state.clock.elapsedTime * 3 + creature.id * 0.1) * floatVariation
+      
+      // Reduce floating effect if creature is on ground or in water
+      if (creature.onGround) floatVariation *= 0.3
+      if (creature.inWater) floatVariation *= 0.5
+      
+      meshRef.current.position.y = creature.position[1] + Math.sin(state.clock.elapsedTime * 3 + creature.id * 0.1) * floatVariation
 
       // Rotate creature based on movement direction with smooth interpolation
       if (creature.direction) {
@@ -133,7 +152,7 @@ function LegacyCreature({ creature, isSelected, onClick, populationSize, meshRef
       // Enhanced scale based on size and energy with breathing effect
       const energyScale = Math.max(0.5, creature.energy / 100)
       const breathingEffect = 1 + Math.sin(state.clock.elapsedTime * 2 + creature.id) * 0.03
-      const scale = creature.size * energyScale * breathingEffect
+      const scale = creature.size * energyScale * breathingEffect * (creature.speedMultiplier || 1)
       meshRef.current.scale.set(scale, scale, scale)
     }
   })

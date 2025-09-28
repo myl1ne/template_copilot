@@ -1,59 +1,70 @@
-# GitHub Copilot Instructions for Project Documentation
+# GitHub Copilot Instructions for Ghostless Shell
 
-This file contains instructions for GitHub Copilot to maintain and update project documentation automatically.
+This file contains instructions for GitHub Copilot to maintain and update the Ghostless Shell personal website project documentation.
+
+## Project Context
+
+Ghostless Shell is a sophisticated personal portfolio website featuring:
+- Interactive resume and professional showcase
+- Curated notes and knowledge repository  
+- Research papers and academic contributions showcase
+- Experimental lab with interactive demos
+- AI companion creature with chat interface
+- Firebase/Firestore backend integration
 
 ## Document Maintenance Guidelines
 
 ### 1. Project Overview (`docs/project-overview.md`)
-- Keep this as a concise one-pager that clearly explains:
-  - What the project does
-  - Who it's for (target audience)
-  - Key features and benefits
-  - How to get started quickly
-- Update whenever there are significant feature additions or changes to the project's core purpose
-- Maintain a professional yet accessible tone
-- Include relevant badges, links, or quick stats if applicable
+- Keep focused on the unique aspects of Ghostless Shell (AI companion, modular experiments, etc.)
+- Emphasize the "ghostless shell" philosophy - intelligent without unnecessary complexity
+- Update when new major sections or AI capabilities are added
+- Maintain the professional yet innovative tone that reflects the project's character
 
-### 2. Status & Roadmap (`docs/roadmap.md`)
-- Maintain two main sections:
-  - **Current Status**: What's working now, recent releases, current version
-  - **Long Term Roadmap**: Planned features, architectural improvements, major milestones
-- Update the current status section after each release or significant milestone
-- Keep roadmap items realistic and prioritized
-- Archive completed roadmap items to a "Recently Completed" section
-- Link to relevant GitHub issues, PRs, or project boards where applicable
+### 2. Development Roadmap (`docs/roadmap.md`)
+- Track progress through development phases: Foundation → Interactive Features → AI Integration → Advanced Features
+- Update current status as development milestones are reached
+- Keep the phased approach clear (Phase 1, 2, 3, etc.)
+- Archive completed features with completion dates and notes
 
-### 3. Current Backlog (`docs/backlog.md`)
-- Automatically sync with GitHub issues when possible
-- Organize tasks by priority: High, Medium, Low
-- Include status for each item: Not Started, In Progress, Under Review, Completed
-- Link each backlog item to its corresponding GitHub issue
+### 3. Development Backlog (`docs/backlog.md`)
+- Organize by current development phase priorities
+- Use phase-specific labels (phase: 1, phase: 2, etc.) in addition to standard priority labels
+- Include effort estimates and dependencies for complex features
+- Track AI companion development separately as it's a unique, complex feature
 - Update status based on issue state changes
 - Group related tasks together under logical headings
 
 ## General Documentation Guidelines
 
 - Use clear, consistent markdown formatting
-- Keep all documentation up-to-date with code changes
-- Include relevant code examples where helpful
+- Keep all documentation current with development progress and feature implementations  
+- Include technical details relevant to Firebase/Firestore integration when appropriate
 - Use relative links for internal documentation references
-- Maintain a consistent voice and style across all documents
-- Add timestamps or version references when documenting changes
-- Ensure all external links are valid and up-to-date
+- Maintain the innovative yet professional tone that reflects Ghostless Shell's character
+- Add timestamps and phase references when documenting changes
+- Ensure all links to research papers, demos, and external resources remain valid
 
-## Automation Rules
+## Automation Rules for Ghostless Shell
 
-- When new GitHub issues are created with specific labels, automatically add them to the backlog
-- When issues are closed, update their status in the backlog
-- After each commit to main branch, review if any documentation needs updates
-- When package.json version changes, update the current status in roadmap
-- When new dependencies are added, consider if project overview needs updates
+- When new GitHub issues are created with phase and priority labels, automatically add them to the appropriate backlog section
+- When issues are closed, update their status in backlog and move to "Recently Completed" with completion date
+- After significant development progress, review if the current roadmap phase status needs updating
+- When new sections (resume, notes, research, experiments) are implemented, update project overview
+- When AI companion features are added or enhanced, highlight these updates prominently in documentation
 
-## Templates for New Projects
+## Special Considerations for Ghostless Shell
 
-When this template is used for a new project:
-1. Replace placeholder content in all documentation files
-2. Update project-specific information (name, description, etc.)
-3. Customize the roadmap based on actual project goals
-4. Set up initial backlog based on planned features
-5. Configure GitHub issue labels that should trigger backlog updates
+### AI Companion Features
+- Document AI companion capabilities and limitations clearly
+- Track conversation system development separately from other features
+- Include ethical considerations and user privacy aspects of AI integration
+
+### Modular Experiments System
+- Maintain a registry of available experiments and demos in documentation
+- Document the modular architecture for adding new experiments
+- Include technical specifications for experiment integration
+
+### Firebase Integration
+- Keep track of Firestore schema changes and their documentation impact
+- Document authentication flows and security considerations
+- Note any Firebase service dependencies and their impact on features

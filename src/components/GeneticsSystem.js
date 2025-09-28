@@ -1,6 +1,7 @@
 // Advanced Genetics System for Ecosystem Sandbox
 // Implements realistic DNA-based trait inheritance with dominant/recessive genes
 // Extended with behavioral genetics for evolved behaviors
+// V2: Added visual trait genetics for creature differentiation
 
 // Gene types and their possible alleles
 export const GENE_TYPES = {
@@ -11,7 +12,13 @@ export const GENE_TYPES = {
   LIFESPAN: 'lifespan',
   REPRODUCTION_RATE: 'reproductionRate',
   
-  // Behavioral traits - NEW
+  // Visual traits - NEW for V2
+  BODY_PATTERN: 'bodyPattern',
+  COLOR_INTENSITY: 'colorIntensity',
+  APPENDAGE_TYPE: 'appendageType',
+  SURFACE_TEXTURE: 'surfaceTexture',
+  
+  // Behavioral traits
   AGGRESSION: 'aggression',
   INTELLIGENCE: 'intelligence',
   SOCIAL_BEHAVIOR: 'socialBehavior',
@@ -28,10 +35,11 @@ export const GENE_TYPES = {
 // Trait categories for specialization
 export const TRAIT_CATEGORIES = {
   PHYSICAL: 'physical',
+  VISUAL: 'visual',        // NEW category for V2
   BEHAVIORAL: 'behavioral', 
   METABOLIC: 'metabolic',
   COGNITIVE: 'cognitive',
-  SOCIAL: 'social'      // NEW category
+  SOCIAL: 'social'
 }
 
 // Gene dominance relationships (true = dominant, false = recessive)
@@ -71,7 +79,28 @@ export const GENE_DOMINANCE = {
     normal: false,
     simple: false
   },
-  // NEW behavioral genes
+  // NEW visual trait genes for V2
+  [GENE_TYPES.BODY_PATTERN]: {
+    striped: true,       // Complex patterns
+    spotted: false,      // Medium complexity
+    solid: false         // Simple solid color
+  },
+  [GENE_TYPES.COLOR_INTENSITY]: {
+    vibrant: true,       // Bright, saturated colors
+    normal: false,       // Standard coloring
+    muted: false         // Dull, low-saturation colors
+  },
+  [GENE_TYPES.APPENDAGE_TYPE]: {
+    complex: true,       // Multiple appendages
+    simple: false,       // Basic appendages
+    minimal: false       // Few or no appendages
+  },
+  [GENE_TYPES.SURFACE_TEXTURE]: {
+    rough: true,         // Textured surface
+    smooth: false,       // Standard surface
+    glossy: false        // Shiny, reflective surface
+  },
+  // Behavioral genes
   [GENE_TYPES.SOCIAL_BEHAVIOR]: {
     gregarious: true,    // Seeks groups
     normal: false,
@@ -146,6 +175,27 @@ export const GENE_EXPRESSION = {
     normal: { min: 0.5, max: 0.8 },
     simple: { min: 0.2, max: 0.5 }
   },
+  // NEW visual trait expressions for V2
+  [GENE_TYPES.BODY_PATTERN]: {
+    striped: { min: 0.8, max: 1.0 },    // High pattern complexity
+    spotted: { min: 0.4, max: 0.7 },    // Medium pattern complexity
+    solid: { min: 0.0, max: 0.3 }       // Low pattern complexity
+  },
+  [GENE_TYPES.COLOR_INTENSITY]: {
+    vibrant: { min: 0.8, max: 1.0 },    // High color saturation
+    normal: { min: 0.4, max: 0.7 },     // Medium color saturation
+    muted: { min: 0.1, max: 0.4 }       // Low color saturation
+  },
+  [GENE_TYPES.APPENDAGE_TYPE]: {
+    complex: { min: 0.7, max: 1.0 },    // Many appendages
+    simple: { min: 0.3, max: 0.6 },     // Some appendages
+    minimal: { min: 0.0, max: 0.3 }     // Few appendages
+  },
+  [GENE_TYPES.SURFACE_TEXTURE]: {
+    rough: { min: 0.7, max: 1.0 },      // High surface roughness
+    smooth: { min: 0.3, max: 0.6 },     // Medium surface roughness
+    glossy: { min: 0.0, max: 0.3 }      // Low surface roughness (glossy)
+  },
   // Behavioral trait expressions (0.0 to 1.0 scales)
   [GENE_TYPES.SOCIAL_BEHAVIOR]: {
     gregarious: { min: 0.8, max: 1.0 },  // High social seeking
@@ -199,6 +249,19 @@ export function generateDNA() {
   })
   
   return dna
+}
+
+// Ensure DNA has all current gene types (for backward compatibility)
+export function ensureCompleteDNA(dna) {
+  const completeDNA = { ...dna }
+  
+  Object.values(GENE_TYPES).forEach(geneType => {
+    if (!completeDNA[geneType]) {
+      completeDNA[geneType] = createGenePair(geneType)
+    }
+  })
+  
+  return completeDNA
 }
 
 // Determine phenotype from genotype (which trait is expressed)
@@ -302,6 +365,9 @@ export function calculateGeneticSimilarity(dna1, dna2) {
   Object.values(GENE_TYPES).forEach(geneType => {
     const gene1 = dna1[geneType]
     const gene2 = dna2[geneType]
+    
+    // Skip if either gene is missing (for backward compatibility)
+    if (!gene1 || !gene2) return
     
     // Count matching alleles
     let matches = 0

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import EnhancedCreature, { generateVisualTraits } from './CreatureGeometryV2'
 
 function CreatureGeometry({ type, size, isLowDetail = false }) {
   // Use lower poly versions when there are many creatures for performance
@@ -22,6 +23,86 @@ export default function Creature({ creature, isSelected, onClick, populationSize
   const meshRef = useRef()
   const [hovered, setHovered] = useState(false)
   
+  // Use enhanced creature rendering if DNA is available or if enhanced type is selected
+  const hasAdvancedDNA = creature.dna && (Object.keys(creature.dna).length > 5 || creature.type === 'enhanced')
+  
+  if (hasAdvancedDNA) {
+    return (
+      <AnimatedCreatureWrapper 
+        creature={creature} 
+        isSelected={isSelected} 
+        onClick={onClick}
+        populationSize={populationSize}
+      >
+        <EnhancedCreature 
+          creature={creature}
+          isSelected={isSelected}
+          onClick={onClick}
+          populationSize={populationSize}
+        />
+      </AnimatedCreatureWrapper>
+    )
+  }
+  
+  // Fallback to legacy rendering for simple creatures
+  return <LegacyCreature 
+    creature={creature}
+    isSelected={isSelected}
+    onClick={onClick}
+    populationSize={populationSize}
+    meshRef={meshRef}
+    hovered={hovered}
+    setHovered={setHovered}
+  />
+}
+
+// Wrapper to add animation to enhanced creatures
+function AnimatedCreatureWrapper({ creature, children }) {
+  const groupRef = useRef()
+  
+  useFrame((state) => {
+    if (groupRef.current) {
+      // Enhanced floating animation with variation based on creature DNA
+      const visualTraits = generateVisualTraits(creature)
+      const baseY = creature.position[1]
+      
+      let floatVariation = 0.06
+      if (visualTraits.bodyShape === 'dart') floatVariation = 0.10
+      else if (visualTraits.bodyShape === 'bulky') floatVariation = 0.03
+      else if (visualTraits.bodyShape === 'torpedo') floatVariation = 0.08
+      
+      groupRef.current.position.set(
+        creature.position[0],
+        baseY + Math.sin(state.clock.elapsedTime * 2.5 + creature.id * 0.1) * floatVariation,
+        creature.position[2]
+      )
+
+      // Rotate creature based on movement direction with smooth interpolation
+      if (creature.direction) {
+        groupRef.current.rotation.y = THREE.MathUtils.lerp(
+          groupRef.current.rotation.y, 
+          creature.direction, 
+          0.1
+        )
+      }
+
+      // Enhanced scale based on size and energy with breathing effect
+      const energyScale = Math.max(0.5, creature.energy / 100)
+      const breathingEffect = 1 + Math.sin(state.clock.elapsedTime * 1.8 + creature.id) * 0.02
+      const scale = creature.size * energyScale * breathingEffect
+      groupRef.current.scale.set(scale, scale, scale)
+    }
+  })
+  
+  return (
+    <group ref={groupRef}>
+      {children}
+    </group>
+  )
+}
+
+// Legacy creature component for backward compatibility
+function LegacyCreature({ creature, isSelected, onClick, populationSize, meshRef, hovered, setHovered }) {
   // Use low detail when population is large for performance
   const isLowDetail = populationSize > 30
 

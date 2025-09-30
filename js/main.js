@@ -213,31 +213,42 @@ function createNest() {
 }
 
 function createFoodSources() {
-    for (let i = 0; i < CONFIG.foodSourceCount; i++) {
-        const angle = (Math.PI * 2 * i) / CONFIG.foodSourceCount;
+    let placedCount = 0;
+    let attempts = 0;
+    const maxAttempts = 100;
+    
+    while (placedCount < CONFIG.foodSourceCount && attempts < maxAttempts) {
+        const angle = (Math.PI * 2 * placedCount) / CONFIG.foodSourceCount + (Math.random() - 0.5) * 0.5;
         const distance = 15 + Math.random() * 10;
         const x = Math.cos(angle) * distance;
         const z = Math.sin(angle) * distance;
-
-        const foodAmount = 20 + Math.floor(Math.random() * 30);
-        const size = 0.5 + foodAmount / 50;
         
         const terrainHeight = getTerrainHeight(x, z);
+        
+        // Only place food above water level
+        if (terrainHeight > CONFIG.waterLevel) {
+            const foodAmount = 20 + Math.floor(Math.random() * 30);
+            const size = 0.5 + foodAmount / 50;
 
-        const foodGeometry = new THREE.SphereGeometry(size, 16, 16);
-        const foodMaterial = new THREE.MeshLambertMaterial({ color: 0x4CAF50 });
-        const food = new THREE.Mesh(foodGeometry, foodMaterial);
-        food.position.set(x, terrainHeight + size, z);
-        food.castShadow = true;
-        food.receiveShadow = true;
-        scene.add(food);
+            const foodGeometry = new THREE.SphereGeometry(size, 16, 16);
+            const foodMaterial = new THREE.MeshLambertMaterial({ color: 0x4CAF50 });
+            const food = new THREE.Mesh(foodGeometry, foodMaterial);
+            food.position.set(x, terrainHeight + size, z);
+            food.castShadow = true;
+            food.receiveShadow = true;
+            scene.add(food);
 
-        foodSources.push({
-            mesh: food,
-            position: { x, z },
-            amount: foodAmount,
-            initialAmount: foodAmount
-        });
+            foodSources.push({
+                mesh: food,
+                position: { x, z },
+                amount: foodAmount,
+                initialAmount: foodAmount
+            });
+            
+            placedCount++;
+        }
+        
+        attempts++;
     }
 }
 
@@ -388,7 +399,21 @@ function exploreForFood(ant, deltaTime) {
         0,
         Math.sin(ant.direction) * CONFIG.antSpeed
     );
-    ant.position.add(ant.velocity);
+    
+    // Calculate potential new position
+    const newX = ant.position.x + ant.velocity.x;
+    const newZ = ant.position.z + ant.velocity.z;
+    
+    // Check if new position would be underwater
+    const newTerrainHeight = getTerrainHeight(newX, newZ);
+    if (newTerrainHeight > CONFIG.waterLevel) {
+        // Safe to move - above water
+        ant.position.add(ant.velocity);
+    } else {
+        // Would be underwater - change direction and don't move
+        ant.direction += Math.PI / 2 + (Math.random() - 0.5) * Math.PI / 4;
+        ant.wanderTimer = 0;
+    }
 
     // Keep within world bounds
     const halfWorld = CONFIG.worldSize / 2 - 2;
@@ -417,7 +442,23 @@ function returnToNest(ant, deltaTime) {
         0,
         Math.sin(ant.direction) * CONFIG.antSpeed
     );
-    ant.position.add(ant.velocity);
+    
+    // Calculate potential new position
+    const newX = ant.position.x + ant.velocity.x;
+    const newZ = ant.position.z + ant.velocity.z;
+    
+    // Check if new position would be underwater
+    const newTerrainHeight = getTerrainHeight(newX, newZ);
+    if (newTerrainHeight > CONFIG.waterLevel) {
+        // Safe to move - above water
+        ant.position.add(ant.velocity);
+    } else {
+        // Would be underwater - try to go around
+        // Add perpendicular offset to avoid water
+        const perpendicularAngle = ant.direction + Math.PI / 2;
+        const avoidanceOffset = Math.random() < 0.5 ? 1 : -1;
+        ant.direction = Math.atan2(dz, dx) + perpendicularAngle * avoidanceOffset * 0.3;
+    }
 }
 
 function dropPheromone(position, type) {

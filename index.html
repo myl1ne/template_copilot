@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ant Colony Simulator</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            background: #000;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 300px;
+            z-index: 100;
+        }
+        #info h1 {
+            margin: 0 0 10px 0;
+            font-size: 20px;
+        }
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 100;
+        }
+        button {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button.secondary {
+            background: #008CBA;
+        }
+        button.secondary:hover {
+            background: #007399;
+        }
+        #stats {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 100;
+        }
+        #stats div {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h1>🐜 Ant Colony Simulator</h1>
+        <p><strong>Controls:</strong></p>
+        <ul style="margin: 5px 0; padding-left: 20px;">
+            <li>Left Mouse: Rotate camera</li>
+            <li>Right Mouse: Pan camera</li>
+            <li>Scroll: Zoom in/out</li>
+        </ul>
+        <p style="margin: 5px 0;"><strong>Watch</strong> ants explore, find food, and bring it back to the nest!</p>
+    </div>
+    
+    <div id="stats">
+        <div><strong>Colony Stats</strong></div>
+        <div>Ants: <span id="antCount">0</span></div>
+        <div>Food Collected: <span id="foodCollected">0</span></div>
+        <div>Active Pheromones: <span id="pheromoneCount">0</span></div>
+    </div>
+    
+    <div id="controls">
+        <button id="pauseBtn">Pause</button>
+        <button id="resetBtn" class="secondary">Reset</button>
+        <button id="addAntsBtn" class="secondary">Add 10 Ants</button>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "./node_modules/three/build/three.module.js",
+            "three/addons/": "./node_modules/three/examples/jsm/"
+        }
+    }
+    </script>
+    
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

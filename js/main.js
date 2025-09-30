@@ -16,7 +16,14 @@ const CONFIG = {
     skyColor: 0x87CEEB,
     terrainHeight: 4,
     waterLevel: -0.5,
-    terrainSegments: 100
+    terrainSegments: 100,
+    // Enemy colony config
+    enemyNestPosition: { x: -20, y: 0.1, z: -20 },
+    enemyAntCount: 20,
+    combatRange: 1.5,
+    // Landscape elements
+    treeCount: 8,
+    rockCount: 12
 };
 
 // RPG Configuration
@@ -27,17 +34,28 @@ const RPG_CONFIG = {
         soldier: { speed: 0.8, carryCapacity: 0.5, color: 0xFF0000, xpPerFood: 20, damage: 10 }
     },
     levelThresholds: [0, 100, 250, 500, 1000, 2000],
-    maxLevel: 5
+    maxLevel: 5,
+    // AI behavior weights
+    autonomy: {
+        defendNestRange: 10,
+        attackEnemyChance: 0.7,
+        avoidEnemyChance: 0.3,
+        healingRate: 0.1
+    }
 };
 
 // Game state
 let scene, camera, renderer, controls;
 let ants = [];
+let enemyAnts = [];
 let foodSources = [];
 let pheromones = [];
-let nest;
+let nest, enemyNest;
+let trees = [];
+let rocks = [];
 let isPaused = false;
 let foodCollected = 0;
+let enemyFoodCollected = 0;
 let clock = new THREE.Clock();
 let terrain, water;
 let selectedAnt = null;
@@ -97,9 +115,16 @@ function init() {
     
     // Water
     createWater();
+    
+    // Landscape elements
+    createTrees();
+    createRocks();
 
-    // Create nest
+    // Create player nest
     createNest();
+    
+    // Create enemy colony
+    createEnemyNest();
 
     // Create food sources
     createFoodSources();
@@ -107,6 +132,11 @@ function init() {
     // Create initial ants
     for (let i = 0; i < CONFIG.antCount; i++) {
         createAnt();
+    }
+    
+    // Create enemy ants
+    for (let i = 0; i < CONFIG.enemyAntCount; i++) {
+        createEnemyAnt();
     }
     
     // Initialize raycaster and mouse for clicking
@@ -239,6 +269,73 @@ function createWater() {
     scene.add(water);
 }
 
+function createTrees() {
+    for (let i = 0; i < CONFIG.treeCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 8 + Math.random() * 15;
+        const x = Math.cos(angle) * distance;
+        const z = Math.sin(angle) * distance;
+        
+        const terrainHeight = getTerrainHeight(x, z);
+        
+        // Only place trees above water
+        if (terrainHeight > CONFIG.waterLevel + 0.5) {
+            const tree = new THREE.Group();
+            
+            // Trunk
+            const trunkGeometry = new THREE.CylinderGeometry(0.3, 0.4, 2, 8);
+            const trunkMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+            const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+            trunk.position.y = 1;
+            trunk.castShadow = true;
+            trunk.receiveShadow = true;
+            tree.add(trunk);
+            
+            // Foliage
+            const foliageGeometry = new THREE.ConeGeometry(1.5, 3, 8);
+            const foliageMaterial = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+            const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+            foliage.position.y = 3;
+            foliage.castShadow = true;
+            foliage.receiveShadow = true;
+            tree.add(foliage);
+            
+            tree.position.set(x, terrainHeight, z);
+            scene.add(tree);
+            trees.push(tree);
+        }
+    }
+}
+
+function createRocks() {
+    for (let i = 0; i < CONFIG.rockCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 5 + Math.random() * 20;
+        const x = Math.cos(angle) * distance;
+        const z = Math.sin(angle) * distance;
+        
+        const terrainHeight = getTerrainHeight(x, z);
+        
+        // Only place rocks above water
+        if (terrainHeight > CONFIG.waterLevel + 0.2) {
+            const size = 0.5 + Math.random() * 1.0;
+            const rockGeometry = new THREE.DodecahedronGeometry(size, 0);
+            const rockMaterial = new THREE.MeshLambertMaterial({ color: 0x808080 });
+            const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+            rock.position.set(x, terrainHeight + size * 0.5, z);
+            rock.rotation.set(
+                Math.random() * Math.PI,
+                Math.random() * Math.PI,
+                Math.random() * Math.PI
+            );
+            rock.castShadow = true;
+            rock.receiveShadow = true;
+            scene.add(rock);
+            rocks.push(rock);
+        }
+    }
+}
+
 function createNest() {
     const nestHeight = getTerrainHeight(CONFIG.nestPosition.x, CONFIG.nestPosition.z);
     
@@ -255,6 +352,26 @@ function createNest() {
     const markerMaterial = new THREE.MeshLambertMaterial({ color: 0xFF6B6B });
     const marker = new THREE.Mesh(markerGeometry, markerMaterial);
     marker.position.set(CONFIG.nestPosition.x, nestHeight + 1, CONFIG.nestPosition.z);
+    marker.castShadow = true;
+    scene.add(marker);
+}
+
+function createEnemyNest() {
+    const nestHeight = getTerrainHeight(CONFIG.enemyNestPosition.x, CONFIG.enemyNestPosition.z);
+    
+    const nestGeometry = new THREE.CylinderGeometry(CONFIG.nestSize, CONFIG.nestSize, 0.5, 32);
+    const nestMaterial = new THREE.MeshLambertMaterial({ color: 0x2C1810 });
+    enemyNest = new THREE.Mesh(nestGeometry, nestMaterial);
+    enemyNest.position.set(CONFIG.enemyNestPosition.x, nestHeight + 0.25, CONFIG.enemyNestPosition.z);
+    enemyNest.receiveShadow = true;
+    enemyNest.castShadow = true;
+    scene.add(enemyNest);
+
+    // Enemy nest marker (purple)
+    const markerGeometry = new THREE.ConeGeometry(0.5, 1, 8);
+    const markerMaterial = new THREE.MeshLambertMaterial({ color: 0x8B008B });
+    const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+    marker.position.set(CONFIG.enemyNestPosition.x, nestHeight + 1, CONFIG.enemyNestPosition.z);
     marker.castShadow = true;
     scene.add(marker);
 }
@@ -356,9 +473,10 @@ function createAnt(antClass = 'worker') {
         selectionRing: selectionRing,
         position: antGroup.position.clone(),
         velocity: new THREE.Vector3(),
-        state: 'exploring', // exploring, returning, gathering, commanded
+        state: 'exploring', // exploring, returning, gathering, commanded, fighting
         targetFood: null,
         commandTarget: null,
+        targetEnemy: null,
         hasFood: false,
         direction: Math.random() * Math.PI * 2,
         wanderTimer: 0,
@@ -369,21 +487,95 @@ function createAnt(antClass = 'worker') {
         xp: 0,
         speed: classConfig.speed,
         carryCapacity: classConfig.carryCapacity,
-        damage: classConfig.damage || 0
+        damage: classConfig.damage || 0,
+        health: 100,
+        maxHealth: 100,
+        isEnemy: false
     };
 
     ants.push(ant);
     return ant;
 }
 
+function createEnemyAnt() {
+    const antGroup = new THREE.Group();
+    
+    // Enemy ants are purple/dark colored
+    const enemyColor = 0x8B008B;
+
+    // Ant body
+    const bodyGeometry = new THREE.SphereGeometry(CONFIG.antSize, 8, 8);
+    bodyGeometry.scale(1.2, 0.8, 1);
+    const bodyMaterial = new THREE.MeshLambertMaterial({ color: enemyColor });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.castShadow = true;
+    antGroup.add(body);
+
+    // Ant head
+    const headGeometry = new THREE.SphereGeometry(CONFIG.antSize * 0.6, 8, 8);
+    const head = new THREE.Mesh(headGeometry, bodyMaterial);
+    head.position.set(CONFIG.antSize * 1.2, 0, 0);
+    head.castShadow = true;
+    antGroup.add(head);
+
+    // Position near enemy nest
+    const spawnAngle = Math.random() * Math.PI * 2;
+    const spawnDistance = CONFIG.nestSize + 0.5;
+    const spawnX = CONFIG.enemyNestPosition.x + Math.cos(spawnAngle) * spawnDistance;
+    const spawnZ = CONFIG.enemyNestPosition.z + Math.sin(spawnAngle) * spawnDistance;
+    const terrainHeight = getTerrainHeight(spawnX, spawnZ);
+    
+    antGroup.position.set(
+        spawnX,
+        terrainHeight + CONFIG.antSize,
+        spawnZ
+    );
+
+    scene.add(antGroup);
+
+    const ant = {
+        mesh: antGroup,
+        body: body,
+        position: antGroup.position.clone(),
+        velocity: new THREE.Vector3(),
+        state: 'exploring',
+        targetFood: null,
+        targetEnemy: null,
+        hasFood: false,
+        direction: Math.random() * Math.PI * 2,
+        wanderTimer: 0,
+        pheromoneTimer: 0,
+        // Enemy ant stats
+        class: 'worker',
+        level: 1,
+        xp: 0,
+        speed: 0.9,
+        carryCapacity: 1.0,
+        damage: 5,
+        health: 80,
+        maxHealth: 80,
+        isEnemy: true
+    };
+
+    enemyAnts.push(ant);
+    return ant;
+}
+
 function updateAnts(deltaTime) {
     ants.forEach(ant => {
+        // Check for nearby enemies (autonomous behavior)
+        if (ant.class === 'soldier' && Math.random() < 0.1) {
+            checkForEnemies(ant);
+        }
+        
         if (ant.state === 'exploring') {
             exploreForFood(ant, deltaTime);
         } else if (ant.state === 'returning') {
             returnToNest(ant, deltaTime);
         } else if (ant.state === 'commanded') {
             executeCommand(ant, deltaTime);
+        } else if (ant.state === 'fighting') {
+            fightEnemy(ant, deltaTime);
         }
 
         // Update Y position to follow terrain
@@ -409,7 +601,7 @@ function updateAnts(deltaTime) {
     });
 }
 
-function exploreForFood(ant, deltaTime) {
+function exploreForFood(ant, deltaTime, isEnemy = false) {
     // Check if near food
     for (let food of foodSources) {
         if (food.amount > 0) {
@@ -587,6 +779,8 @@ function updatePheromones() {
 function updateStats() {
     document.getElementById('antCount').textContent = ants.length;
     document.getElementById('foodCollected').textContent = foodCollected;
+    document.getElementById('enemyCount').textContent = enemyAnts.length;
+    document.getElementById('enemyFood').textContent = enemyFoodCollected;
     document.getElementById('pheromoneCount').textContent = pheromones.length;
     document.getElementById('colonyLevel').textContent = colonyLevel;
     document.getElementById('colonyXP').textContent = Math.floor(colonyXP);
@@ -603,6 +797,12 @@ function resetSimulation() {
         scene.remove(ant.mesh);
     });
     ants = [];
+    
+    // Remove all enemy ants
+    enemyAnts.forEach(ant => {
+        scene.remove(ant.mesh);
+    });
+    enemyAnts = [];
     
     // Deselect any selected ant
     selectedAnt = null;
@@ -624,6 +824,7 @@ function resetSimulation() {
 
     // Reset stats
     foodCollected = 0;
+    enemyFoodCollected = 0;
     colonyXP = 0;
     colonyLevel = 1;
 
@@ -638,6 +839,11 @@ function resetSimulation() {
             createAnt('soldier');
         }
     }
+    
+    // Create enemy ants
+    for (let i = 0; i < CONFIG.enemyAntCount; i++) {
+        createEnemyAnt();
+    }
 
     isPaused = false;
     document.getElementById('pauseBtn').textContent = 'Pause';
@@ -650,6 +856,7 @@ function animate() {
 
     if (!isPaused) {
         updateAnts(deltaTime);
+        updateEnemyAnts(deltaTime);
         updatePheromones();
         updateStats();
     }
@@ -767,6 +974,189 @@ function executeCommand(ant, deltaTime) {
     } else {
         // Try to go around water
         ant.direction += Math.PI / 4;
+    }
+}
+
+// Enemy AI and Combat Functions
+function updateEnemyAnts(deltaTime) {
+    enemyAnts.forEach(ant => {
+        // Check for nearby player ants
+        if (Math.random() < 0.1) {
+            checkForPlayerAnts(ant);
+        }
+        
+        if (ant.state === 'exploring') {
+            exploreForFood(ant, deltaTime, true);
+        } else if (ant.state === 'returning') {
+            returnToEnemyNest(ant, deltaTime);
+        } else if (ant.state === 'fighting') {
+            fightEnemy(ant, deltaTime);
+        }
+
+        // Update Y position to follow terrain
+        const terrainHeight = getTerrainHeight(ant.position.x, ant.position.z);
+        ant.position.y = terrainHeight + CONFIG.antSize;
+
+        // Update mesh position
+        ant.mesh.position.copy(ant.position);
+        
+        // Rotate ant to face direction of movement
+        if (ant.velocity.length() > 0.001) {
+            ant.mesh.rotation.y = Math.atan2(ant.velocity.x, ant.velocity.z);
+        }
+    });
+}
+
+function checkForEnemies(ant) {
+    let closestEnemy = null;
+    let closestDist = Infinity;
+    
+    enemyAnts.forEach(enemy => {
+        const dx = enemy.position.x - ant.position.x;
+        const dz = enemy.position.z - ant.position.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        
+        if (dist < closestDist && dist < RPG_CONFIG.autonomy.defendNestRange) {
+            closestDist = dist;
+            closestEnemy = enemy;
+        }
+    });
+    
+    if (closestEnemy && Math.random() < RPG_CONFIG.autonomy.attackEnemyChance) {
+        ant.state = 'fighting';
+        ant.targetEnemy = closestEnemy;
+    }
+}
+
+function checkForPlayerAnts(ant) {
+    let closestPlayer = null;
+    let closestDist = Infinity;
+    
+    ants.forEach(player => {
+        const dx = player.position.x - ant.position.x;
+        const dz = player.position.z - ant.position.z;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        
+        if (dist < closestDist && dist < 8) {
+            closestDist = dist;
+            closestPlayer = player;
+        }
+    });
+    
+    if (closestPlayer && Math.random() < 0.5) {
+        ant.state = 'fighting';
+        ant.targetEnemy = closestPlayer;
+    }
+}
+
+function fightEnemy(ant, deltaTime) {
+    if (!ant.targetEnemy || ant.targetEnemy.health <= 0) {
+        ant.state = 'exploring';
+        ant.targetEnemy = null;
+        return;
+    }
+    
+    const dx = ant.targetEnemy.position.x - ant.position.x;
+    const dz = ant.targetEnemy.position.z - ant.position.z;
+    const distance = Math.sqrt(dx * dx + dz * dz);
+    
+    if (distance < CONFIG.combatRange) {
+        // In combat range - attack!
+        if (Math.random() < 0.1) {  // Attack chance per frame
+            ant.targetEnemy.health -= ant.damage;
+            
+            // Visual feedback - flash red
+            ant.targetEnemy.body.material.emissive.setHex(0xFF0000);
+            setTimeout(() => {
+                if (ant.targetEnemy.body) {
+                    ant.targetEnemy.body.material.emissive.setHex(0x000000);
+                }
+            }, 100);
+            
+            // Check if enemy defeated
+            if (ant.targetEnemy.health <= 0) {
+                handleAntDeath(ant.targetEnemy);
+                ant.state = 'exploring';
+                ant.targetEnemy = null;
+                // Gain XP for defeating enemy
+                if (!ant.isEnemy) {
+                    gainXP(ant, 50);
+                }
+            }
+        }
+    } else {
+        // Move towards enemy
+        ant.direction = Math.atan2(dz, dx);
+        ant.velocity.set(
+            Math.cos(ant.direction) * CONFIG.antSpeed * ant.speed,
+            0,
+            Math.sin(ant.direction) * CONFIG.antSpeed * ant.speed
+        );
+        
+        const newX = ant.position.x + ant.velocity.x;
+        const newZ = ant.position.z + ant.velocity.z;
+        const newTerrainHeight = getTerrainHeight(newX, newZ);
+        
+        if (newTerrainHeight > CONFIG.waterLevel) {
+            ant.position.add(ant.velocity);
+        } else {
+            ant.state = 'exploring';
+            ant.targetEnemy = null;
+        }
+    }
+}
+
+function handleAntDeath(ant) {
+    scene.remove(ant.mesh);
+    
+    if (ant.isEnemy) {
+        const index = enemyAnts.indexOf(ant);
+        if (index > -1) {
+            enemyAnts.splice(index, 1);
+        }
+    } else {
+        const index = ants.indexOf(ant);
+        if (index > -1) {
+            ants.splice(index, 1);
+        }
+        if (selectedAnt === ant) {
+            deselectAnt();
+        }
+    }
+}
+
+function returnToEnemyNest(ant, deltaTime) {
+    const dx = CONFIG.enemyNestPosition.x - ant.position.x;
+    const dz = CONFIG.enemyNestPosition.z - ant.position.z;
+    const distance = Math.sqrt(dx * dx + dz * dz);
+
+    if (distance < CONFIG.nestSize) {
+        // Reached nest!
+        ant.hasFood = false;
+        ant.state = 'exploring';
+        ant.targetFood = null;
+        enemyFoodCollected++;
+        return;
+    }
+
+    // Move towards nest
+    ant.direction = Math.atan2(dz, dx);
+    ant.velocity.set(
+        Math.cos(ant.direction) * CONFIG.antSpeed * ant.speed,
+        0,
+        Math.sin(ant.direction) * CONFIG.antSpeed * ant.speed
+    );
+    
+    const newX = ant.position.x + ant.velocity.x;
+    const newZ = ant.position.z + ant.velocity.z;
+    const newTerrainHeight = getTerrainHeight(newX, newZ);
+    
+    if (newTerrainHeight > CONFIG.waterLevel) {
+        ant.position.add(ant.velocity);
+    } else {
+        const perpendicularAngle = ant.direction + Math.PI / 2;
+        const avoidanceOffset = Math.random() < 0.5 ? 1 : -1;
+        ant.direction = Math.atan2(dz, dx) + perpendicularAngle * avoidanceOffset * 0.3;
     }
 }
 

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ant Colony RPG</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+            background: #000;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 300px;
+            z-index: 100;
+        }
+        #info h1 {
+            margin: 0 0 10px 0;
+            font-size: 20px;
+        }
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 100;
+        }
+        button {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button.secondary {
+            background: #008CBA;
+        }
+        button.secondary:hover {
+            background: #007399;
+        }
+        button.worker {
+            background: #333;
+        }
+        button.scout {
+            background: #4A90E2;
+        }
+        button.soldier {
+            background: #FF0000;
+        }
+        #stats {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 100;
+            min-width: 200px;
+        }
+        #stats div {
+            margin: 5px 0;
+        }
+        #antInfo {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 100;
+            display: none;
+            min-width: 200px;
+        }
+        #antInfo h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+        #antInfo p {
+            margin: 5px 0;
+        }
+        .class-legend {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+        }
+        .class-legend div {
+            display: flex;
+            align-items: center;
+            margin: 3px 0;
+        }
+        .class-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h1>🐜 Ant Colony RPG</h1>
+        <p><strong>Controls:</strong></p>
+        <ul style="margin: 5px 0; padding-left: 20px;">
+            <li>Click ant to select</li>
+            <li>Click ground to command</li>
+            <li>Left Mouse: Rotate camera</li>
+            <li>Right Mouse: Pan camera</li>
+            <li>Scroll: Zoom in/out</li>
+        </ul>
+        <div class="class-legend">
+            <strong>Ant Classes:</strong>
+            <div><span class="class-color" style="background: #000"></span>Worker</div>
+            <div><span class="class-color" style="background: #4A90E2"></span>Scout (Fast)</div>
+            <div><span class="class-color" style="background: #FF0000"></span>Soldier (Strong)</div>
+        </div>
+    </div>
+    
+    <div id="stats">
+        <div><strong>Your Colony</strong></div>
+        <div>Level: <span id="colonyLevel">1</span></div>
+        <div>XP: <span id="colonyXP">0</span></div>
+        <div>Ants: <span id="antCount">0</span></div>
+        <div>Food: <span id="foodCollected">0</span></div>
+        <div style="margin-top: 10px;"><strong>Enemy Colony</strong></div>
+        <div>Ants: <span id="enemyCount">0</span></div>
+        <div>Food: <span id="enemyFood">0</span></div>
+        <div style="margin-top: 10px;">Pheromones: <span id="pheromoneCount">0</span></div>
+    </div>
+    
+    <div id="antInfo"></div>
+    
+    <div id="controls">
+        <button id="pauseBtn">Pause</button>
+        <button id="resetBtn" class="secondary">Reset</button>
+        <div style="margin-top: 10px;">
+            <strong>Recruit:</strong><br>
+            <button id="addWorkerBtn" class="worker">Worker</button>
+            <button id="addScoutBtn" class="scout">Scout</button>
+            <button id="addSoldierBtn" class="soldier">Soldier</button>
+        </div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "./node_modules/three/build/three.module.js",
+            "three/addons/": "./node_modules/three/examples/jsm/"
+        }
+    }
+    </script>
+    
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

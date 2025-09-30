@@ -1,0 +1,19 @@
+{
+  "name": "ant-colony-simulator",
+  "version": "0.1.0",
+  "description": "An interactive 3D ant colony simulator built with three.js",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8080 -o",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": ["three.js", "simulation", "ants", "3d", "colony"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "three": "^0.157.0"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

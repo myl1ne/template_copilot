@@ -13,7 +13,10 @@ const CONFIG = {
     pheromoneStrength: 1.0,
     worldSize: 50,
     groundColor: 0x8B7355,
-    skyColor: 0x87CEEB
+    skyColor: 0x87CEEB,
+    terrainHeight: 5,
+    waterLevel: 0.5,
+    terrainSegments: 100
 };
 
 // Game state
@@ -25,6 +28,7 @@ let nest;
 let isPaused = false;
 let foodCollected = 0;
 let clock = new THREE.Clock();
+let terrain, water;
 
 // Initialize the scene
 function init() {
@@ -73,13 +77,11 @@ function init() {
     directionalLight.shadow.camera.bottom = -30;
     scene.add(directionalLight);
 
-    // Ground
-    const groundGeometry = new THREE.PlaneGeometry(CONFIG.worldSize, CONFIG.worldSize);
-    const groundMaterial = new THREE.MeshLambertMaterial({ color: CONFIG.groundColor });
-    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true;
-    scene.add(ground);
+    // Ground - Create terrain with height variations
+    createTerrain();
+    
+    // Water
+    createWater();
 
     // Create nest
     createNest();
@@ -106,11 +108,97 @@ function init() {
     animate();
 }
 
+// Simple noise function for terrain generation
+function noise(x, z) {
+    // Simple pseudo-random noise based on position
+    const sin = Math.sin(x * 0.1 + z * 0.1) * 0.5;
+    const cos = Math.cos(x * 0.15 - z * 0.1) * 0.3;
+    const sin2 = Math.sin(x * 0.2 + z * 0.15) * 0.2;
+    return sin + cos + sin2;
+}
+
+function getTerrainHeight(x, z) {
+    if (!terrain) return 0;
+    
+    // Get height from terrain geometry
+    const halfSize = CONFIG.worldSize / 2;
+    const segmentSize = CONFIG.worldSize / CONFIG.terrainSegments;
+    
+    // Convert world coordinates to terrain grid coordinates
+    const gridX = Math.floor((x + halfSize) / segmentSize);
+    const gridZ = Math.floor((z + halfSize) / segmentSize);
+    
+    // Clamp to terrain bounds
+    const clampedX = Math.max(0, Math.min(CONFIG.terrainSegments - 1, gridX));
+    const clampedZ = Math.max(0, Math.min(CONFIG.terrainSegments - 1, gridZ));
+    
+    // Get vertex index
+    const index = clampedZ * (CONFIG.terrainSegments + 1) + clampedX;
+    
+    if (terrain.geometry.attributes.position.array[index * 3 + 1] !== undefined) {
+        return terrain.geometry.attributes.position.array[index * 3 + 1];
+    }
+    
+    return 0;
+}
+
+function createTerrain() {
+    const geometry = new THREE.PlaneGeometry(
+        CONFIG.worldSize, 
+        CONFIG.worldSize, 
+        CONFIG.terrainSegments, 
+        CONFIG.terrainSegments
+    );
+    
+    // Modify vertices to create hills and valleys
+    const vertices = geometry.attributes.position.array;
+    for (let i = 0; i < vertices.length; i += 3) {
+        const x = vertices[i];
+        const z = vertices[i + 1];
+        
+        // Create height variation using noise
+        const height = noise(x, z) * CONFIG.terrainHeight;
+        vertices[i + 2] = height;
+    }
+    
+    // Rotate to horizontal and update normals
+    geometry.rotateX(-Math.PI / 2);
+    geometry.computeVertexNormals();
+    
+    const material = new THREE.MeshLambertMaterial({ 
+        color: CONFIG.groundColor,
+        flatShading: false
+    });
+    
+    terrain = new THREE.Mesh(geometry, material);
+    terrain.receiveShadow = true;
+    terrain.castShadow = true;
+    scene.add(terrain);
+}
+
+function createWater() {
+    const waterGeometry = new THREE.PlaneGeometry(CONFIG.worldSize, CONFIG.worldSize);
+    const waterMaterial = new THREE.MeshLambertMaterial({ 
+        color: 0x4A90E2,
+        transparent: true,
+        opacity: 0.6,
+        side: THREE.DoubleSide
+    });
+    
+    water = new THREE.Mesh(waterGeometry, waterMaterial);
+    water.rotation.x = -Math.PI / 2;
+    water.position.y = CONFIG.waterLevel;
+    water.receiveShadow = true;
+    scene.add(water);
+}
+
 function createNest() {
+    const nestHeight = getTerrainHeight(CONFIG.nestPosition.x, CONFIG.nestPosition.z);
+    
     const nestGeometry = new THREE.CylinderGeometry(CONFIG.nestSize, CONFIG.nestSize, 0.5, 32);
     const nestMaterial = new THREE.MeshLambertMaterial({ color: 0x654321 });
     nest = new THREE.Mesh(nestGeometry, nestMaterial);
-    nest.position.set(CONFIG.nestPosition.x, 0.25, CONFIG.nestPosition.z);
+    nest.position.set(CONFIG.nestPosition.x, nestHeight + 0.25, CONFIG.nestPosition.z);
     nest.receiveShadow = true;
     nest.castShadow = true;
     scene.add(nest);
@@ -119,7 +207,7 @@ function createNest() {
     const markerGeometry = new THREE.ConeGeometry(0.5, 1, 8);
     const markerMaterial = new THREE.MeshLambertMaterial({ color: 0xFF6B6B });
     const marker = new THREE.Mesh(markerGeometry, markerMaterial);
-    marker.position.set(CONFIG.nestPosition.x, 1, CONFIG.nestPosition.z);
+    marker.position.set(CONFIG.nestPosition.x, nestHeight + 1, CONFIG.nestPosition.z);
     marker.castShadow = true;
     scene.add(marker);
 }
@@ -133,11 +221,13 @@ function createFoodSources() {
 
         const foodAmount = 20 + Math.floor(Math.random() * 30);
         const size = 0.5 + foodAmount / 50;
+        
+        const terrainHeight = getTerrainHeight(x, z);
 
         const foodGeometry = new THREE.SphereGeometry(size, 16, 16);
         const foodMaterial = new THREE.MeshLambertMaterial({ color: 0x4CAF50 });
         const food = new THREE.Mesh(foodGeometry, foodMaterial);
-        food.position.set(x, size, z);
+        food.position.set(x, terrainHeight + size, z);
         food.castShadow = true;
         food.receiveShadow = true;
         scene.add(food);
@@ -172,10 +262,14 @@ function createAnt() {
     // Position near nest
     const spawnAngle = Math.random() * Math.PI * 2;
     const spawnDistance = CONFIG.nestSize + 0.5;
+    const spawnX = CONFIG.nestPosition.x + Math.cos(spawnAngle) * spawnDistance;
+    const spawnZ = CONFIG.nestPosition.z + Math.sin(spawnAngle) * spawnDistance;
+    const terrainHeight = getTerrainHeight(spawnX, spawnZ);
+    
     antGroup.position.set(
-        CONFIG.nestPosition.x + Math.cos(spawnAngle) * spawnDistance,
-        CONFIG.antSize,
-        CONFIG.nestPosition.z + Math.sin(spawnAngle) * spawnDistance
+        spawnX,
+        terrainHeight + CONFIG.antSize,
+        spawnZ
     );
 
     scene.add(antGroup);
@@ -203,6 +297,10 @@ function updateAnts(deltaTime) {
         } else if (ant.state === 'returning') {
             returnToNest(ant, deltaTime);
         }
+
+        // Update Y position to follow terrain
+        const terrainHeight = getTerrainHeight(ant.position.x, ant.position.z);
+        ant.position.y = terrainHeight + CONFIG.antSize;
 
         // Update mesh position
         ant.mesh.position.copy(ant.position);
@@ -332,7 +430,11 @@ function dropPheromone(position, type) {
     });
     const pheromoneMesh = new THREE.Mesh(pheromoneGeometry, pheromoneMaterial);
     pheromoneMesh.position.copy(position);
-    pheromoneMesh.position.y = 0.05;
+    
+    // Place pheromone on terrain
+    const terrainHeight = getTerrainHeight(position.x, position.z);
+    pheromoneMesh.position.y = terrainHeight + 0.05;
+    
     scene.add(pheromoneMesh);
 
     pheromones.push({

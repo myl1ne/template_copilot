@@ -14,8 +14,8 @@ const CONFIG = {
     worldSize: 50,
     groundColor: 0x8B7355,
     skyColor: 0x87CEEB,
-    terrainHeight: 5,
-    waterLevel: 0.5,
+    terrainHeight: 4,
+    waterLevel: -0.5,
     terrainSegments: 100
 };
 
@@ -110,11 +110,39 @@ function init() {
 
 // Simple noise function for terrain generation
 function noise(x, z) {
-    // Simple pseudo-random noise based on position
-    const sin = Math.sin(x * 0.1 + z * 0.1) * 0.5;
-    const cos = Math.cos(x * 0.15 - z * 0.1) * 0.3;
-    const sin2 = Math.sin(x * 0.2 + z * 0.15) * 0.2;
-    return sin + cos + sin2;
+    // Create multiple octaves for more interesting terrain
+    const frequency1 = 0.05;
+    const frequency2 = 0.1;
+    const frequency3 = 0.2;
+    
+    // Base terrain with large hills
+    const baseHeight = Math.sin(x * frequency1) * Math.cos(z * frequency1) * 1.0;
+    
+    // Medium-scale variation for rolling hills
+    const mediumVariation = Math.sin(x * frequency2 + z * frequency2) * 0.4;
+    
+    // Small-scale detail
+    const detail = Math.sin(x * frequency3) * Math.cos(z * frequency3) * 0.2;
+    
+    // Combine all layers
+    let height = baseHeight + mediumVariation + detail;
+    
+    // Create river channels - create low areas along certain axes
+    const riverX = Math.abs(Math.sin(x * 0.03)) - 0.7; // River running parallel to Z
+    const riverZ = Math.abs(Math.sin(z * 0.025 + 10)) - 0.7; // River running parallel to X
+    
+    // Apply river channels (make them cut deep into terrain)
+    const riverDepth = Math.min(riverX, riverZ);
+    if (riverDepth > 0) {
+        height -= riverDepth * 2.5; // Rivers cut into terrain
+    }
+    
+    // Create plains - flatten areas where height is near zero
+    if (Math.abs(height) < 0.3) {
+        height *= 0.4; // Flatten near-zero areas into plains
+    }
+    
+    return height;
 }
 
 function getTerrainHeight(x, z) {

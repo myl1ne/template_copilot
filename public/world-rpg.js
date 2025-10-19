@@ -1,7 +1,9 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
-import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { FBXCharacterLoader } from './modules/FBXCharacterLoader.js';
+import { NPCFactory } from './modules/NPCFactory.js';
+import { EnvironmentFactory } from './modules/EnvironmentFactory.js';
+import { CameraController } from './modules/CameraController.js';
+import { GoblinFactory } from './modules/GoblinFactory.js';
 
 // Scene setup
 const scene = new THREE.Scene();
@@ -23,54 +25,6 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-// WoW-style Camera Controls
-let cameraDistance = 8;
-let cameraHeight = 3;
-let cameraAngleH = 0; // Horizontal rotation (around character)
-let cameraAngleV = 0.3; // Vertical angle (up/down)
-let isRightMouseDown = false;
-let lastMouseX = 0;
-let lastMouseY = 0;
-
-// Mouse controls for camera
-renderer.domElement.addEventListener('mousedown', (e) => {
-    if (e.button === 2) { // Right mouse button
-        isRightMouseDown = true;
-        lastMouseX = e.clientX;
-        lastMouseY = e.clientY;
-        renderer.domElement.style.cursor = 'grabbing';
-    }
-});
-
-renderer.domElement.addEventListener('mouseup', (e) => {
-    if (e.button === 2) {
-        isRightMouseDown = false;
-        renderer.domElement.style.cursor = 'default';
-    }
-});
-
-renderer.domElement.addEventListener('mousemove', (e) => {
-    if (isRightMouseDown) {
-        const deltaX = e.clientX - lastMouseX;
-        const deltaY = e.clientY - lastMouseY;
-        
-        cameraAngleH -= deltaX * 0.005;
-        cameraAngleV = Math.max(-0.5, Math.min(1.4, cameraAngleV + deltaY * 0.005));
-        
-        lastMouseX = e.clientX;
-        lastMouseY = e.clientY;
-    }
-});
-
-// Mouse wheel for zoom
-renderer.domElement.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    cameraDistance = Math.max(3, Math.min(20, cameraDistance + e.deltaY * 0.01));
-});
-
-// Prevent context menu
-renderer.domElement.addEventListener('contextmenu', (e) => e.preventDefault());
 
 // Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);

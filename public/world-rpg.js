@@ -4,6 +4,8 @@ import { NPCFactory } from './modules/NPCFactory.js';
 import { EnvironmentFactory } from './modules/EnvironmentFactory.js';
 import { CameraController } from './modules/CameraController.js';
 import { GoblinFactory } from './modules/GoblinFactory.js';
+import { MonsterFactory } from './modules/MonsterFactory.js';
+import { QuestFactory } from './modules/QuestFactory.js';
 
 // ===== SCENE SETUP =====
 const scene = new THREE.Scene();
@@ -218,35 +220,8 @@ playerInventory.addItem(new Item('health_pot', 'Health Potion', '🧪', 'consuma
 playerInventory.addItem(new Item('bread', 'Bread', '🍞', 'consumable', 5, { healing: 10 }));
 
 // ===== QUEST SYSTEM =====
-const quests = {
-    'village_rescue': {
-        id: 'village_rescue',
-        name: 'The Village Rescue',
-        description: 'A goblin camp has been raiding the village. Defeat their leader and return peace to the land.',
-        objectives: [
-            { id: 'kill_goblins', description: 'Defeat 3 goblin warriors', current: 0, target: 3, completed: false },
-            { id: 'kill_boss', description: 'Defeat the Goblin Chief', current: 0, target: 1, completed: false },
-            { id: 'return_to_elder', description: 'Return to the Village Elder', current: 0, target: 1, completed: false }
-        ],
-        rewards: { xp: 500, gold: 100 },
-        active: true,
-        completed: false
-    },
-    'merchant_delivery': {
-        id: 'merchant_delivery',
-        name: 'The Merchant\'s Request',
-        description: 'The Traveling Merchant needs someone to deliver a special package to a hermit living deep in the forest.',
-        objectives: [
-            { id: 'get_package', description: 'Receive the package from the Merchant', current: 0, target: 1, completed: false },
-            { id: 'find_hermit', description: 'Find the Hermit in the forest', current: 0, target: 1, completed: false },
-            { id: 'deliver_package', description: 'Deliver the package', current: 0, target: 1, completed: false }
-        ],
-        rewards: { xp: 300, gold: 150 },
-        active: false,
-        completed: false,
-        available: false
-    }
-};
+const questFactory = new QuestFactory();
+const quests = questFactory.createStandardQuests();
 
 let activeQuest = quests['village_rescue'];
 
@@ -297,10 +272,12 @@ const npcFactory = new NPCFactory(characterLoader);
 const environmentFactory = new EnvironmentFactory(scene);
 const cameraController = new CameraController(camera, renderer, characterGroup);
 const goblinFactory = new GoblinFactory(scene, characterLoader.loadedModels);
+const monsterFactory = new MonsterFactory(scene);
 
 const npcs = [];
 const environmentObjects = [];
 const goblins = [];
+const monsters = [];
 
 // ===== UI FUNCTIONS =====
 function updateUI() {

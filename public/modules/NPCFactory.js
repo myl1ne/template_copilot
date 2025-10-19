@@ -68,14 +68,26 @@ export class NPCFactory {
         
         // Try to use FBX model if available
         if (npc.modelName && this.characterLoader.hasCharacter(npc.modelName)) {
+            // Clone the loaded model — the loader already applies the proper scale
             const charModel = SkeletonUtils.clone(this.characterLoader.getModel(npc.modelName));
-            charModel.scale.multiplyScalar(0.012); // Fine-tune scale
-            charModel.rotation.y = Math.PI; // Face forward
-            
+            // Make characters slightly bigger than the normalized size (hardcoded factor)
+            charModel.scale.multiplyScalar(1.5); // increase size by 1.5x
+            // Ensure the clone faces forward
+            charModel.rotation.y = Math.PI;
+
+            // Configure meshes: enable shadows and disable frustum culling for skinned meshes
+            // (skinned meshes can sometimes be incorrectly culled)
+            // Lift the cloned model slightly so it doesn't intersect the ground
+            // (some FBX origins place geometry slightly below the world origin)
+            if (charModel.position) charModel.position.y += 0.05;
+
             charModel.traverse((child) => {
                 if (child.isMesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
+                    // Some FBX/skinned meshes have bounding/skeleton offsets that make
+                    // frustum culling remove them unexpectedly. Disable culling to be safe.
+                    child.frustumCulled = false;
                 }
             });
             

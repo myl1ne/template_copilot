@@ -46,12 +46,12 @@ export class FBXCharacterLoader {
             const size = bbox.getSize(new THREE.Vector3());
             const height = size.y;
             
-            // Calculate scale to reach target height
-            const scale = targetHeight / height;
-            model.scale.set(scale, scale, scale);
-            
-            // Apply additional fine-tuning scale (0.01x)
-            model.scale.multiplyScalar(0.01);
+            // Calculate scale to reach target height.
+            // Using targetHeight / measuredHeight works for both meters and centimeters
+            // because measuredHeight is expressed in the same units as the raw geometry.
+            // (Previously a blanket *100 made many models far too large.)
+            const finalScale = height > 0 ? (targetHeight / height) : 1.0;
+            model.scale.set(finalScale, finalScale, finalScale);
             
             // Store the model
             this.loadedModels[characterName] = model;
@@ -74,7 +74,7 @@ export class FBXCharacterLoader {
                 }
             }
 
-            console.log(`✓ ${characterName} loaded (height: ${height.toFixed(2)} → ${targetHeight} units, scale: ${scale.toFixed(3)})`);
+            console.log(`✓ ${characterName} loaded (measured height: ${height.toFixed(2)}, target: ${targetHeight} units, applied scale: ${finalScale.toFixed(6)})`);
             return true;
         } catch (error) {
             console.error(`Error loading ${characterName}:`, error);

@@ -1,0 +1,19 @@
+{
+  "name": "template_copilot",
+  "version": "1.0.0",
+  "description": "> **Note**: This is a meta-template repository. Replace `[Project Name]` and all placeholder content with your actual project information.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "demo": "node src/examples/demo.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "three": "^0.180.0"
+  }
+}

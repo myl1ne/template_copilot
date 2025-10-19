@@ -1,58 +1,57 @@
-# [Project Name] - Project Overview
+# RPG Engine - Project Overview
 
-> **Note**: This is a template file. Replace all placeholder content with actual project information.
+## What is RPG Engine?
 
-## What is [Project Name]?
-
-[Project Name] is a [brief description of what the project does in one sentence].
+RPG Engine is a flexible JavaScript-based role-playing game engine designed to be the foundation for an MMORPG with generative AI at its core. Built with Three.js compatibility in mind, it provides comprehensive data structures for characters, skills, and quests.
 
 ## Target Audience
 
 This project is designed for:
-- [Primary user group]
-- [Secondary user group]
-- [Any other relevant stakeholders]
+- Game developers building RPG or MMORPG games
+- Developers interested in AI-driven game content
+- JavaScript/Node.js developers exploring game development
+- Indie game developers looking for a solid RPG foundation
 
 ## Key Features
 
-- **[Feature 1]**: [Brief description of the feature and its benefit]
-- **[Feature 2]**: [Brief description of the feature and its benefit]
-- **[Feature 3]**: [Brief description of the feature and its benefit]
+- **Character System**: Comprehensive stats (HP, mana, armor, etc.) and attributes (STR, DEX, CON, INT, WIZ, CHA) with skill management
+- **Skill System**: Flexible skill framework with levels, requirements, mana costs, and various effect types
+- **Quest System**: Full-featured quest management with objectives, progress tracking, and rewards
 
 ## Quick Start
 
 ### Prerequisites
-- [List any required software, versions, or system requirements]
+- Node.js (v14 or higher)
+- npm (v6 or higher)
 
 ### Installation
 ```bash
-# Replace with actual installation commands
-npm install [project-name]
-# or
-pip install [project-name]
-# or
-git clone [repository-url]
+git clone https://github.com/myl1ne/template_copilot.git
+cd template_copilot
+npm install
 ```
 
 ### Basic Usage
 ```bash
-# Replace with actual usage examples
-[project-name] --help
+# Run the demo to see all features in action
+npm run demo
 ```
+
+For detailed usage examples, see [RPG_ENGINE.md](../RPG_ENGINE.md).
 
 ## Core Benefits
 
-1. **[Primary Benefit]**: [Explain how this solves a key problem]
-2. **[Secondary Benefit]**: [Explain additional value provided]
-3. **[Tertiary Benefit]**: [Explain any other significant advantages]
+1. **Comprehensive RPG Framework**: All the essential data structures needed for an RPG game (characters, skills, quests) ready to use out of the box
+2. **Three.js Ready**: Designed to integrate seamlessly with Three.js for 3D rendering and visualization
+3. **AI-First Design**: Built with generative AI integration in mind, perfect for creating dynamic, AI-driven game content and experiences
 
 ## Links & Resources
 
-- **Repository**: [GitHub repository URL]
-- **Documentation**: [Link to full documentation]
-- **Issues & Support**: [Link to issue tracker]
-- **License**: [License type and link]
+- **Repository**: https://github.com/myl1ne/template_copilot
+- **Documentation**: See RPG_ENGINE.md for detailed API documentation
+- **Issues & Support**: https://github.com/myl1ne/template_copilot/issues
+- **License**: ISC
 
 ---
 
-*Last updated: [Date] | Version: [Current version]*
+*Last updated: 2025-10-19 | Version: 1.0.0*

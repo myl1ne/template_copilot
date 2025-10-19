@@ -1623,6 +1623,17 @@ const merchantInventory = [
 // FBX Loader for character assets
 const fbxLoader = new FBXLoader();
 
+// Utility function to find animation by keyword search
+function findAnimationByKeyword(animations, keywords) {
+    for (const keyword of keywords) {
+        const found = animations.find(anim => 
+            anim.name.toLowerCase().includes(keyword.toLowerCase())
+        );
+        if (found) return found;
+    }
+    return null;
+}
+
 // Load Baelin character and animations
 async function loadBaelinCharacter() {
     // Single-file FBX for Baelin (uploaded as Baelin.fbx)
@@ -1634,18 +1645,37 @@ async function loadBaelinCharacter() {
         // yield to the event loop so the UI can update while parsing heavy FBX
         await new Promise(r => setTimeout(r, 0));
 
+        // Calculate bounding box to determine proper scale
+        const bbox = new THREE.Box3().setFromObject(model);
+        const size = bbox.getSize(new THREE.Vector3());
+        const height = size.y;
+        
+        // Target height of 2 units for NPCs
+        const targetHeight = 2.0;
+        const scale = targetHeight / height;
+        model.scale.set(scale, scale, scale);
+        
         loadedModels['baelin'] = model;
-        // If the FBX contains animations, store the first as 'baelin_idle'
+        
+        // Smart animation detection by keyword
         if (model.animations && model.animations.length > 0) {
-            loadedAnimations['baelin_idle'] = model.animations[0];
-            for (let i = 1; i < model.animations.length; i++) {
-                loadedAnimations['baelin_anim_' + i] = model.animations[i];
+            const idleAnim = findAnimationByKeyword(model.animations, ['idle', 'stand']);
+            const walkAnim = findAnimationByKeyword(model.animations, ['walk', 'walking']);
+            const talkAnim = findAnimationByKeyword(model.animations, ['talk', 'talking', 'speak']);
+            const runAnim = findAnimationByKeyword(model.animations, ['run', 'running']);
+            
+            if (idleAnim) loadedAnimations['baelin_idle'] = idleAnim;
+            if (walkAnim) loadedAnimations['baelin_walk'] = walkAnim;
+            if (talkAnim) loadedAnimations['baelin_talk'] = talkAnim;
+            if (runAnim) loadedAnimations['baelin_run'] = runAnim;
+            
+            // Fallback: if no idle found, use first animation
+            if (!idleAnim && model.animations.length > 0) {
+                loadedAnimations['baelin_idle'] = model.animations[0];
             }
         }
 
-        // No normalization: keep the FBX as-loaded so it displays at its authored transform.
-
-        console.log('✓ Baelin character and animations loaded (single-file)', filePath);
+        console.log('✓ Baelin character loaded (height:', height.toFixed(2), '→', targetHeight, 'units, scale:', scale.toFixed(3) + ')');
         return true;
     } catch (error) {
         console.error('Error loading Baelin character:', error);
@@ -1661,14 +1691,38 @@ async function loadBaradunCharacter() {
             fbxLoader.load(filePath, resolve, undefined, reject);
         });
         await new Promise(r => setTimeout(r, 0));
+        
+        // Calculate bounding box to determine proper scale
+        const bbox = new THREE.Box3().setFromObject(model);
+        const size = bbox.getSize(new THREE.Vector3());
+        const height = size.y;
+        
+        // Target height of 2 units for NPCs
+        const targetHeight = 2.0;
+        const scale = targetHeight / height;
+        model.scale.set(scale, scale, scale);
+        
         loadedModels['baradun'] = model;
+        
+        // Smart animation detection by keyword
         if (model.animations && model.animations.length > 0) {
-            loadedAnimations['baradun_idle'] = model.animations[0];
+            const idleAnim = findAnimationByKeyword(model.animations, ['idle', 'stand']);
+            const walkAnim = findAnimationByKeyword(model.animations, ['walk', 'walking']);
+            const talkAnim = findAnimationByKeyword(model.animations, ['talk', 'talking', 'speak']);
+            const runAnim = findAnimationByKeyword(model.animations, ['run', 'running']);
+            
+            if (idleAnim) loadedAnimations['baradun_idle'] = idleAnim;
+            if (walkAnim) loadedAnimations['baradun_walk'] = walkAnim;
+            if (talkAnim) loadedAnimations['baradun_talk'] = talkAnim;
+            if (runAnim) loadedAnimations['baradun_run'] = runAnim;
+            
+            // Fallback: if no idle found, use first animation
+            if (!idleAnim && model.animations.length > 0) {
+                loadedAnimations['baradun_idle'] = model.animations[0];
+            }
         }
 
-        // No normalization for Baradun: keep the FBX as-loaded so it displays at its authored transform.
-
-        console.log('✓ Baradun loaded and normalized', filePath);
+        console.log('✓ Baradun loaded (height:', height.toFixed(2), '→', targetHeight, 'units, scale:', scale.toFixed(3) + ')');
         return true;
     } catch (err) {
         console.error('Error loading Baradun:', err);

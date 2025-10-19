@@ -1275,7 +1275,8 @@ const quests = {
         description: 'A goblin camp has been raiding the village. Defeat their leader and return peace to the land.',
         objectives: [
             { id: 'kill_goblins', description: 'Defeat 3 goblin warriors', current: 0, target: 3, completed: false },
-            { id: 'kill_boss', description: 'Defeat the Goblin Chief', current: 0, target: 1, completed: false }
+            { id: 'kill_boss', description: 'Defeat the Goblin Chief', current: 0, target: 1, completed: false },
+            { id: 'return_to_elder', description: 'Return to the Village Elder', current: 0, target: 1, completed: false }
         ],
         rewards: { xp: 500, gold: 100 },
         active: true,
@@ -1628,14 +1629,29 @@ function showDialogue(npc) {
     if (npc.type === 'quest_giver') {
         // Village Elder - First Quest
         if (npc.id === 'elder') {
-            const questBtn = document.createElement('button');
-            questBtn.className = 'dialogue-btn';
-            questBtn.textContent = 'Tell me more about the goblins';
-            questBtn.onclick = () => {
-                document.getElementById('dialogue-text').textContent = 
-                    "The goblins have set up camp to the south. Defeat them and return to me for a reward!";
-            };
-            options.appendChild(questBtn);
+            // Check if player can complete the quest
+            if (activeQuest && activeQuest.id === 'village_rescue' && 
+                activeQuest.objectives[0].completed && activeQuest.objectives[1].completed && 
+                !activeQuest.objectives[2].completed) {
+                const completeBtn = document.createElement('button');
+                completeBtn.className = 'dialogue-btn';
+                completeBtn.textContent = '✓ I defeated the goblins!';
+                completeBtn.onclick = () => {
+                    updateQuestProgress('return_to_elder', 1);
+                    document.getElementById('dialogue-text').textContent = 
+                        "Excellent work, brave warrior! The village is safe once again. Please accept this reward for your heroic deeds!";
+                };
+                options.appendChild(completeBtn);
+            } else {
+                const questBtn = document.createElement('button');
+                questBtn.className = 'dialogue-btn';
+                questBtn.textContent = 'Tell me more about the goblins';
+                questBtn.onclick = () => {
+                    document.getElementById('dialogue-text').textContent = 
+                        "The goblins have set up camp to the south. Defeat them and return to me for a reward!";
+                };
+                options.appendChild(questBtn);
+            }
         }
         
         // Forest Hermit - Delivery quest target

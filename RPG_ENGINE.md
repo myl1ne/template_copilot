@@ -63,6 +63,28 @@ npm install
 
 ## Demos
 
+### Interactive Quest Demo with Automated Testing
+Experience a complete quest playthrough with visual testing:
+
+```bash
+# Start the dev server
+npm run dev
+
+# In another terminal, run the automated visual test
+npm test
+```
+
+The quest demo features:
+- Complete quest progression (travel, combat, boss fight, completion)
+- Real-time HP/Mana tracking during combat
+- Automated screenshot capture at key moments
+- Detailed quest log with timestamps
+- Auto-play mode for demonstrations
+
+Open http://localhost:3000/quest-demo.html to interact manually, or run `npm test` for automated testing with screenshots.
+
+See [tests/README.md](tests/README.md) for complete testing documentation.
+
 ### Interactive 3D Demo
 Experience the RPG Engine in action with our Three.js powered demo:
 

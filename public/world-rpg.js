@@ -298,6 +298,10 @@ function createChest(x, z) {
             if (!this.opened) {
                 this.opened = true;
                 lid.rotation.x = -Math.PI / 3;
+                // Actually add gold and item to inventory
+                playerInventory.addGold(100);
+                playerInventory.addItem(new Item('health_pot', 'Health Potion', '🧪', 'consumable', 50, { healing: 50 }));
+                updateInventoryUI();
                 return { message: 'You found 100 gold and a Health Potion!', type: 'success' };
             } else {
                 return { message: 'The chest is empty.', type: 'info' };
@@ -478,6 +482,14 @@ function createGoblin(x, z) {
                 this.timeSinceDeath = 0;
                 // Fade out the goblin
                 this.mesh.visible = false;
+                
+                // Update quest progress
+                if (this.isBoss) {
+                    updateQuestProgress('kill_boss', 1);
+                } else {
+                    updateQuestProgress('kill_goblins', 1);
+                }
+                
                 return { 
                     message: `Goblin defeated! Dealt ${damage} damage. +50 XP`, 
                     type: 'success' 
@@ -486,6 +498,121 @@ function createGoblin(x, z) {
             
             return { 
                 message: `Hit goblin for ${damage} damage! (${this.hp}/${this.maxHp} HP remaining)`, 
+                type: 'warning' 
+            };
+        }
+    };
+}
+
+// Helper function to create a goblin boss
+function createGoblinBoss(x, z) {
+    const goblin = new THREE.Group();
+    
+    // Larger body for boss
+    const bodyGeo = new THREE.CylinderGeometry(0.4, 0.3, 0.9, 8);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x2d5016, roughness: 0.8 }); // Darker green
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 0.6;
+    body.castShadow = true;
+    goblin.add(body);
+    
+    // Larger head
+    const headGeo = new THREE.SphereGeometry(0.35, 8, 8);
+    const headMat = new THREE.MeshStandardMaterial({ color: 0x3a6b1f }); // Darker green
+    const head = new THREE.Mesh(headGeo, headMat);
+    head.position.y = 1.3;
+    head.castShadow = true;
+    goblin.add(head);
+    
+    // Boss crown
+    const crownGeo = new THREE.CylinderGeometry(0.4, 0.3, 0.2, 6);
+    const crownMat = new THREE.MeshStandardMaterial({ color: 0xFFD700, metalness: 0.7 }); // Gold
+    const crown = new THREE.Mesh(crownGeo, crownMat);
+    crown.position.y = 1.6;
+    goblin.add(crown);
+    
+    // Ears
+    const earGeo = new THREE.ConeGeometry(0.15, 0.4, 4);
+    const earMat = new THREE.MeshStandardMaterial({ color: 0x3a6b1f });
+    const leftEar = new THREE.Mesh(earGeo, earMat);
+    leftEar.position.set(-0.3, 1.4, 0);
+    leftEar.rotation.z = -Math.PI / 4;
+    goblin.add(leftEar);
+    
+    const rightEar = new THREE.Mesh(earGeo, earMat);
+    rightEar.position.set(0.3, 1.4, 0);
+    rightEar.rotation.z = Math.PI / 4;
+    goblin.add(rightEar);
+    
+    // Bigger battle axe for boss
+    const handleGeo = new THREE.CylinderGeometry(0.08, 0.08, 1.2, 8);
+    const handleMat = new THREE.MeshStandardMaterial({ color: 0x4a2511 });
+    const handle = new THREE.Mesh(handleGeo, handleMat);
+    
+    const axeHeadGeo = new THREE.BoxGeometry(0.6, 0.4, 0.1);
+    const axeHeadMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.8 });
+    const axeHead = new THREE.Mesh(axeHeadGeo, axeHeadMat);
+    axeHead.position.y = 0.7;
+    
+    const axe = new THREE.Group();
+    axe.add(handle);
+    axe.add(axeHead);
+    axe.position.set(0.4, 0.6, 0);
+    axe.rotation.z = Math.PI / 4;
+    goblin.add(axe);
+    
+    goblin.position.set(x, 0, z);
+    scene.add(goblin);
+    
+    const spawnPosition = { x, z };
+    
+    return {
+        type: 'goblin boss',
+        position: { x, y: 0, z },
+        spawnPosition: spawnPosition,
+        mesh: goblin,
+        hp: 150,
+        maxHp: 150,
+        alive: true,
+        isBoss: true,
+        respawnTime: 60, // Boss takes longer to respawn
+        timeSinceDeath: 0,
+        interactable: true,
+        lastAttackTime: 0,
+        attackCooldown: 1.5,
+        interact: function() {
+            if (!this.alive) {
+                return { message: 'The Goblin Chief has been defeated!', type: 'info' };
+            }
+            
+            // Player attacks goblin boss
+            const currentTime = Date.now() / 1000;
+            if (currentTime - this.lastAttackTime < this.attackCooldown) {
+                return { message: 'Attack on cooldown!', type: 'warning' };
+            }
+            
+            this.lastAttackTime = currentTime;
+            const damage = Math.floor(15 + Math.random() * 10);
+            this.hp -= damage;
+            
+            if (this.hp <= 0) {
+                this.alive = false;
+                this.hp = 0;
+                this.timeSinceDeath = 0;
+                // Fade out the goblin
+                this.mesh.visible = false;
+                
+                // Update quest progress for boss
+                updateQuestProgress('kill_boss', 1);
+                
+                return { 
+                    message: `💀 GOBLIN CHIEF DEFEATED! Dealt ${damage} damage. +200 XP`, 
+                    type: 'success' 
+                };
+            }
+            
+            return { 
+                message: `⚔️ Hit Goblin Chief for ${damage} damage! (${this.hp}/${this.maxHp} HP remaining)`, 
                 type: 'warning' 
             };
         }
@@ -516,6 +643,11 @@ function createGoblinCamp() {
         goblins.push(goblin);
         environmentObjects.push(goblin);
     });
+    
+    // Add Goblin Chief (Boss) in the center
+    const goblinBoss = createGoblinBoss(goblinCampCenter.x, goblinCampCenter.z + 3);
+    goblins.push(goblinBoss);
+    environmentObjects.push(goblinBoss);
     
     // Camp signs
     const sign1 = createSign(goblinCampCenter.x + 8, goblinCampCenter.z, 'Beware: Goblin Territory!');
@@ -992,6 +1124,70 @@ const playerInventory = {
         return false;
     }
 };
+
+// Quest System
+const activeQuest = {
+    name: 'The Village Rescue',
+    description: 'A goblin camp has been raiding the village. Defeat their leader and return peace to the land.',
+    objectives: [
+        { id: 'kill_goblins', description: 'Defeat 3 goblin warriors', current: 0, target: 3, completed: false },
+        { id: 'kill_boss', description: 'Defeat the Goblin Chief', current: 0, target: 1, completed: false }
+    ],
+    rewards: { xp: 500, gold: 100 },
+    active: true,
+    completed: false
+};
+
+function updateQuestProgress(objectiveId, amount = 1) {
+    if (!activeQuest.active || activeQuest.completed) return;
+    
+    const objective = activeQuest.objectives.find(obj => obj.id === objectiveId);
+    if (objective && !objective.completed) {
+        objective.current = Math.min(objective.current + amount, objective.target);
+        if (objective.current >= objective.target) {
+            objective.completed = true;
+            addMessage(`✅ Quest Updated: ${objective.description}`, 'success');
+        } else {
+            addMessage(`Quest Progress: ${objective.description} (${objective.current}/${objective.target})`, 'info');
+        }
+        updateQuestUI();
+        
+        // Check if all objectives are complete
+        if (activeQuest.objectives.every(obj => obj.completed)) {
+            activeQuest.completed = true;
+            playerInventory.addGold(activeQuest.rewards.gold);
+            addMessage(`🎉 QUEST COMPLETE! Rewards: ${activeQuest.rewards.xp} XP, ${activeQuest.rewards.gold} Gold`, 'success');
+            updateQuestUI();
+        }
+    }
+}
+
+function updateQuestUI() {
+    const questPanel = document.getElementById('quest-panel');
+    if (!questPanel) return;
+    
+    if (activeQuest.active) {
+        questPanel.innerHTML = `
+            <div class="quest-header ${activeQuest.completed ? 'completed' : ''}">
+                <div class="quest-title">📜 ${activeQuest.name}</div>
+                <div class="quest-desc">${activeQuest.description}</div>
+            </div>
+            <div class="objectives">
+                ${activeQuest.objectives.map(obj => `
+                    <div class="objective ${obj.completed ? 'completed' : ''}">
+                        ${obj.completed ? '✅' : '⭕'} ${obj.description}
+                        <span class="progress">(${obj.current}/${obj.target})</span>
+                    </div>
+                `).join('')}
+            </div>
+            ${activeQuest.completed ? `
+                <div class="quest-rewards">
+                    🎁 Rewards: ${activeQuest.rewards.xp} XP, ${activeQuest.rewards.gold} Gold
+                </div>
+            ` : ''}
+        `;
+    }
+}
 
 // Sample items
 const sampleItems = [

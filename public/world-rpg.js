@@ -208,6 +208,63 @@ scene.add(characterGroup);
 // Environment objects
 const environmentObjects = [];
 
+// NPCs array needs to be available before functions like `animate` run
+// to avoid temporal-dead-zone ReferenceErrors when code iterates `npcs`.
+const npcs = [];
+
+// Models and animations storage (initialized early to avoid TDZ when
+// functions like createGoblin reference loadedModels before loader code runs)
+const loadedModels = {};
+const loadedAnimations = {};
+
+// Utility: pick the single largest mesh/skinnedMesh under an object and return its
+// world-space bounding box and size. This avoids helpers or non-mesh nodes inflating
+// the combined bounds.
+function getLargestMeshBBox(root) {
+    root.updateMatrixWorld(true);
+    let largest = null;
+    const tmpBox = new THREE.Box3();
+    root.traverse((child) => {
+        if (child.isMesh || child.isSkinnedMesh) {
+            const geom = child.geometry;
+            if (!geom) return;
+            if (!geom.boundingBox) geom.computeBoundingBox();
+            tmpBox.copy(geom.boundingBox).applyMatrix4(child.matrixWorld);
+            const size = new THREE.Vector3();
+            tmpBox.getSize(size);
+            const vol = size.x * size.y * size.z;
+            if (!largest || vol > largest.vol) {
+                largest = { box: tmpBox.clone(), size: size.clone(), mesh: child, vol };
+            }
+        }
+    });
+    if (largest) return { bbox: largest.box, size: largest.size, mesh: largest.mesh };
+    // fallback to whole-object box
+    const fallback = new THREE.Box3().setFromObject(root);
+    const fsize = new THREE.Vector3();
+    fallback.getSize(fsize);
+    return { bbox: fallback, size: fsize, mesh: null };
+}
+
+// Find the child mesh with the largest geometry bounding box (ignores world transforms).
+function getLargestGeometryMesh(root) {
+    let best = null;
+    root.traverse((child) => {
+        if (child.isMesh || child.isSkinnedMesh) {
+            const geom = child.geometry;
+            if (!geom) return;
+            if (!geom.boundingBox) geom.computeBoundingBox();
+            const size = new THREE.Vector3();
+            geom.boundingBox.getSize(size);
+            const vol = size.x * size.y * size.z;
+            if (!best || vol > best.vol) {
+                best = { mesh: child, geomBox: geom.boundingBox.clone(), size: size.clone(), vol };
+            }
+        }
+    });
+    return best; // may be null
+}
+
 // Helper function to create a tree
 function createTree(x, z) {
     const tree = new THREE.Group();
@@ -551,7 +608,7 @@ function createGoblin(x, z) {
     goblin.add(head);
     
     // Add mask if available
-    const maskTypes = ['fox', 'wolf', 'crocodile', 'colorful'];
+        const maskTypes = ['fox', 'wolf', 'crocodile', 'colorful', 'baelin'];
     const randomMask = maskTypes[Math.floor(Math.random() * maskTypes.length)];
     if (loadedModels['mask_' + randomMask]) {
         const mask = loadedModels['mask_' + randomMask].clone();
@@ -653,7 +710,7 @@ function createGoblinBoss(x, z) {
     const goblin = new THREE.Group();
     
     // Larger body for boss
-    const bodyGeo = new THREE.CylinderGeometry(0.4, 0.3, 0.9, 8);
+        const bodyGeo = new THREE.CylinderGeometry(0.4, 0.3, 1.2, 8);
     const bodyMat = new THREE.MeshStandardMaterial({ color: 0x2d5016, roughness: 0.8 }); // Darker green
     const body = new THREE.Mesh(bodyGeo, bodyMat);
     body.position.y = 0.6;
@@ -1161,7 +1218,7 @@ function animate() {
     // Update animation
     updateAnimation(delta);
     
-    // Update NPC animations (Greg)
+    // Update NPC animations
     npcs.forEach(npc => {
         if (npc.mixer) {
             npc.mixer.update(delta);
@@ -1511,8 +1568,7 @@ class NPCCharacter {
     }
 }
 
-// Create NPCs
-const npcs = [];
+// Create NPCs (array `npcs` was initialized earlier)
 
 // Quest Giver NPC
 const questGiver = new NPCCharacter(
@@ -1566,41 +1622,56 @@ const merchantInventory = [
 
 // FBX Loader for character assets
 const fbxLoader = new FBXLoader();
-const loadedModels = {};
-const loadedAnimations = {};
 
-// Load Greg character and animations
-async function loadGregCharacter() {
-    const basePath = '/assets/characters/Greg/';
-    const animations = [
-        'Animation_Idle_4_withSkin.fbx',
-        'Animation_Walking_withSkin.fbx',
-        'Animation_Running_withSkin.fbx',
-        'Animation_Talk_with_Left_Hand_Raised_withSkin.fbx'
-    ];
-    
+// Load Baelin character and animations
+async function loadBaelinCharacter() {
+    // Single-file FBX for Baelin (uploaded as Baelin.fbx)
+    const filePath = '/assets/characters/Baelin.fbx';
     try {
-        // Load first animation which includes the model
         const model = await new Promise((resolve, reject) => {
-            fbxLoader.load(basePath + animations[0], resolve, undefined, reject);
+            fbxLoader.load(filePath, resolve, undefined, reject);
         });
-        
-        loadedModels['greg'] = model;
-        loadedAnimations['greg_idle'] = model.animations[0];
-        
-        // Load other animations
-        for (let i = 1; i < animations.length; i++) {
-            const anim = await new Promise((resolve, reject) => {
-                fbxLoader.load(basePath + animations[i], resolve, undefined, reject);
-            });
-            const animName = animations[i].replace('Animation_', '').replace('_withSkin.fbx', '').toLowerCase();
-            loadedAnimations['greg_' + animName] = anim.animations[0];
+        // yield to the event loop so the UI can update while parsing heavy FBX
+        await new Promise(r => setTimeout(r, 0));
+
+        loadedModels['baelin'] = model;
+        // If the FBX contains animations, store the first as 'baelin_idle'
+        if (model.animations && model.animations.length > 0) {
+            loadedAnimations['baelin_idle'] = model.animations[0];
+            for (let i = 1; i < model.animations.length; i++) {
+                loadedAnimations['baelin_anim_' + i] = model.animations[i];
+            }
         }
-        
-        console.log('✓ Greg character and animations loaded');
+
+        // No normalization: keep the FBX as-loaded so it displays at its authored transform.
+
+        console.log('✓ Baelin character and animations loaded (single-file)', filePath);
         return true;
     } catch (error) {
-        console.error('Error loading Greg character:', error);
+        console.error('Error loading Baelin character:', error);
+        return false;
+    }
+}
+
+// Load Baradun character (merchant)
+async function loadBaradunCharacter() {
+    const filePath = '/assets/characters/Baradun.fbx';
+    try {
+        const model = await new Promise((resolve, reject) => {
+            fbxLoader.load(filePath, resolve, undefined, reject);
+        });
+        await new Promise(r => setTimeout(r, 0));
+        loadedModels['baradun'] = model;
+        if (model.animations && model.animations.length > 0) {
+            loadedAnimations['baradun_idle'] = model.animations[0];
+        }
+
+        // No normalization for Baradun: keep the FBX as-loaded so it displays at its authored transform.
+
+        console.log('✓ Baradun loaded and normalized', filePath);
+        return true;
+    } catch (err) {
+        console.error('Error loading Baradun:', err);
         return false;
     }
 }
@@ -1609,10 +1680,10 @@ async function loadGregCharacter() {
 async function loadMasks() {
     const basePath = '/assets/items/';
     const masks = [
-        'Fox_Mask_Delight_1013090808_texture_fbx/Fox_Mask_Delight_1013090808_texture_fbx/Fox_Mask_Delight_1013090808_texture.fbx',
-        'Wolf_Mask_1013091527_texture_fbx/Wolf_Mask_1013091527_texture_fbx/Wolf_Mask_1013091527_texture.fbx',
-        'Crocodile_Mask_1013091746_texture_fbx/Crocodile_Mask_1013091746_texture_fbx/Crocodile_Mask_1013091746_texture.fbx',
-        'Colorful_Bird_Mask_1013090920_texture_fbx/Colorful_Bird_Mask_1013090920_texture_fbx/Colorful_Bird_Mask_1013090920_texture.fbx'
+        //'Fox_Mask_Delight_1013090808_texture_fbx/Fox_Mask_Delight_1013090808_texture_fbx/Fox_Mask_Delight_1013090808_texture.fbx',
+        //'Wolf_Mask_1013091527_texture_fbx/Wolf_Mask_1013091527_texture_fbx/Wolf_Mask_1013091527_texture.fbx',
+        //'Crocodile_Mask_1013091746_texture_fbx/Crocodile_Mask_1013091746_texture_fbx/Crocodile_Mask_1013091746_texture.fbx',
+        //'Colorful_Bird_Mask_1013090920_texture_fbx/Colorful_Bird_Mask_1013090920_texture_fbx/Colorful_Bird_Mask_1013090920_texture.fbx'
     ];
     
     try {
@@ -1635,29 +1706,58 @@ async function loadMasks() {
 function createNPCMesh(npc) {
     const npcGroup = new THREE.Group();
     
-    // Use Greg FBX model for quest giver (Village Elder)
-    if (npc.id === 'elder' && loadedModels['greg']) {
-        const gregModel = loadedModels['greg'].clone();
-        gregModel.scale.set(0.01, 0.01, 0.01); // Scale down FBX model
-        gregModel.rotation.y = Math.PI; // Face forward
-        gregModel.traverse((child) => {
+    // Use Baelin FBX model for quest giver (Village Elder)
+    if (npc.id === 'elder' && loadedModels['baelin']) {
+        // Clone the Baelin FBX and add it to the NPC group without modifying its authored transform.
+        const charModel = loadedModels['baelin'].clone();
+        charModel.rotation.y = Math.PI; // Face forward
+        charModel.traverse((child) => {
             if (child.isMesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
             }
         });
-        npcGroup.add(gregModel);
-        
-        // Setup animation mixer for Greg
-        if (loadedAnimations['greg_idle']) {
-            const mixer = new THREE.AnimationMixer(gregModel);
-            const action = mixer.clipAction(loadedAnimations['greg_idle']);
+        npcGroup.add(charModel);
+
+        // Setup animation mixer for Baelin if animations are available
+        if (loadedAnimations['baelin_idle']) {
+            const mixer = new THREE.AnimationMixer(charModel);
+            const action = mixer.clipAction(loadedAnimations['baelin_idle']);
             action.play();
             npc.mixer = mixer;
             npc.currentAnimation = 'idle';
         }
     } else {
         // Fallback to primitive shapes for other NPCs
+        // Use Baradun FBX model for merchant if available
+        if (npc.type === 'merchant' && loadedModels['baradun']) {
+            const bModel = loadedModels['baradun'].clone();
+            // We assume the Baradun prototype was normalized during load
+            bModel.traverse((child) => {
+                if (child.isMesh) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                }
+            });
+            bModel.rotation.y = Math.PI;
+            npcGroup.add(bModel);
+            if (loadedAnimations['baradun_idle']) {
+                const mixer = new THREE.AnimationMixer(bModel);
+                const action = mixer.clipAction(loadedAnimations['baradun_idle']);
+                action.play();
+                npc.mixer = mixer;
+                npc.currentAnimation = 'idle';
+            }
+            npc.mesh = npcGroup;
+            return {
+                type: 'npc',
+                npc: npc,
+                position: npc.position,
+                mesh: npcGroup,
+                interactable: true,
+                interact: function() { interactWithNPC(npc); }
+            };
+        }
         // Body
         const bodyGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 8);
         const bodyMat = new THREE.MeshStandardMaterial({ 
@@ -1723,10 +1823,10 @@ function createNPCMesh(npc) {
     // Show loading message
     addMessage('Loading character assets...', 'info');
     
-    // Load assets
+    // Load assets (Baradun and Baelin); masks are disabled
     await Promise.all([
-        loadGregCharacter(),
-        loadMasks()
+        loadBaradunCharacter(),
+        loadBaelinCharacter()
     ]);
     
     addMessage('✓ Assets loaded!', 'success');
@@ -1736,6 +1836,8 @@ function createNPCMesh(npc) {
         const npcObj = createNPCMesh(npc);
         environmentObjects.push(npcObj);
     });
+
+    // diagnostics removed
 })();
 
 // NPC Interaction

@@ -47,10 +47,42 @@ Comprehensive quest management:
 - Reward system (experience, gold, items, skills)
 - Quest giver and location tracking
 
+### Three.js Integration
+3D visualization and rendering:
+- Character rendering with 3D models
+- Real-time animations (rotation, sword swings, particle effects)
+- Interactive camera controls
+- Dynamic lighting and shadows
+- WebGL-based rendering
+
 ## Installation
 
 ```bash
 npm install
+```
+
+## Demos
+
+### Interactive 3D Demo
+Experience the RPG Engine in action with our Three.js powered demo:
+
+```bash
+npm run dev
+```
+
+Then open http://localhost:3000/ in your browser to see:
+- 3D character visualization (warrior with shield and sword)
+- Real-time character animations
+- Interactive camera controls
+- Live character stats display
+
+See [public/README.md](public/README.md) for more details about the 3D demo.
+
+### Console Demo
+Run the data structures demo to see the underlying models:
+
+```bash
+npm run demo
 ```
 
 ## Usage

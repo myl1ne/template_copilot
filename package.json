@@ -8,6 +8,10 @@
   },
   "scripts": {
     "demo": "node src/examples/demo.js",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "node src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,5 +19,8 @@
   "license": "ISC",
   "dependencies": {
     "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.10"
   }
 }

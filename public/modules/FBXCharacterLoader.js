@@ -47,11 +47,9 @@ export class FBXCharacterLoader {
             const height = size.y;
             
             // Calculate scale to reach target height
+            // FBX models are in centimeters, so we need to scale them down
             const scale = targetHeight / height;
             model.scale.set(scale, scale, scale);
-            
-            // Apply additional fine-tuning scale (0.01x)
-            model.scale.multiplyScalar(0.01);
             
             // Store the model
             this.loadedModels[characterName] = model;

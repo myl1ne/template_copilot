@@ -69,7 +69,7 @@ export class NPCFactory {
         // Try to use FBX model if available
         if (npc.modelName && this.characterLoader.hasCharacter(npc.modelName)) {
             const charModel = SkeletonUtils.clone(this.characterLoader.getModel(npc.modelName));
-            charModel.scale.multiplyScalar(0.012); // Fine-tune scale
+            // No additional scaling needed - model is already sized correctly by FBXCharacterLoader
             charModel.rotation.y = Math.PI; // Face forward
             
             charModel.traverse((child) => {

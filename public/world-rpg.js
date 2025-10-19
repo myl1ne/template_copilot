@@ -840,8 +840,8 @@ environmentObjects.push(createCampfire(0, -10));
 environmentObjects.push(createHouse(15, 0));
 environmentObjects.push(createHouse(-15, 5));
 
-// Add magical chest (something fun!)
-const magicalChest = createMagicalChest(10, 10);
+// Add magical chest (something fun!) - moved away from NPCs to avoid interaction conflicts
+const magicalChest = createMagicalChest(15, -5);
 environmentObjects.push(magicalChest);
 
 // Create goblin camp
@@ -989,6 +989,10 @@ function checkInteractions() {
     
     for (const obj of environmentObjects) {
         if (obj.interactable) {
+            // Skip inactive objects (dead goblins, opened chests)
+            if (obj.type === 'goblin' && !obj.alive) continue;
+            if ((obj.type === 'chest' || obj.type === 'magical_chest') && obj.opened) continue;
+            
             const dx = obj.position.x - player.position.x;
             const dz = obj.position.z - player.position.z;
             const distance = Math.sqrt(dx * dx + dz * dz);
@@ -1264,20 +1268,39 @@ const playerInventory = {
 };
 
 // Quest System
-const activeQuest = {
-    name: 'The Village Rescue',
-    description: 'A goblin camp has been raiding the village. Defeat their leader and return peace to the land.',
-    objectives: [
-        { id: 'kill_goblins', description: 'Defeat 3 goblin warriors', current: 0, target: 3, completed: false },
-        { id: 'kill_boss', description: 'Defeat the Goblin Chief', current: 0, target: 1, completed: false }
-    ],
-    rewards: { xp: 500, gold: 100 },
-    active: true,
-    completed: false
+const quests = {
+    'village_rescue': {
+        id: 'village_rescue',
+        name: 'The Village Rescue',
+        description: 'A goblin camp has been raiding the village. Defeat their leader and return peace to the land.',
+        objectives: [
+            { id: 'kill_goblins', description: 'Defeat 3 goblin warriors', current: 0, target: 3, completed: false },
+            { id: 'kill_boss', description: 'Defeat the Goblin Chief', current: 0, target: 1, completed: false }
+        ],
+        rewards: { xp: 500, gold: 100 },
+        active: true,
+        completed: false
+    },
+    'merchant_delivery': {
+        id: 'merchant_delivery',
+        name: 'The Merchant\'s Request',
+        description: 'The Traveling Merchant needs someone to deliver a special package to a hermit living deep in the forest.',
+        objectives: [
+            { id: 'get_package', description: 'Receive the package from the Merchant', current: 0, target: 1, completed: false },
+            { id: 'find_hermit', description: 'Find the Hermit in the forest', current: 0, target: 1, completed: false },
+            { id: 'deliver_package', description: 'Deliver the package', current: 0, target: 1, completed: false }
+        ],
+        rewards: { xp: 300, gold: 150 },
+        active: false,
+        completed: false,
+        available: false // Only available after first quest
+    }
 };
 
+let activeQuest = quests['village_rescue'];
+
 function updateQuestProgress(objectiveId, amount = 1) {
-    if (!activeQuest.active || activeQuest.completed) return;
+    if (!activeQuest || !activeQuest.active || activeQuest.completed) return;
     
     const objective = activeQuest.objectives.find(obj => obj.id === objectiveId);
     if (objective && !objective.completed) {
@@ -1296,7 +1319,29 @@ function updateQuestProgress(objectiveId, amount = 1) {
             playerInventory.addGold(activeQuest.rewards.gold);
             addMessage(`🎉 QUEST COMPLETE! Rewards: ${activeQuest.rewards.xp} XP, ${activeQuest.rewards.gold} Gold`, 'success');
             updateQuestUI();
+            
+            // Unlock next quest if this was the first quest
+            if (activeQuest.id === 'village_rescue') {
+                quests['merchant_delivery'].available = true;
+                addMessage(`📜 New quest available from the Traveling Merchant!`, 'info');
+            }
         }
+    }
+}
+
+function activateQuest(questId) {
+    const quest = quests[questId];
+    if (quest && !quest.active && !quest.completed) {
+        // Deactivate current quest
+        if (activeQuest) {
+            activeQuest.active = false;
+        }
+        
+        // Activate new quest
+        quest.active = true;
+        activeQuest = quest;
+        addMessage(`📜 New Quest: ${quest.name}`, 'success');
+        updateQuestUI();
     }
 }
 
@@ -1409,6 +1454,21 @@ function useItem(item) {
         }
         playerInventory.removeItem(item.id);
         updateInventoryUI();
+    } else if (item.type === 'weapon' || item.type === 'armor') {
+        // Equip the item
+        if (item.slot) {
+            // Unequip existing item in the slot
+            const existingItem = playerInventory.equipment[item.slot];
+            if (existingItem) {
+                playerInventory.addItem(existingItem);
+            }
+            
+            // Equip new item
+            playerInventory.equipment[item.slot] = item;
+            playerInventory.removeItem(item.id);
+            addMessage(`Equipped ${item.icon} ${item.name}`, 'success');
+            updateInventoryUI();
+        }
     }
 }
 
@@ -1455,7 +1515,20 @@ const merchant = new NPCCharacter(
     ]
 );
 
-npcs.push(questGiver, merchant);
+// Hermit NPC (for second quest)
+const hermit = new NPCCharacter(
+    'hermit',
+    'Forest Hermit',
+    'quest_giver',
+    { x: -25, z: -25 },
+    [
+        "Ah, a visitor! How rare...",
+        "I live here in solitude, away from the troubles of the village.",
+        "What brings you to my humble dwelling?"
+    ]
+);
+
+npcs.push(questGiver, merchant, hermit);
 
 // Merchant inventory
 const merchantInventory = [
@@ -1553,14 +1626,71 @@ function showDialogue(npc) {
     options.innerHTML = '';
     
     if (npc.type === 'quest_giver') {
-        const questBtn = document.createElement('button');
-        questBtn.className = 'dialogue-btn';
-        questBtn.textContent = 'Tell me more about the goblins';
-        questBtn.onclick = () => {
+        // Village Elder - First Quest
+        if (npc.id === 'elder') {
+            const questBtn = document.createElement('button');
+            questBtn.className = 'dialogue-btn';
+            questBtn.textContent = 'Tell me more about the goblins';
+            questBtn.onclick = () => {
+                document.getElementById('dialogue-text').textContent = 
+                    "The goblins have set up camp to the south. Defeat them and return to me for a reward!";
+            };
+            options.appendChild(questBtn);
+        }
+        
+        // Forest Hermit - Delivery quest target
+        if (npc.id === 'hermit') {
+            if (activeQuest.id === 'merchant_delivery' && !activeQuest.objectives[1].completed) {
+                const foundBtn = document.createElement('button');
+                foundBtn.className = 'dialogue-btn';
+                foundBtn.textContent = 'I found you! (Complete objective)';
+                foundBtn.onclick = () => {
+                    updateQuestProgress('find_hermit', 1);
+                    document.getElementById('dialogue-text').textContent = 
+                        "Excellent! You found me. Now, do you have the package?";
+                };
+                options.appendChild(foundBtn);
+            }
+            
+            if (activeQuest.id === 'merchant_delivery' && activeQuest.objectives[0].completed && !activeQuest.objectives[2].completed) {
+                const deliverBtn = document.createElement('button');
+                deliverBtn.className = 'dialogue-btn';
+                deliverBtn.textContent = 'Deliver the package';
+                deliverBtn.onclick = () => {
+                    updateQuestProgress('deliver_package', 1);
+                    document.getElementById('dialogue-text').textContent = 
+                        "Thank you, brave soul! This package contains rare herbs I cannot find in these woods. You've done me a great service!";
+                };
+                options.appendChild(deliverBtn);
+            }
+        }
+    }
+    
+    // Merchant - Second quest giver
+    if (npc.type === 'merchant' && quests['merchant_delivery'].available && !quests['merchant_delivery'].active && !quests['merchant_delivery'].completed) {
+        const questBtn2 = document.createElement('button');
+        questBtn2.className = 'dialogue-btn';
+        questBtn2.textContent = 'Do you need any help?';
+        questBtn2.onclick = () => {
             document.getElementById('dialogue-text').textContent = 
-                "The goblins have set up camp to the south. Defeat them and return to me for a reward!";
+                "Actually, yes! I need someone to deliver a package to the Forest Hermit who lives deep in the woods to the southwest. Will you help?";
+            
+            // Add accept quest button
+            const acceptBtn = document.createElement('button');
+            acceptBtn.className = 'dialogue-btn';
+            acceptBtn.textContent = 'I\'ll deliver your package!';
+            acceptBtn.onclick = () => {
+                activateQuest('merchant_delivery');
+                updateQuestProgress('get_package', 1);
+                playerInventory.addItem(new Item('package', 'Sealed Package', '📦', 'quest', 0, {}));
+                document.getElementById('dialogue-text').textContent = 
+                    "Wonderful! The hermit lives far to the southwest, near coordinates (-25, -25). Be careful out there!";
+            };
+            options.innerHTML = '';
+            options.appendChild(acceptBtn);
+            options.appendChild(closeBtn);
         };
-        options.appendChild(questBtn);
+        options.appendChild(questBtn2);
     }
     
     const closeBtn = document.createElement('button');

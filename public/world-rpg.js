@@ -1,0 +1,1347 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+// Scene setup
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87CEEB); // Sky blue
+scene.fog = new THREE.Fog(0x87CEEB, 20, 100);
+
+// Camera setup
+const camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+);
+camera.position.set(0, 5, 10);
+
+// Renderer setup
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+// WoW-style Camera Controls
+let cameraDistance = 8;
+let cameraHeight = 3;
+let cameraAngleH = 0; // Horizontal rotation (around character)
+let cameraAngleV = 0.3; // Vertical angle (up/down)
+let isRightMouseDown = false;
+let lastMouseX = 0;
+let lastMouseY = 0;
+
+// Mouse controls for camera
+renderer.domElement.addEventListener('mousedown', (e) => {
+    if (e.button === 2) { // Right mouse button
+        isRightMouseDown = true;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+        renderer.domElement.style.cursor = 'grabbing';
+    }
+});
+
+renderer.domElement.addEventListener('mouseup', (e) => {
+    if (e.button === 2) {
+        isRightMouseDown = false;
+        renderer.domElement.style.cursor = 'default';
+    }
+});
+
+renderer.domElement.addEventListener('mousemove', (e) => {
+    if (isRightMouseDown) {
+        const deltaX = e.clientX - lastMouseX;
+        const deltaY = e.clientY - lastMouseY;
+        
+        cameraAngleH -= deltaX * 0.005;
+        cameraAngleV = Math.max(-0.5, Math.min(1.4, cameraAngleV + deltaY * 0.005));
+        
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+    }
+});
+
+// Mouse wheel for zoom
+renderer.domElement.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    cameraDistance = Math.max(3, Math.min(20, cameraDistance + e.deltaY * 0.01));
+});
+
+// Prevent context menu
+renderer.domElement.addEventListener('contextmenu', (e) => e.preventDefault());
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+
+const sunLight = new THREE.DirectionalLight(0xffffff, 0.8);
+sunLight.position.set(50, 50, 50);
+sunLight.castShadow = true;
+sunLight.shadow.camera.near = 0.1;
+sunLight.shadow.camera.far = 200;
+sunLight.shadow.camera.left = -50;
+sunLight.shadow.camera.right = 50;
+sunLight.shadow.camera.top = 50;
+sunLight.shadow.camera.bottom = -50;
+sunLight.shadow.mapSize.width = 2048;
+sunLight.shadow.mapSize.height = 2048;
+scene.add(sunLight);
+
+// Ground - larger terrain
+const groundSize = 100;
+const groundGeometry = new THREE.PlaneGeometry(groundSize, groundSize, 50, 50);
+const groundMaterial = new THREE.MeshStandardMaterial({
+    color: 0x3a7d44,
+    roughness: 0.8,
+    metalness: 0.2
+});
+
+// Add some terrain variation
+const positions = groundGeometry.attributes.position;
+for (let i = 0; i < positions.count; i++) {
+    const x = positions.getX(i);
+    const y = positions.getY(i);
+    const height = Math.sin(x * 0.1) * 0.5 + Math.cos(y * 0.1) * 0.5;
+    positions.setZ(i, height);
+}
+positions.needsUpdate = true;
+groundGeometry.computeVertexNormals();
+
+const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Grid helper
+const gridHelper = new THREE.GridHelper(groundSize, 50, 0x000000, 0x000000);
+gridHelper.material.opacity = 0.1;
+gridHelper.material.transparent = true;
+scene.add(gridHelper);
+
+// Player character
+const characterGroup = new THREE.Group();
+characterGroup.position.set(0, 0, 0);
+
+// Body
+const bodyGeometry = new THREE.CapsuleGeometry(0.4, 1.2, 4, 8);
+const bodyMaterial = new THREE.MeshStandardMaterial({
+    color: 0x8b4513,
+    roughness: 0.7,
+    metalness: 0.3
+});
+const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+body.position.y = 1.3;
+body.castShadow = true;
+characterGroup.add(body);
+
+// Head
+const headGeometry = new THREE.SphereGeometry(0.3, 32, 32);
+const headMaterial = new THREE.MeshStandardMaterial({
+    color: 0xffdbac,
+    roughness: 0.8,
+    metalness: 0.1
+});
+const head = new THREE.Mesh(headGeometry, headMaterial);
+head.position.y = 2.3;
+head.castShadow = true;
+characterGroup.add(head);
+
+// Helmet
+const helmetGeometry = new THREE.ConeGeometry(0.35, 0.4, 8);
+const helmetMaterial = new THREE.MeshStandardMaterial({
+    color: 0x757575,
+    roughness: 0.4,
+    metalness: 0.8
+});
+const helmet = new THREE.Mesh(helmetGeometry, helmetMaterial);
+helmet.position.y = 2.6;
+helmet.castShadow = true;
+characterGroup.add(helmet);
+
+// Shield
+const shieldGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.1, 32);
+const shieldMaterial = new THREE.MeshStandardMaterial({
+    color: 0x4ade80,
+    roughness: 0.5,
+    metalness: 0.6,
+    emissive: 0x22c55e,
+    emissiveIntensity: 0.2
+});
+const shield = new THREE.Mesh(shieldGeometry, shieldMaterial);
+shield.position.set(-0.7, 1.3, 0);
+shield.rotation.z = Math.PI / 2;
+shield.castShadow = true;
+characterGroup.add(shield);
+
+// Sword
+const swordGroup = new THREE.Group();
+const bladeGeometry = new THREE.BoxGeometry(0.1, 1.2, 0.05);
+const bladeMaterial = new THREE.MeshStandardMaterial({
+    color: 0xc0c0c0,
+    roughness: 0.3,
+    metalness: 0.9,
+    emissive: 0x60a5fa,
+    emissiveIntensity: 0.3
+});
+const blade = new THREE.Mesh(bladeGeometry, bladeMaterial);
+blade.position.y = 0.6;
+blade.castShadow = true;
+swordGroup.add(blade);
+
+const hiltGeometry = new THREE.BoxGeometry(0.4, 0.1, 0.1);
+const hiltMaterial = new THREE.MeshStandardMaterial({
+    color: 0x8b4513,
+    roughness: 0.6,
+    metalness: 0.4
+});
+const hilt = new THREE.Mesh(hiltGeometry, hiltMaterial);
+hilt.castShadow = true;
+swordGroup.add(hilt);
+
+swordGroup.position.set(0.7, 1.3, 0);
+swordGroup.rotation.z = -Math.PI / 4;
+characterGroup.add(swordGroup);
+
+scene.add(characterGroup);
+
+// Environment objects
+const environmentObjects = [];
+
+// Helper function to create a tree
+function createTree(x, z) {
+    const tree = new THREE.Group();
+    
+    // Trunk
+    const trunkGeo = new THREE.CylinderGeometry(0.3, 0.4, 3, 8);
+    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a2511 });
+    const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+    trunk.position.y = 1.5;
+    trunk.castShadow = true;
+    tree.add(trunk);
+    
+    // Leaves
+    const leavesGeo = new THREE.SphereGeometry(1.5, 8, 8);
+    const leavesMat = new THREE.MeshStandardMaterial({ color: 0x228b22 });
+    const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+    leaves.position.y = 3.5;
+    leaves.castShadow = true;
+    tree.add(leaves);
+    
+    tree.position.set(x, 0, z);
+    scene.add(tree);
+    
+    return {
+        type: 'tree',
+        position: { x, y: 0, z },
+        mesh: tree,
+        interactable: false
+    };
+}
+
+// Helper function to create a rock
+function createRock(x, z, scale = 1) {
+    const rockGeo = new THREE.DodecahedronGeometry(0.8 * scale, 0);
+    const rockMat = new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 0.9 });
+    const rock = new THREE.Mesh(rockGeo, rockMat);
+    rock.position.set(x, 0.4 * scale, z);
+    rock.rotation.set(Math.random(), Math.random(), Math.random());
+    rock.castShadow = true;
+    rock.receiveShadow = true;
+    scene.add(rock);
+    
+    return {
+        type: 'rock',
+        position: { x, y: 0, z },
+        mesh: rock,
+        interactable: false
+    };
+}
+
+// Helper function to create a chest
+function createChest(x, z) {
+    const chest = new THREE.Group();
+    
+    // Base
+    const baseGeo = new THREE.BoxGeometry(1, 0.6, 0.7);
+    const baseMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+    const base = new THREE.Mesh(baseGeo, baseMat);
+    base.position.y = 0.3;
+    base.castShadow = true;
+    chest.add(base);
+    
+    // Lid
+    const lidGeo = new THREE.BoxGeometry(1.1, 0.2, 0.75);
+    const lidMat = new THREE.MeshStandardMaterial({ color: 0xA0522D });
+    const lid = new THREE.Mesh(lidGeo, lidMat);
+    lid.position.y = 0.7;
+    lid.castShadow = true;
+    chest.add(lid);
+    
+    // Lock
+    const lockGeo = new THREE.BoxGeometry(0.2, 0.2, 0.1);
+    const lockMat = new THREE.MeshStandardMaterial({ color: 0xFFD700, metalness: 0.8 });
+    const lock = new THREE.Mesh(lockGeo, lockMat);
+    lock.position.set(0, 0.3, 0.36);
+    lock.castShadow = true;
+    chest.add(lock);
+    
+    chest.position.set(x, 0, z);
+    scene.add(chest);
+    
+    return {
+        type: 'chest',
+        position: { x, y: 0, z },
+        mesh: chest,
+        interactable: true,
+        opened: false,
+        interact: function() {
+            if (!this.opened) {
+                this.opened = true;
+                lid.rotation.x = -Math.PI / 3;
+                return { message: 'You found 100 gold and a Health Potion!', type: 'success' };
+            } else {
+                return { message: 'The chest is empty.', type: 'info' };
+            }
+        }
+    };
+}
+
+// Helper function to create a campfire
+function createCampfire(x, z) {
+    const campfire = new THREE.Group();
+    
+    // Logs arranged in a circle
+    for (let i = 0; i < 6; i++) {
+        const angle = (i / 6) * Math.PI * 2;
+        const logGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.8, 8);
+        const logMat = new THREE.MeshStandardMaterial({ color: 0x4a2511 });
+        const log = new THREE.Mesh(logGeo, logMat);
+        log.position.set(Math.cos(angle) * 0.3, 0.15, Math.sin(angle) * 0.3);
+        log.rotation.z = Math.PI / 2;
+        log.rotation.y = angle;
+        log.castShadow = true;
+        campfire.add(log);
+    }
+    
+    // Fire (glowing sphere)
+    const fireGeo = new THREE.SphereGeometry(0.3, 8, 8);
+    const fireMat = new THREE.MeshStandardMaterial({
+        color: 0xFF4500,
+        emissive: 0xFF4500,
+        emissiveIntensity: 1
+    });
+    const fire = new THREE.Mesh(fireGeo, fireMat);
+    fire.position.y = 0.4;
+    campfire.add(fire);
+    
+    // Light
+    const fireLight = new THREE.PointLight(0xFF4500, 2, 5);
+    fireLight.position.y = 0.4;
+    campfire.add(fireLight);
+    
+    campfire.position.set(x, 0, z);
+    scene.add(campfire);
+    
+    return {
+        type: 'campfire',
+        position: { x, y: 0, z },
+        mesh: campfire,
+        fire: fire,
+        interactable: true,
+        interact: function() {
+            return { message: 'You rest by the fire and restore 50 HP', type: 'success', healing: 50 };
+        }
+    };
+}
+
+// Helper function to create a house
+function createHouse(x, z) {
+    const house = new THREE.Group();
+    
+    // Walls
+    const wallsGeo = new THREE.BoxGeometry(4, 3, 4);
+    const wallsMat = new THREE.MeshStandardMaterial({ color: 0xD2B48C });
+    const walls = new THREE.Mesh(wallsGeo, wallsMat);
+    walls.position.y = 1.5;
+    walls.castShadow = true;
+    walls.receiveShadow = true;
+    house.add(walls);
+    
+    // Roof
+    const roofGeo = new THREE.ConeGeometry(3.5, 2, 4);
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+    const roof = new THREE.Mesh(roofGeo, roofMat);
+    roof.position.y = 4;
+    roof.rotation.y = Math.PI / 4;
+    roof.castShadow = true;
+    house.add(roof);
+    
+    // Door
+    const doorGeo = new THREE.BoxGeometry(0.8, 1.5, 0.1);
+    const doorMat = new THREE.MeshStandardMaterial({ color: 0x654321 });
+    const door = new THREE.Mesh(doorGeo, doorMat);
+    door.position.set(0, 0.75, 2.05);
+    door.castShadow = true;
+    house.add(door);
+    
+    house.position.set(x, 0, z);
+    scene.add(house);
+    
+    return {
+        type: 'house',
+        position: { x, y: 0, z },
+        mesh: house,
+        interactable: true,
+        interact: function() {
+            return { message: 'You enter the cozy house', type: 'info' };
+        }
+    };
+}
+
+// Helper function to create a goblin enemy
+function createGoblin(x, z) {
+    const goblin = new THREE.Group();
+    
+    // Body (greenish)
+    const bodyGeo = new THREE.CapsuleGeometry(0.3, 0.8, 4, 8);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x4a7c59 });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 0.9;
+    body.castShadow = true;
+    goblin.add(body);
+    
+    // Head (green)
+    const headGeo = new THREE.SphereGeometry(0.25, 16, 16);
+    const headMat = new THREE.MeshStandardMaterial({ color: 0x3d6e49 });
+    const head = new THREE.Mesh(headGeo, headMat);
+    head.position.y = 1.6;
+    head.castShadow = true;
+    goblin.add(head);
+    
+    // Ears (pointy)
+    const earGeo = new THREE.ConeGeometry(0.1, 0.2, 8);
+    const earMat = new THREE.MeshStandardMaterial({ color: 0x3d6e49 });
+    const leftEar = new THREE.Mesh(earGeo, earMat);
+    leftEar.position.set(-0.2, 1.7, 0);
+    leftEar.rotation.z = -Math.PI / 4;
+    goblin.add(leftEar);
+    const rightEar = new THREE.Mesh(earGeo, earMat);
+    rightEar.position.set(0.2, 1.7, 0);
+    rightEar.rotation.z = Math.PI / 4;
+    goblin.add(rightEar);
+    
+    // Simple weapon (club)
+    const clubGeo = new THREE.CylinderGeometry(0.08, 0.12, 0.8, 8);
+    const clubMat = new THREE.MeshStandardMaterial({ color: 0x4a2511 });
+    const club = new THREE.Mesh(clubGeo, clubMat);
+    club.position.set(0.4, 1, 0);
+    club.rotation.z = Math.PI / 6;
+    club.castShadow = true;
+    goblin.add(club);
+    
+    goblin.position.set(x, 0, z);
+    scene.add(goblin);
+    
+    const spawnPosition = { x, z };
+    
+    return {
+        type: 'goblin',
+        position: { x, y: 0, z },
+        spawnPosition: spawnPosition,
+        mesh: goblin,
+        hp: 50,
+        maxHp: 50,
+        alive: true,
+        respawnTime: 30, // seconds
+        timeSinceDeath: 0,
+        interactable: true,
+        lastAttackTime: 0,
+        attackCooldown: 2,
+        interact: function() {
+            if (!this.alive) {
+                return { message: 'The goblin is already defeated!', type: 'info' };
+            }
+            
+            // Player attacks goblin
+            const currentTime = Date.now() / 1000;
+            if (currentTime - this.lastAttackTime < this.attackCooldown) {
+                return { message: 'Attack on cooldown!', type: 'warning' };
+            }
+            
+            this.lastAttackTime = currentTime;
+            const damage = Math.floor(15 + Math.random() * 10);
+            this.hp -= damage;
+            
+            if (this.hp <= 0) {
+                this.alive = false;
+                this.hp = 0;
+                this.timeSinceDeath = 0;
+                // Fade out the goblin
+                this.mesh.visible = false;
+                return { 
+                    message: `Goblin defeated! Dealt ${damage} damage. +50 XP`, 
+                    type: 'success' 
+                };
+            }
+            
+            return { 
+                message: `Hit goblin for ${damage} damage! (${this.hp}/${this.maxHp} HP remaining)`, 
+                type: 'warning' 
+            };
+        }
+    };
+}
+
+// Goblin camp location
+const goblinCampCenter = { x: -20, z: -20 };
+const goblins = [];
+
+// Create goblin camp with multiple goblins
+function createGoblinCamp() {
+    // Central campfire
+    const campfire = createCampfire(goblinCampCenter.x, goblinCampCenter.z);
+    environmentObjects.push(campfire);
+    
+    // Goblins around the camp
+    const goblinPositions = [
+        { x: -18, z: -20 },
+        { x: -22, z: -20 },
+        { x: -20, z: -18 },
+        { x: -20, z: -22 },
+        { x: -17, z: -17 },
+    ];
+    
+    goblinPositions.forEach(pos => {
+        const goblin = createGoblin(pos.x, pos.z);
+        goblins.push(goblin);
+        environmentObjects.push(goblin);
+    });
+    
+    // Camp signs
+    const sign1 = createSign(goblinCampCenter.x + 8, goblinCampCenter.z, 'Beware: Goblin Territory!');
+    environmentObjects.push(sign1);
+}
+
+// Helper function to create a sign
+function createSign(x, z, text) {
+    const sign = new THREE.Group();
+    
+    // Post
+    const postGeo = new THREE.CylinderGeometry(0.08, 0.08, 1.5, 8);
+    const postMat = new THREE.MeshStandardMaterial({ color: 0x4a2511 });
+    const post = new THREE.Mesh(postGeo, postMat);
+    post.position.y = 0.75;
+    post.castShadow = true;
+    sign.add(post);
+    
+    // Sign board
+    const boardGeo = new THREE.BoxGeometry(1.2, 0.6, 0.1);
+    const boardMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+    const board = new THREE.Mesh(boardGeo, boardMat);
+    board.position.y = 1.5;
+    board.castShadow = true;
+    sign.add(board);
+    
+    sign.position.set(x, 0, z);
+    scene.add(sign);
+    
+    return {
+        type: 'sign',
+        position: { x, y: 0, z },
+        mesh: sign,
+        text: text,
+        interactable: true,
+        interact: function() {
+            return { message: `Sign: "${this.text}"`, type: 'info' };
+        }
+    };
+}
+
+// Create environment
+// Trees
+for (let i = 0; i < 20; i++) {
+    const angle = (i / 20) * Math.PI * 2;
+    const radius = 15 + Math.random() * 10;
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
+    environmentObjects.push(createTree(x, z));
+}
+
+// Rocks
+for (let i = 0; i < 15; i++) {
+    const x = (Math.random() - 0.5) * 40;
+    const z = (Math.random() - 0.5) * 40;
+    environmentObjects.push(createRock(x, z, 0.8 + Math.random() * 0.6));
+}
+
+// Interactable objects
+environmentObjects.push(createChest(5, -5));
+environmentObjects.push(createChest(-7, 8));
+environmentObjects.push(createCampfire(0, -10));
+environmentObjects.push(createHouse(15, 0));
+environmentObjects.push(createHouse(-15, 5));
+
+// Create goblin camp
+createGoblinCamp();
+
+// Player state
+const player = {
+    hp: 150,
+    maxHp: 150,
+    stamina: 100,
+    maxStamina: 100,
+    position: { x: 0, y: 0, z: 0 },
+    rotation: 0,
+    velocity: { x: 0, z: 0 },
+    speed: 3,
+    runSpeed: 6,
+    isRunning: false,
+    animationState: 'idle', // idle, walking, running, attacking, resting
+    animationTime: 0
+};
+
+// Input handling
+const keys = {};
+window.addEventListener('keydown', (e) => { keys[e.key.toLowerCase()] = true; });
+window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+
+// Animation functions
+function setAnimation(state) {
+    if (player.animationState !== state) {
+        player.animationState = state;
+        player.animationTime = 0;
+        document.getElementById('anim-state').textContent = state.charAt(0).toUpperCase() + state.slice(1);
+        showAnimationLabel(state);
+    }
+}
+
+function showAnimationLabel(state) {
+    const label = document.getElementById('animation-state');
+    const labels = {
+        idle: '💤 Idle',
+        walking: '🚶 Walking',
+        running: '🏃 Running',
+        attacking: '⚔️ Attacking!',
+        resting: '😌 Resting...'
+    };
+    label.textContent = labels[state] || state;
+    label.classList.add('show');
+    setTimeout(() => label.classList.remove('show'), 1000);
+}
+
+function updateAnimation(delta) {
+    player.animationTime += delta;
+    
+    switch (player.animationState) {
+        case 'idle':
+            // Gentle bobbing
+            body.position.y = 1.3 + Math.sin(player.animationTime * 2) * 0.05;
+            swordGroup.rotation.z = -Math.PI / 4;
+            break;
+            
+        case 'walking':
+            // Walking bob
+            body.position.y = 1.3 + Math.abs(Math.sin(player.animationTime * 8)) * 0.1;
+            body.rotation.z = Math.sin(player.animationTime * 8) * 0.05;
+            swordGroup.rotation.z = -Math.PI / 4 + Math.sin(player.animationTime * 8) * 0.1;
+            shield.position.x = -0.7 + Math.sin(player.animationTime * 8) * 0.05;
+            break;
+            
+        case 'running':
+            // Faster bob
+            body.position.y = 1.3 + Math.abs(Math.sin(player.animationTime * 12)) * 0.15;
+            body.rotation.z = Math.sin(player.animationTime * 12) * 0.1;
+            swordGroup.rotation.z = -Math.PI / 4 + Math.sin(player.animationTime * 12) * 0.2;
+            shield.position.x = -0.7 + Math.sin(player.animationTime * 12) * 0.1;
+            break;
+            
+        case 'attacking':
+            // Sword swing
+            const attackProgress = Math.min(player.animationTime / 0.5, 1);
+            if (attackProgress < 0.5) {
+                swordGroup.rotation.z = -Math.PI / 4 - attackProgress * 2 * Math.PI / 2;
+            } else {
+                swordGroup.rotation.z = -Math.PI / 4 - (1 - attackProgress) * 2 * Math.PI / 2;
+            }
+            body.rotation.y = Math.sin(attackProgress * Math.PI) * 0.3;
+            
+            if (attackProgress >= 1) {
+                setAnimation('idle');
+            }
+            break;
+            
+        case 'resting':
+            // Sitting/resting position
+            body.position.y = 0.8;
+            body.rotation.x = 0.3;
+            swordGroup.position.y = 0.8;
+            shield.position.y = 0.8;
+            
+            if (player.animationTime > 2) {
+                body.rotation.x = 0;
+                swordGroup.position.y = 1.3;
+                shield.position.y = 1.3;
+                setAnimation('idle');
+                player.hp = Math.min(player.maxHp, player.hp + 30);
+                addMessage('Rested and recovered 30 HP', 'success');
+                updateUI();
+            }
+            break;
+    }
+}
+
+// UI functions
+function updateUI() {
+    const hpPercent = (player.hp / player.maxHp) * 100;
+    document.getElementById('hp-bar').style.width = hpPercent + '%';
+    document.getElementById('hp-bar').textContent = Math.round(hpPercent) + '%';
+    document.getElementById('hp-text').textContent = `${Math.round(player.hp)} / ${player.maxHp}`;
+    
+    const staminaPercent = (player.stamina / player.maxStamina) * 100;
+    document.getElementById('stamina-bar').style.width = staminaPercent + '%';
+    document.getElementById('stamina-bar').textContent = Math.round(staminaPercent) + '%';
+    document.getElementById('stamina-text').textContent = `${Math.round(player.stamina)} / ${player.maxStamina}`;
+    
+    document.getElementById('pos-text').textContent = `${Math.round(player.position.x)}, ${Math.round(player.position.z)}`;
+}
+
+function addMessage(text, type = 'info') {
+    const messages = document.getElementById('messages');
+    const message = document.createElement('div');
+    message.className = `message ${type}`;
+    message.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+    messages.appendChild(message);
+    messages.parentElement.scrollTop = messages.parentElement.scrollHeight;
+    
+    // Keep only last 10 messages
+    while (messages.children.length > 10) {
+        messages.removeChild(messages.firstChild);
+    }
+}
+
+// Check for nearby interactable objects
+function checkInteractions() {
+    let nearestObject = null;
+    let nearestDistance = 2.5;
+    
+    for (const obj of environmentObjects) {
+        if (obj.interactable) {
+            const dx = obj.position.x - player.position.x;
+            const dz = obj.position.z - player.position.z;
+            const distance = Math.sqrt(dx * dx + dz * dz);
+            
+            if (distance < nearestDistance) {
+                nearestObject = obj;
+                nearestDistance = distance;
+            }
+        }
+    }
+    
+    const prompt = document.getElementById('interaction-prompt');
+    if (nearestObject) {
+        prompt.classList.add('show');
+        document.getElementById('interaction-text').textContent = `Press E to interact with ${nearestObject.type}`;
+        return nearestObject;
+    } else {
+        prompt.classList.remove('show');
+        return null;
+    }
+}
+
+// Handle interactions
+let nearestInteractable = null;
+window.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'e' && nearestInteractable) {
+        const result = nearestInteractable.interact();
+        addMessage(result.message, result.type || 'info');
+        
+        if (result.healing) {
+            player.hp = Math.min(player.maxHp, player.hp + result.healing);
+            updateUI();
+        }
+    }
+    
+    if (e.key === ' ' && player.animationState !== 'attacking') {
+        e.preventDefault();
+        setAnimation('attacking');
+    }
+    
+    if (e.key.toLowerCase() === 'r' && player.animationState === 'idle') {
+        setAnimation('resting');
+    }
+});
+
+// Update camera to follow player (WoW-style)
+function updateCamera() {
+    // Calculate camera position based on angles
+    const offsetX = Math.sin(cameraAngleH) * Math.cos(cameraAngleV) * cameraDistance;
+    const offsetY = Math.sin(cameraAngleV) * cameraDistance + cameraHeight;
+    const offsetZ = Math.cos(cameraAngleH) * Math.cos(cameraAngleV) * cameraDistance;
+    
+    const idealPosition = new THREE.Vector3(
+        characterGroup.position.x + offsetX,
+        characterGroup.position.y + offsetY,
+        characterGroup.position.z + offsetZ
+    );
+    
+    const lookAtPosition = new THREE.Vector3(
+        characterGroup.position.x,
+        characterGroup.position.y + 1.5,
+        characterGroup.position.z
+    );
+    
+    // Smooth camera movement
+    camera.position.lerp(idealPosition, 0.1);
+    camera.lookAt(lookAtPosition);
+}
+
+// Animation loop
+const clock = new THREE.Clock();
+
+function animate() {
+    requestAnimationFrame(animate);
+    const delta = clock.getDelta();
+    
+    // Movement
+    if (player.animationState !== 'attacking' && player.animationState !== 'resting') {
+        const forward = keys['w'] || keys['arrowup'];
+        const backward = keys['s'] || keys['arrowdown'];
+        const left = keys['a'] || keys['arrowleft'];
+        const right = keys['d'] || keys['arrowright'];
+        const running = keys['shift'];
+        
+        player.isRunning = running && player.stamina > 0;
+        const speed = player.isRunning ? player.runSpeed : player.speed;
+        
+        player.velocity.x = 0;
+        player.velocity.z = 0;
+        
+        // Calculate movement direction relative to camera
+        let moveX = 0;
+        let moveZ = 0;
+        
+        if (forward) {
+            moveZ -= 1;
+        }
+        if (backward) {
+            moveZ += 1;
+        }
+        if (left) {
+            moveX -= 1;
+        }
+        if (right) {
+            moveX += 1;
+        }
+        
+        const isMoving = forward || backward || left || right;
+        
+        if (isMoving) {
+            // Normalize diagonal movement
+            const length = Math.sqrt(moveX * moveX + moveZ * moveZ);
+            if (length > 0) {
+                moveX /= length;
+                moveZ /= length;
+            }
+            
+            // Apply camera rotation to movement
+            const moveAngle = Math.atan2(moveX, moveZ) + cameraAngleH;
+            player.velocity.x = Math.sin(moveAngle) * speed * delta;
+            player.velocity.z = Math.cos(moveAngle) * speed * delta;
+            
+            player.position.x += player.velocity.x;
+            player.position.z += player.velocity.z;
+            
+            // Update character rotation to face movement direction
+            player.rotation = moveAngle;
+            characterGroup.rotation.y = player.rotation;
+            
+            // Update animation state
+            if (player.isRunning) {
+                setAnimation('running');
+                player.stamina = Math.max(0, player.stamina - 10 * delta);
+            } else {
+                setAnimation('walking');
+                player.stamina = Math.min(player.maxStamina, player.stamina + 5 * delta);
+            }
+        } else {
+            if (player.animationState === 'walking' || player.animationState === 'running') {
+                setAnimation('idle');
+            }
+            player.stamina = Math.min(player.maxStamina, player.stamina + 15 * delta);
+        }
+        
+        characterGroup.position.set(player.position.x, player.position.y, player.position.z);
+        updateUI();
+    }
+    
+    // Update animation
+    updateAnimation(delta);
+    
+    // Check for nearby interactable objects
+    nearestInteractable = checkInteractions();
+    
+    // Animate campfire
+    for (const obj of environmentObjects) {
+        if (obj.type === 'campfire' && obj.fire) {
+            obj.fire.scale.y = 1 + Math.sin(Date.now() * 0.005) * 0.2;
+            obj.fire.scale.x = 1 + Math.cos(Date.now() * 0.005) * 0.2;
+        }
+    }
+    
+    // Goblin respawn logic
+    for (const goblin of goblins) {
+        if (!goblin.alive) {
+            goblin.timeSinceDeath += delta;
+            
+            if (goblin.timeSinceDeath >= goblin.respawnTime) {
+                // Respawn goblin
+                goblin.hp = goblin.maxHp;
+                goblin.alive = true;
+                goblin.timeSinceDeath = 0;
+                goblin.mesh.visible = true;
+                goblin.position.x = goblin.spawnPosition.x;
+                goblin.position.z = goblin.spawnPosition.z;
+                goblin.mesh.position.set(goblin.spawnPosition.x, 0, goblin.spawnPosition.z);
+                addMessage('A goblin has respawned!', 'warning');
+            }
+        } else {
+            // Idle animation for alive goblins
+            if (goblin.mesh.visible) {
+                goblin.mesh.rotation.y += delta * 0.5;
+                goblin.mesh.children[0].position.y = 0.9 + Math.sin(Date.now() * 0.002) * 0.05;
+            }
+        }
+    }
+    
+    updateCamera();
+    renderer.render(scene, camera);
+}
+
+// Handle resize
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// Start
+animate();
+updateUI();
+addMessage('Explore the world! Use WASD to move, I for inventory', 'info');
+
+console.log('RPG Engine - Full RPG Demo with NPCs & Inventory Loaded');
+
+// ===== INVENTORY & EQUIPMENT SYSTEM =====
+
+// Simple item class for the demo
+class Item {
+    constructor(id, name, icon, type, value, stats = {}) {
+        this.id = id;
+        this.name = name;
+        this.icon = icon;
+        this.type = type; // weapon, armor, consumable, quest
+        this.value = value;
+        this.stats = stats;
+        this.slot = stats.slot || null;
+        this.quantity = 1;
+    }
+}
+
+// Inventory system
+const playerInventory = {
+    gold: 100,
+    maxSlots: 20,
+    items: [],
+    equipment: {
+        head: null,
+        chest: null,
+        legs: null,
+        weapon: null,
+        shield: null
+    },
+    
+    addItem(item) {
+        if (this.items.length >= this.maxSlots) {
+            addMessage('Inventory full!', 'warning');
+            return false;
+        }
+        this.items.push(item);
+        addMessage(`Obtained ${item.icon} ${item.name}`, 'success');
+        return true;
+    },
+    
+    removeItem(itemId) {
+        const index = this.items.findIndex(i => i.id === itemId);
+        if (index !== -1) {
+            this.items.splice(index, 1);
+            return true;
+        }
+        return false;
+    },
+    
+    addGold(amount) {
+        this.gold += amount;
+        addMessage(`+${amount} 💰 gold`, 'success');
+    },
+    
+    removeGold(amount) {
+        if (this.gold >= amount) {
+            this.gold -= amount;
+            return true;
+        }
+        return false;
+    }
+};
+
+// Sample items
+const sampleItems = [
+    new Item('health_pot', 'Health Potion', '🧪', 'consumable', 50, { healing: 50 }),
+    new Item('mana_pot', 'Mana Potion', '🔮', 'consumable', 40, { manaRestore: 30 }),
+    new Item('iron_sword', 'Iron Sword', '🗡️', 'weapon', 100, { slot: 'weapon', damage: 15 }),
+    new Item('steel_helm', 'Steel Helmet', '⛑️', 'armor', 80, { slot: 'head', armor: 5 }),
+    new Item('bread', 'Bread', '🍞', 'consumable', 5, { healing: 10 }),
+];
+
+// Initialize inventory with some starter items
+playerInventory.addItem(new Item('health_pot', 'Health Potion', '🧪', 'consumable', 50, { healing: 50 }));
+playerInventory.addItem(new Item('bread', 'Bread', '🍞', 'consumable', 5, { healing: 10 }));
+
+// UI Functions
+function openInventory() {
+    document.getElementById('inventory-panel').classList.add('show');
+    updateInventoryUI();
+}
+
+function closeInventory() {
+    document.getElementById('inventory-panel').classList.remove('show');
+}
+
+function updateInventoryUI() {
+    // Update gold
+    document.getElementById('gold-amount').textContent = playerInventory.gold;
+    document.getElementById('inv-count').textContent = playerInventory.items.length;
+    document.getElementById('inv-max').textContent = playerInventory.maxSlots;
+    
+    // Update inventory grid
+    const invGrid = document.getElementById('inventory-grid');
+    invGrid.innerHTML = '';
+    
+    playerInventory.items.forEach((item, index) => {
+        const slot = document.createElement('div');
+        slot.className = 'inv-slot';
+        slot.innerHTML = `
+            <div class="icon">${item.icon}</div>
+            <div class="name">${item.name}</div>
+        `;
+        slot.onclick = () => useItem(item);
+        invGrid.appendChild(slot);
+    });
+    
+    // Fill empty slots
+    for (let i = playerInventory.items.length; i < playerInventory.maxSlots; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'inv-slot';
+        invGrid.appendChild(slot);
+    }
+    
+    // Update equipment grid
+    const eqGrid = document.getElementById('equipment-grid');
+    eqGrid.innerHTML = '';
+    
+    const slots = ['head', 'chest', 'legs', 'weapon', 'shield'];
+    slots.forEach(slotName => {
+        const slot = document.createElement('div');
+        slot.className = 'inv-slot';
+        const item = playerInventory.equipment[slotName];
+        if (item) {
+            slot.innerHTML = `
+                <div class="icon">${item.icon}</div>
+                <div class="name">${item.name}</div>
+            `;
+        } else {
+            slot.innerHTML = `<div class="name">${slotName}</div>`;
+        }
+        eqGrid.appendChild(slot);
+    });
+}
+
+function useItem(item) {
+    if (item.type === 'consumable') {
+        if (item.stats.healing) {
+            player.hp = Math.min(player.maxHp, player.hp + item.stats.healing);
+            addMessage(`Used ${item.icon} ${item.name}, restored ${item.stats.healing} HP`, 'success');
+            updateUI();
+        }
+        playerInventory.removeItem(item.id);
+        updateInventoryUI();
+    }
+}
+
+// ===== NPC SYSTEM =====
+
+// Simple NPC class
+class NPCCharacter {
+    constructor(id, name, type, position, dialogue) {
+        this.id = id;
+        this.name = name;
+        this.type = type; // quest_giver, merchant
+        this.position = position;
+        this.dialogue = dialogue;
+        this.mesh = null;
+    }
+}
+
+// Create NPCs
+const npcs = [];
+
+// Quest Giver NPC
+const questGiver = new NPCCharacter(
+    'elder',
+    'Village Elder',
+    'quest_giver',
+    { x: 10, z: 10 },
+    [
+        "Greetings, brave adventurer!",
+        "The goblin threat grows stronger each day.",
+        "Would you help protect our village?"
+    ]
+);
+
+// Merchant NPC
+const merchant = new NPCCharacter(
+    'merchant',
+    'Traveling Merchant',
+    'merchant',
+    { x: -10, z: 10 },
+    [
+        "Welcome to my humble shop!",
+        "I have the finest wares in all the land.",
+        "Take a look at what I have to offer!"
+    ]
+);
+
+npcs.push(questGiver, merchant);
+
+// Merchant inventory
+const merchantInventory = [
+    new Item('health_pot', 'Health Potion', '🧪', 'consumable', 50, { healing: 50 }),
+    new Item('mana_pot', 'Mana Potion', '🔮', 'consumable', 40, { manaRestore: 30 }),
+    new Item('iron_sword', 'Iron Sword', '🗡️', 'weapon', 100, { slot: 'weapon', damage: 15 }),
+    new Item('steel_helm', 'Steel Helmet', '⛑️', 'armor', 80, { slot: 'head', armor: 5 }),
+    new Item('bread', 'Bread', '🍞', 'consumable', 5, { healing: 10 }),
+];
+
+// Create NPC meshes
+function createNPCMesh(npc) {
+    const npcGroup = new THREE.Group();
+    
+    // Body
+    const bodyGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 8);
+    const bodyMat = new THREE.MeshStandardMaterial({ 
+        color: npc.type === 'merchant' ? 0x9333ea : 0x3b82f6 
+    });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 0.75;
+    body.castShadow = true;
+    npcGroup.add(body);
+    
+    // Head
+    const headGeo = new THREE.SphereGeometry(0.3, 16, 16);
+    const headMat = new THREE.MeshStandardMaterial({ color: 0xffdbac });
+    const head = new THREE.Mesh(headGeo, headMat);
+    head.position.y = 1.7;
+    head.castShadow = true;
+    npcGroup.add(head);
+    
+    // Hat/indicator
+    const hatGeo = new THREE.ConeGeometry(0.35, 0.5, 8);
+    const hatMat = new THREE.MeshStandardMaterial({ 
+        color: npc.type === 'merchant' ? 0xfbbf24 : 0x4ade80,
+        emissive: npc.type === 'merchant' ? 0xfbbf24 : 0x4ade80,
+        emissiveIntensity: 0.3
+    });
+    const hat = new THREE.Mesh(hatGeo, hatMat);
+    hat.position.y = 2.2;
+    hat.castShadow = true;
+    npcGroup.add(hat);
+    
+    // Add floating icon
+    const iconGeo = new THREE.SphereGeometry(0.15, 16, 16);
+    const iconMat = new THREE.MeshStandardMaterial({ 
+        color: npc.type === 'merchant' ? 0xfbbf24 : 0x22c55e,
+        emissive: npc.type === 'merchant' ? 0xfbbf24 : 0x22c55e,
+        emissiveIntensity: 0.5
+    });
+    const icon = new THREE.Mesh(iconGeo, iconMat);
+    icon.position.y = 2.7;
+    npcGroup.add(icon);
+    
+    npcGroup.position.set(npc.position.x, 0, npc.position.z);
+    scene.add(npcGroup);
+    
+    npc.mesh = npcGroup;
+    npc.icon = icon;
+    
+    return {
+        type: 'npc',
+        npc: npc,
+        position: npc.position,
+        mesh: npcGroup,
+        interactable: true,
+        interact: function() {
+            interactWithNPC(npc);
+        }
+    };
+}
+
+// Add NPCs to the world
+npcs.forEach(npc => {
+    const npcObj = createNPCMesh(npc);
+    environmentObjects.push(npcObj);
+});
+
+// NPC Interaction
+function interactWithNPC(npc) {
+    if (npc.type === 'merchant') {
+        openTrading(npc);
+    } else if (npc.type === 'quest_giver') {
+        showDialogue(npc);
+    }
+}
+
+function showDialogue(npc) {
+    const panel = document.getElementById('dialogue-panel');
+    document.getElementById('npc-name').textContent = npc.name;
+    document.getElementById('dialogue-text').textContent = npc.dialogue[0];
+    
+    const options = document.getElementById('dialogue-options');
+    options.innerHTML = '';
+    
+    if (npc.type === 'quest_giver') {
+        const questBtn = document.createElement('button');
+        questBtn.className = 'dialogue-btn';
+        questBtn.textContent = 'Tell me more about the goblins';
+        questBtn.onclick = () => {
+            document.getElementById('dialogue-text').textContent = 
+                "The goblins have set up camp to the south. Defeat them and return to me for a reward!";
+        };
+        options.appendChild(questBtn);
+    }
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'dialogue-btn secondary';
+    closeBtn.textContent = 'Farewell';
+    closeBtn.onclick = closeDialogue;
+    options.appendChild(closeBtn);
+    
+    panel.classList.add('show');
+}
+
+function closeDialogue() {
+    document.getElementById('dialogue-panel').classList.remove('show');
+}
+
+// Trading UI
+function openTrading(npc) {
+    const panel = document.getElementById('trading-panel');
+    document.getElementById('merchant-name').textContent = npc.name;
+    document.getElementById('trade-gold-amount').textContent = playerInventory.gold;
+    
+    // Populate merchant items
+    const merchantItems = document.getElementById('merchant-items');
+    merchantItems.innerHTML = '';
+    
+    merchantInventory.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'trade-item';
+        itemDiv.innerHTML = `
+            <div class="item-info">
+                <div class="icon">${item.icon}</div>
+                <div class="details">
+                    <div class="name">${item.name}</div>
+                    <div class="price">💰 ${Math.ceil(item.value * 1.5)} gold</div>
+                </div>
+            </div>
+        `;
+        itemDiv.onclick = () => buyItem(item);
+        merchantItems.appendChild(itemDiv);
+    });
+    
+    // Populate player items
+    const playerItems = document.getElementById('player-items');
+    playerItems.innerHTML = '';
+    
+    playerInventory.items.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'trade-item';
+        itemDiv.innerHTML = `
+            <div class="item-info">
+                <div class="icon">${item.icon}</div>
+                <div class="details">
+                    <div class="name">${item.name}</div>
+                    <div class="price">💰 ${Math.floor(item.value * 0.5)} gold</div>
+                </div>
+            </div>
+        `;
+        itemDiv.onclick = () => sellItem(item);
+        playerItems.appendChild(itemDiv);
+    });
+    
+    panel.classList.add('show');
+}
+
+function closeTrading() {
+    document.getElementById('trading-panel').classList.remove('show');
+}
+
+function buyItem(item) {
+    const price = Math.ceil(item.value * 1.5);
+    if (playerInventory.removeGold(price)) {
+        const newItem = new Item(item.id, item.name, item.icon, item.type, item.value, item.stats);
+        if (playerInventory.addItem(newItem)) {
+            document.getElementById('trade-gold-amount').textContent = playerInventory.gold;
+            addMessage(`Bought ${item.icon} ${item.name} for ${price} gold`, 'success');
+        } else {
+            playerInventory.addGold(price); // Refund if inventory full
+        }
+    } else {
+        addMessage('Not enough gold!', 'warning');
+    }
+}
+
+function sellItem(item) {
+    const price = Math.floor(item.value * 0.5);
+    if (playerInventory.removeItem(item.id)) {
+        playerInventory.addGold(price);
+        document.getElementById('trade-gold-amount').textContent = playerInventory.gold;
+        addMessage(`Sold ${item.icon} ${item.name} for ${price} gold`, 'success');
+        openTrading(merchant); // Refresh trading UI
+    }
+}
+
+// Additional keyboard controls
+window.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'i') {
+        const invPanel = document.getElementById('inventory-panel');
+        if (invPanel.classList.contains('show')) {
+            closeInventory();
+        } else {
+            openInventory();
+        }
+    }
+    
+    if (e.key === 'Escape') {
+        closeInventory();
+        closeTrading();
+        closeDialogue();
+    }
+});
+
+// Animate NPC icons (make them float)
+setInterval(() => {
+    npcs.forEach(npc => {
+        if (npc.icon) {
+            npc.icon.position.y = 2.7 + Math.sin(Date.now() * 0.002) * 0.2;
+        }
+    });
+}, 50);

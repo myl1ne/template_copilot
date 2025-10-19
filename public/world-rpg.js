@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 
 // Scene setup
 const scene = new THREE.Scene();
@@ -548,6 +549,22 @@ function createGoblin(x, z) {
     head.position.y = 1.6;
     head.castShadow = true;
     goblin.add(head);
+    
+    // Add mask if available
+    const maskTypes = ['fox', 'wolf', 'crocodile', 'colorful'];
+    const randomMask = maskTypes[Math.floor(Math.random() * maskTypes.length)];
+    if (loadedModels['mask_' + randomMask]) {
+        const mask = loadedModels['mask_' + randomMask].clone();
+        mask.scale.set(0.0015, 0.0015, 0.0015); // Scale down mask
+        mask.position.set(0, 1.6, 0.15); // Position on head
+        mask.rotation.y = Math.PI; // Face forward
+        mask.traverse((child) => {
+            if (child.isMesh) {
+                child.castShadow = true;
+            }
+        });
+        goblin.add(mask);
+    }
     
     // Ears (pointy)
     const earGeo = new THREE.ConeGeometry(0.1, 0.2, 8);
@@ -1144,6 +1161,13 @@ function animate() {
     // Update animation
     updateAnimation(delta);
     
+    // Update NPC animations (Greg)
+    npcs.forEach(npc => {
+        if (npc.mixer) {
+            npc.mixer.update(delta);
+        }
+    });
+    
     // Check for nearby interactable objects
     nearestInteractable = checkInteractions();
     
@@ -1540,41 +1564,132 @@ const merchantInventory = [
     new Item('bread', 'Bread', '🍞', 'consumable', 5, { healing: 10 }),
 ];
 
+// FBX Loader for character assets
+const fbxLoader = new FBXLoader();
+const loadedModels = {};
+const loadedAnimations = {};
+
+// Load Greg character and animations
+async function loadGregCharacter() {
+    const basePath = '/assets/characters/Greg/';
+    const animations = [
+        'Animation_Idle_4_withSkin.fbx',
+        'Animation_Walking_withSkin.fbx',
+        'Animation_Running_withSkin.fbx',
+        'Animation_Talk_with_Left_Hand_Raised_withSkin.fbx'
+    ];
+    
+    try {
+        // Load first animation which includes the model
+        const model = await new Promise((resolve, reject) => {
+            fbxLoader.load(basePath + animations[0], resolve, undefined, reject);
+        });
+        
+        loadedModels['greg'] = model;
+        loadedAnimations['greg_idle'] = model.animations[0];
+        
+        // Load other animations
+        for (let i = 1; i < animations.length; i++) {
+            const anim = await new Promise((resolve, reject) => {
+                fbxLoader.load(basePath + animations[i], resolve, undefined, reject);
+            });
+            const animName = animations[i].replace('Animation_', '').replace('_withSkin.fbx', '').toLowerCase();
+            loadedAnimations['greg_' + animName] = anim.animations[0];
+        }
+        
+        console.log('✓ Greg character and animations loaded');
+        return true;
+    } catch (error) {
+        console.error('Error loading Greg character:', error);
+        return false;
+    }
+}
+
+// Load mask FBX models
+async function loadMasks() {
+    const basePath = '/assets/items/';
+    const masks = [
+        'Fox_Mask_Delight_1013090808_texture_fbx/Fox_Mask_Delight_1013090808_texture_fbx/Fox_Mask_Delight_1013090808_texture.fbx',
+        'Wolf_Mask_1013091527_texture_fbx/Wolf_Mask_1013091527_texture_fbx/Wolf_Mask_1013091527_texture.fbx',
+        'Crocodile_Mask_1013091746_texture_fbx/Crocodile_Mask_1013091746_texture_fbx/Crocodile_Mask_1013091746_texture.fbx',
+        'Colorful_Bird_Mask_1013090920_texture_fbx/Colorful_Bird_Mask_1013090920_texture_fbx/Colorful_Bird_Mask_1013090920_texture.fbx'
+    ];
+    
+    try {
+        for (let i = 0; i < masks.length; i++) {
+            const mask = await new Promise((resolve, reject) => {
+                fbxLoader.load(basePath + masks[i], resolve, undefined, reject);
+            });
+            const maskName = masks[i].split('/')[0].split('_')[0].toLowerCase();
+            loadedModels['mask_' + maskName] = mask;
+        }
+        console.log('✓ Masks loaded');
+        return true;
+    } catch (error) {
+        console.error('Error loading masks:', error);
+        return false;
+    }
+}
+
 // Create NPC meshes
 function createNPCMesh(npc) {
     const npcGroup = new THREE.Group();
     
-    // Body
-    const bodyGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 8);
-    const bodyMat = new THREE.MeshStandardMaterial({ 
-        color: npc.type === 'merchant' ? 0x9333ea : 0x3b82f6 
-    });
-    const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.position.y = 0.75;
-    body.castShadow = true;
-    npcGroup.add(body);
+    // Use Greg FBX model for quest giver (Village Elder)
+    if (npc.id === 'elder' && loadedModels['greg']) {
+        const gregModel = loadedModels['greg'].clone();
+        gregModel.scale.set(0.01, 0.01, 0.01); // Scale down FBX model
+        gregModel.rotation.y = Math.PI; // Face forward
+        gregModel.traverse((child) => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+        });
+        npcGroup.add(gregModel);
+        
+        // Setup animation mixer for Greg
+        if (loadedAnimations['greg_idle']) {
+            const mixer = new THREE.AnimationMixer(gregModel);
+            const action = mixer.clipAction(loadedAnimations['greg_idle']);
+            action.play();
+            npc.mixer = mixer;
+            npc.currentAnimation = 'idle';
+        }
+    } else {
+        // Fallback to primitive shapes for other NPCs
+        // Body
+        const bodyGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 8);
+        const bodyMat = new THREE.MeshStandardMaterial({ 
+            color: npc.type === 'merchant' ? 0x9333ea : 0x3b82f6 
+        });
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 0.75;
+        body.castShadow = true;
+        npcGroup.add(body);
+        
+        // Head
+        const headGeo = new THREE.SphereGeometry(0.3, 16, 16);
+        const headMat = new THREE.MeshStandardMaterial({ color: 0xffdbac });
+        const head = new THREE.Mesh(headGeo, headMat);
+        head.position.y = 1.7;
+        head.castShadow = true;
+        npcGroup.add(head);
+        
+        // Hat/indicator
+        const hatGeo = new THREE.ConeGeometry(0.35, 0.5, 8);
+        const hatMat = new THREE.MeshStandardMaterial({ 
+            color: npc.type === 'merchant' ? 0xfbbf24 : 0x4ade80,
+            emissive: npc.type === 'merchant' ? 0xfbbf24 : 0x4ade80,
+            emissiveIntensity: 0.3
+        });
+        const hat = new THREE.Mesh(hatGeo, hatMat);
+        hat.position.y = 2.2;
+        hat.castShadow = true;
+        npcGroup.add(hat);
+    }
     
-    // Head
-    const headGeo = new THREE.SphereGeometry(0.3, 16, 16);
-    const headMat = new THREE.MeshStandardMaterial({ color: 0xffdbac });
-    const head = new THREE.Mesh(headGeo, headMat);
-    head.position.y = 1.7;
-    head.castShadow = true;
-    npcGroup.add(head);
-    
-    // Hat/indicator
-    const hatGeo = new THREE.ConeGeometry(0.35, 0.5, 8);
-    const hatMat = new THREE.MeshStandardMaterial({ 
-        color: npc.type === 'merchant' ? 0xfbbf24 : 0x4ade80,
-        emissive: npc.type === 'merchant' ? 0xfbbf24 : 0x4ade80,
-        emissiveIntensity: 0.3
-    });
-    const hat = new THREE.Mesh(hatGeo, hatMat);
-    hat.position.y = 2.2;
-    hat.castShadow = true;
-    npcGroup.add(hat);
-    
-    // Add floating icon
+    // Add floating icon (always present)
     const iconGeo = new THREE.SphereGeometry(0.15, 16, 16);
     const iconMat = new THREE.MeshStandardMaterial({ 
         color: npc.type === 'merchant' ? 0xfbbf24 : 0x22c55e,
@@ -1603,11 +1718,25 @@ function createNPCMesh(npc) {
     };
 }
 
-// Add NPCs to the world
-npcs.forEach(npc => {
-    const npcObj = createNPCMesh(npc);
-    environmentObjects.push(npcObj);
-});
+// Load FBX assets and then add NPCs to the world
+(async function initAssets() {
+    // Show loading message
+    addMessage('Loading character assets...', 'info');
+    
+    // Load assets
+    await Promise.all([
+        loadGregCharacter(),
+        loadMasks()
+    ]);
+    
+    addMessage('✓ Assets loaded!', 'success');
+    
+    // Now create NPCs with loaded models
+    npcs.forEach(npc => {
+        const npcObj = createNPCMesh(npc);
+        environmentObjects.push(npcObj);
+    });
+})();
 
 // NPC Interaction
 function interactWithNPC(npc) {
@@ -1629,10 +1758,12 @@ function showDialogue(npc) {
     if (npc.type === 'quest_giver') {
         // Village Elder - First Quest
         if (npc.id === 'elder') {
-            // Check if player can complete the quest
-            if (activeQuest && activeQuest.id === 'village_rescue' && 
-                activeQuest.objectives[0].completed && activeQuest.objectives[1].completed && 
-                !activeQuest.objectives[2].completed) {
+            const villageQuest = quests['village_rescue'];
+            
+            // Only show turn-in button if quest is active, objectives complete, but quest not completed yet
+            if (villageQuest.active && !villageQuest.completed &&
+                villageQuest.objectives[0].completed && villageQuest.objectives[1].completed && 
+                !villageQuest.objectives[2].completed) {
                 const completeBtn = document.createElement('button');
                 completeBtn.className = 'dialogue-btn';
                 completeBtn.textContent = '✓ I defeated the goblins!';
@@ -1640,9 +1771,15 @@ function showDialogue(npc) {
                     updateQuestProgress('return_to_elder', 1);
                     document.getElementById('dialogue-text').textContent = 
                         "Excellent work, brave warrior! The village is safe once again. Please accept this reward for your heroic deeds!";
+                    // Close dialogue after a delay to show completion message
+                    setTimeout(() => {
+                        closeDialogue();
+                    }, 2000);
                 };
                 options.appendChild(completeBtn);
-            } else {
+            } 
+            // Show quest info button only if quest is active and not all objectives are done
+            else if (villageQuest.active && !villageQuest.completed) {
                 const questBtn = document.createElement('button');
                 questBtn.className = 'dialogue-btn';
                 questBtn.textContent = 'Tell me more about the goblins';
@@ -1651,6 +1788,11 @@ function showDialogue(npc) {
                         "The goblins have set up camp to the south. Defeat them and return to me for a reward!";
                 };
                 options.appendChild(questBtn);
+            }
+            // After quest is complete, show different dialogue
+            else if (villageQuest.completed) {
+                document.getElementById('dialogue-text').textContent = 
+                    "Thank you again, brave warrior! The village is forever in your debt.";
             }
         }
         

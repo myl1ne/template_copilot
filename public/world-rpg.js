@@ -649,7 +649,7 @@ function createGoblin(x, z) {
     scene.add(goblin);
     
     const spawnPosition = { x, z };
-    
+
     return {
         type: 'goblin',
         position: { x, y: 0, z },
@@ -664,43 +664,38 @@ function createGoblin(x, z) {
         lastAttackTime: 0,
         attackCooldown: 2,
         interact: function() {
-            if (!this.alive) {
-                return { message: 'The goblin is already defeated!', type: 'info' };
-            }
-            
-            // Player attacks goblin
             const currentTime = Date.now() / 1000;
             if (currentTime - this.lastAttackTime < this.attackCooldown) {
                 return { message: 'Attack on cooldown!', type: 'warning' };
             }
-            
+
             this.lastAttackTime = currentTime;
             const damage = Math.floor(15 + Math.random() * 10);
             this.hp -= damage;
-            
+
             if (this.hp <= 0) {
                 this.alive = false;
                 this.hp = 0;
                 this.timeSinceDeath = 0;
                 // Fade out the goblin
                 this.mesh.visible = false;
-                
+
                 // Update quest progress
                 if (this.isBoss) {
                     updateQuestProgress('kill_boss', 1);
                 } else {
                     updateQuestProgress('kill_goblins', 1);
                 }
-                
-                return { 
-                    message: `Goblin defeated! Dealt ${damage} damage. +50 XP`, 
-                    type: 'success' 
+
+                return {
+                    message: `Goblin defeated! Dealt ${damage} damage. +50 XP`,
+                    type: 'success'
                 };
             }
-            
-            return { 
-                message: `Hit goblin for ${damage} damage! (${this.hp}/${this.maxHp} HP remaining)`, 
-                type: 'warning' 
+
+            return {
+                message: `Hit goblin for ${damage} damage! (${this.hp}/${this.maxHp} HP remaining)`,
+                type: 'warning'
             };
         }
     };
@@ -1572,45 +1567,29 @@ class NPCCharacter {
 // Create NPCs (array `npcs` was initialized earlier)
 
 // Quest Giver NPC
-const questGiver = new NPCCharacter(
-    'elder',
-    'Village Elder',
-    'quest_giver',
-    { x: 10, z: 10 },
-    [
-        "Greetings, brave adventurer!",
-        "The goblin threat grows stronger each day.",
-        "Would you help protect our village?"
-    ]
-);
+// Replace NPC roster with four characters using provided FBX names
+// We store modelKey on the NPC so createNPCMesh will pick the correct FBX
+const greg = new NPCCharacter('greg', 'Greg', 'quest_giver', { x: 10, z: 10 }, [
+    "Hello there — I'm Greg, the village elder in some places.",
+    "We need your help with the goblin problem."
+]);
 
-// Merchant NPC
-const merchant = new NPCCharacter(
-    'merchant',
-    'Traveling Merchant',
-    'merchant',
-    { x: -10, z: 10 },
-    [
-        "Welcome to my humble shop!",
-        "I have the finest wares in all the land.",
-        "Take a look at what I have to offer!"
-    ]
-);
+const bodger = new NPCCharacter('bodger', 'Bodger', 'merchant', { x: -10, z: 10 }, [
+    "Step right up! Bodger's bargains today!",
+    "I've got the finest trinkets in the region."
+]);
 
-// Hermit NPC (for second quest)
-const hermit = new NPCCharacter(
-    'hermit',
-    'Forest Hermit',
-    'quest_giver',
-    { x: -25, z: -25 },
-    [
-        "Ah, a visitor! How rare...",
-        "I live here in solitude, away from the troubles of the village.",
-        "What brings you to my humble dwelling?"
-    ]
-);
+const baelinNPC = new NPCCharacter('baelin', 'Baelin', 'quest_giver', { x: -25, z: -5 }, [
+    "The forest speaks in whispers...",
+    "Careful out there, traveler."
+]);
 
-npcs.push(questGiver, merchant, hermit);
+const baradunNPC = new NPCCharacter('baradun', 'Baradun', 'quest_giver', { x: 5, z: 12 }, [
+    "I'm Baradun, keeper of stories.",
+    "Have you heard the tale of the northern lights?"
+]);
+
+npcs.push(greg, bodger, baelinNPC, baradunNPC);
 
 // Merchant inventory
 const merchantInventory = [
@@ -1646,17 +1625,18 @@ async function loadBaelinCharacter() {
         // yield to the event loop so the UI can update while parsing heavy FBX
         await new Promise(r => setTimeout(r, 0));
 
-        // Calculate bounding box to determine proper scale
-        const bbox = new THREE.Box3().setFromObject(model);
-        const size = bbox.getSize(new THREE.Vector3());
-        const height = size.y;
-        
-        // Target height of 2 units for NPCs
-        const targetHeight = 2.0;
-        const scale = targetHeight / height;
-        model.scale.set(scale, scale, scale);
-        model.scale.multiplyScalar(0.01); 
-        
+        // Diagnostics: report raw bounding box and child mesh counts (no in-place normalization)
+        try {
+            const bbox = new THREE.Box3().setFromObject(model);
+            const size = bbox.getSize(new THREE.Vector3());
+            const height = size.y;
+            const meshCount = (() => { let c = 0; model.traverse(ch => { if (ch.isMesh || ch.isSkinnedMesh) c++; }); return c; })();
+            console.log('Baelin FBX loaded -> bbox size:', size, 'height:', height, 'mesh/skinnedMesh count:', meshCount);
+        } catch (e) {
+            console.warn('Baelin diagnostics failed:', e);
+        }
+
+        // Store the model as-loaded (no scaling/centering here per user request)
         loadedModels['baelin'] = model;
         
         // Smart animation detection by keyword
@@ -1677,10 +1657,66 @@ async function loadBaelinCharacter() {
             }
         }
 
-        console.log('✓ Baelin character loaded (height:', height.toFixed(2), '→', targetHeight, 'units, scale:', scale.toFixed(3) + ')');
+    console.log('✓ Baelin character loaded');
         return true;
     } catch (error) {
         console.error('Error loading Baelin character:', error);
+        return false;
+    }
+}
+
+// Load Greg character
+async function loadGregCharacter() {
+    const filePath = '/assets/characters/Greg.fbx';
+    try {
+        const model = await new Promise((resolve, reject) => {
+            fbxLoader.load(filePath, resolve, undefined, reject);
+        });
+        await new Promise(r => setTimeout(r, 0));
+        try {
+            const bbox = new THREE.Box3().setFromObject(model);
+            const size = bbox.getSize(new THREE.Vector3());
+            const height = size.y;
+            const meshCount = (() => { let c = 0; model.traverse(ch => { if (ch.isMesh || ch.isSkinnedMesh) c++; }); return c; })();
+            console.log('Greg FBX loaded -> bbox size:', size, 'height:', height, 'mesh/skinnedMesh count:', meshCount);
+        } catch (e) { console.warn('Greg diagnostics failed', e); }
+        loadedModels['greg'] = model;
+        if (model.animations && model.animations.length > 0) {
+            const idleAnim = findAnimationByKeyword(model.animations, ['idle', 'stand']);
+            if (idleAnim) loadedAnimations['greg_idle'] = idleAnim; else loadedAnimations['greg_idle'] = model.animations[0];
+        }
+        console.log('✓ Greg loaded');
+        return true;
+    } catch (err) {
+        console.error('Error loading Greg:', err);
+        return false;
+    }
+}
+
+// Load Bodger (merchant)
+async function loadBodgerCharacter() {
+    const filePath = '/assets/characters/Bodger.fbx';
+    try {
+        const model = await new Promise((resolve, reject) => {
+            fbxLoader.load(filePath, resolve, undefined, reject);
+        });
+        await new Promise(r => setTimeout(r, 0));
+        try {
+            const bbox = new THREE.Box3().setFromObject(model);
+            const size = bbox.getSize(new THREE.Vector3());
+            const height = size.y;
+            const meshCount = (() => { let c = 0; model.traverse(ch => { if (ch.isMesh || ch.isSkinnedMesh) c++; }); return c; })();
+            console.log('Bodger FBX loaded -> bbox size:', size, 'height:', height, 'mesh/skinnedMesh count:', meshCount);
+        } catch (e) { console.warn('Bodger diagnostics failed', e); }
+        loadedModels['bodger'] = model;
+        if (model.animations && model.animations.length > 0) {
+            const idleAnim = findAnimationByKeyword(model.animations, ['idle', 'stand']);
+            if (idleAnim) loadedAnimations['bodger_idle'] = idleAnim; else loadedAnimations['bodger_idle'] = model.animations[0];
+        }
+        console.log('✓ Bodger loaded');
+        return true;
+    } catch (err) {
+        console.error('Error loading Bodger:', err);
         return false;
     }
 }
@@ -1694,17 +1730,18 @@ async function loadBaradunCharacter() {
         });
         await new Promise(r => setTimeout(r, 0));
         
-        // Calculate bounding box to determine proper scale
-        const bbox = new THREE.Box3().setFromObject(model);
-        const size = bbox.getSize(new THREE.Vector3());
-        const height = size.y;
-        
-        // Target height of 2 units for NPCs
-        const targetHeight = 2.0;
-        const scale = targetHeight / height;
-        model.scale.set(scale, scale, scale);
-        
-        model.scale.multiplyScalar(0.01); 
+        // Diagnostics: report raw bounding box and child mesh counts (no in-place normalization)
+        try {
+            const bbox = new THREE.Box3().setFromObject(model);
+            const size = bbox.getSize(new THREE.Vector3());
+            const height = size.y;
+            const meshCount = (() => { let c = 0; model.traverse(ch => { if (ch.isMesh || ch.isSkinnedMesh) c++; }); return c; })();
+            console.log('Baradun FBX loaded -> bbox size:', size, 'height:', height, 'mesh/skinnedMesh count:', meshCount);
+        } catch (e) {
+            console.warn('Baradun diagnostics failed:', e);
+        }
+
+        // Store the model as-loaded (no scaling/centering here per user request)
         loadedModels['baradun'] = model;
         
         // Smart animation detection by keyword
@@ -1725,7 +1762,7 @@ async function loadBaradunCharacter() {
             }
         }
 
-        console.log('✓ Baradun loaded (height:', height.toFixed(2), '→', targetHeight, 'units, scale:', scale.toFixed(3) + ')');
+    console.log('✓ Baradun loaded');
         return true;
     } catch (err) {
         console.error('Error loading Baradun:', err);
@@ -1763,51 +1800,173 @@ async function loadMasks() {
 function createNPCMesh(npc) {
     const npcGroup = new THREE.Group();
     
-    // Use Baelin FBX model for quest giver (Village Elder)
-    if (npc.id === 'elder' && loadedModels['baelin']) {
-        // Clone the Baelin FBX and add it to the NPC group without modifying its authored transform.
-    const charModel = SkeletonUtils.clone(loadedModels['baelin']);
-    // apply a small uniform scale so authoring units match the scene (adjustable)
-    charModel.scale.multiplyScalar(0.012);
-        charModel.rotation.y = Math.PI; // Face forward
-        charModel.traverse((child) => {
-            if (child.isMesh) {
-                child.castShadow = true;
-                child.receiveShadow = true;
-            }
-        });
-        npcGroup.add(charModel);
+    // If a loaded model exists for this NPC id, clone/use it
+    if (loadedModels[npc.id]) {
+        try {
+            const modelKey = npc.id;
+            const clone = SkeletonUtils.clone(loadedModels[modelKey]);
+            clone.rotation.y = Math.PI; // face forward by default
 
-        // Setup animation mixer for Baelin if animations are available
-        if (loadedAnimations['baelin_idle']) {
-            const mixer = new THREE.AnimationMixer(charModel);
-            const action = mixer.clipAction(loadedAnimations['baelin_idle']);
-            action.play();
-            npc.mixer = mixer;
-            npc.currentAnimation = 'idle';
-        }
-    } else {
-        // Fallback to primitive shapes for other NPCs
-        // Use Baradun FBX model for merchant if available
-        if (npc.type === 'merchant' && loadedModels['baradun']) {
-            const bModel = SkeletonUtils.clone(loadedModels['baradun']);
-            // We assume the Baradun prototype was normalized during load
-            bModel.traverse((child) => {
-                if (child.isMesh) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
+            // Compute bbox, apply safe uniform scale
+            // finalScale and liftY are populated by the scaling logic below
+            let finalScale = 1.0;
+            let liftY = 0;
+            try {
+                // Prefer using the largest geometry mesh's bounding box so root offsets
+                // and helper nodes don't inflate the size. Fall back to world bbox if needed.
+                try {
+                    const primaryMesh = getLargestGeometryMesh(clone);
+                    const targetHeight = 2.0;
+                    // assign to outer finalScale/finalHeight so they're visible after this block
+                    finalScale = 1.0;
+                    let finalHeight = 0;
+
+                    // try to ensure we have a usable primary mesh (prefer skinned mesh)
+                    let detectedMethod = 'none';
+                    let usablePrimary = primaryMesh;
+                    if (!usablePrimary) {
+                        // prefer the first SkinnedMesh, then any Mesh with geometry
+                        primaryMesh && (usablePrimary = primaryMesh);
+                        clone.traverse((ch) => {
+                            if (!usablePrimary && ch.isSkinnedMesh && ch.geometry) {
+                                usablePrimary = ch;
+                            }
+                        });
+                        if (!usablePrimary) {
+                            clone.traverse((ch) => {
+                                if (!usablePrimary && ch.isMesh && ch.geometry) usablePrimary = ch;
+                            });
+                        }
+                    }
+
+                    if (usablePrimary && usablePrimary.geometry) {
+                        detectedMethod = 'geom';
+                        if (!usablePrimary.geometry.boundingBox) usablePrimary.geometry.computeBoundingBox();
+                        const gbox = usablePrimary.geometry.boundingBox.clone();
+                        const geomHeight = gbox.getSize(new THREE.Vector3()).y || 1;
+
+                        // unit heuristic
+                        let unitGuess = 'units';
+                        let conv = 1.0;
+                        if (geomHeight > 10) { conv = 0.01; unitGuess = 'cm'; }
+
+                        let scale = targetHeight / Math.max(geomHeight * conv, 0.0001);
+                        scale = Math.min(Math.max(scale, 0.0001), 3.0);
+
+                        // per-model override (quick tuning)
+                        const modelScaleOverrides = {
+                            // 'greg': 1.0,
+                        };
+                        const overrideMul = modelScaleOverrides[modelKey] || 1.0;
+                        // set outer finalScale so later code/logs see the value
+                        finalScale = scale * overrideMul;
+
+                        // apply absolute uniform scale (use set to avoid multiplying any baked-in scale)
+                        console.log(`createNPCMesh: pre-scale for ${modelKey} = ${clone.scale.toArray()}`);
+                        clone.scale.set(finalScale, finalScale, finalScale);
+                        clone.updateMatrixWorld(true);
+                        console.log(`createNPCMesh: post-scale for ${modelKey} = ${clone.scale.toArray()}`);
+
+                        // compute lift using the primary mesh's world-space bbox so nested transforms
+                        // and bone offsets are respected. This is more robust than using geometry.min + local pos.
+                        try {
+                            const worldBox = new THREE.Box3().setFromObject(usablePrimary);
+                            const minWorldY = worldBox.min.y;
+                            liftY = -minWorldY;
+                        } catch (err) {
+                            // fallback to previous heuristic if something goes wrong
+                            const meshLocalMinY = gbox.min.y + (usablePrimary.position ? usablePrimary.position.y : 0);
+                            liftY = -(meshLocalMinY * finalScale);
+                        }
+                        clone.position.y = liftY;
+
+                        finalHeight = geomHeight * conv * finalScale;
+                        console.log(`createNPCMesh: method=${detectedMethod}, model=${modelKey}, unit=${unitGuess}, geomHeight=${geomHeight.toFixed(3)}, appliedScale=${finalScale.toFixed(6)}, finalHeight=${finalHeight.toFixed(3)}m, liftY=${liftY.toFixed(4)}`);
+                    } else {
+                        // fallback to world bbox
+                        const bbox = new THREE.Box3().setFromObject(clone);
+                        const size = bbox.getSize(new THREE.Vector3());
+                        const height = size.y || 1;
+                        let unitGuess = 'units';
+                        let conv = 1.0;
+                        if (height > 10) { conv = 0.01; unitGuess = 'cm'; }
+                        let scale = targetHeight / Math.max(height * conv, 0.0001);
+                        scale = Math.min(Math.max(scale, 0.0001), 3.0);
+                        finalScale = scale;
+                        console.log(`createNPCMesh: pre-scale (worldbbox) for ${modelKey} = ${clone.scale.toArray()}`);
+                        clone.scale.set(finalScale, finalScale, finalScale);
+                        // update world matrices then recompute bbox to get correct min after scale
+                        clone.updateMatrixWorld(true);
+                        console.log(`createNPCMesh: post-scale (worldbbox) for ${modelKey} = ${clone.scale.toArray()}`);
+                        const bbox2 = new THREE.Box3().setFromObject(clone);
+                        const min = bbox2.min;
+                        liftY = -min.y;
+                        clone.position.y = liftY;
+                        finalHeight = height * conv * finalScale;
+                        console.log(`createNPCMesh: method=worldbbox, model=${modelKey}, unit=${unitGuess}, rawHeight=${height.toFixed(3)}, appliedScale=${finalScale.toFixed(6)}, finalHeight=${finalHeight.toFixed(3)}m, liftY=${liftY.toFixed(4)}`);
+                    }
+                } catch (e) {
+                    console.warn(`createNPCMesh: scaling/align failed for ${npc.id}`, e);
                 }
-            });
-            bModel.rotation.y = Math.PI;
-            npcGroup.add(bModel);
-            if (loadedAnimations['baradun_idle']) {
-                const mixer = new THREE.AnimationMixer(bModel);
-                const action = mixer.clipAction(loadedAnimations['baradun_idle']);
+
+                let meshCount = 0;
+                let skinnedCount = 0;
+                clone.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                        meshCount++;
+                    }
+                    if (child.isSkinnedMesh) skinnedCount++;
+                });
+                console.log(`createNPCMesh: clone for '${modelKey}' created - meshes: ${meshCount}, skinnedMeshes: ${skinnedCount}, appliedScale: ${finalScale.toFixed(4)}, liftY: ${liftY.toFixed(4)}`);
+            } catch (e) {
+                console.warn(`createNPCMesh: bbox/scale/align failed for ${npc.id}`, e);
+            }
+
+            npcGroup.add(clone);
+
+            // Setup mixer using naming convention '{id}_idle' fallback to first clip
+            const idleKey = `${npc.id}_idle`;
+            if (loadedAnimations[idleKey]) {
+                const mixer = new THREE.AnimationMixer(clone);
+                const action = mixer.clipAction(loadedAnimations[idleKey]);
                 action.play();
                 npc.mixer = mixer;
                 npc.currentAnimation = 'idle';
+                console.log(`createNPCMesh: mixer created and idle animation played for ${npc.id}`);
+            } else {
+                console.log(`createNPCMesh: no idle animation registered for ${npc.id}`);
             }
+
+            // Add small red origin marker so user can see where the NPC group origin is
+            const originMarker = new THREE.Mesh(
+                new THREE.SphereGeometry(0.05, 8, 8),
+                new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.5 })
+            );
+            originMarker.position.set(0, 0, 0);
+            npcGroup.add(originMarker);
+
+            // Attach mesh to npc object, create the floating icon, place group and add to scene
             npc.mesh = npcGroup;
+
+            // Add floating icon (always present)
+            const iconGeo = new THREE.SphereGeometry(0.15, 16, 16);
+            const iconMat = new THREE.MeshStandardMaterial({ 
+                color: npc.type === 'merchant' ? 0xfbbf24 : 0x22c55e,
+                emissive: npc.type === 'merchant' ? 0xfbbf24 : 0x22c55e,
+                emissiveIntensity: 0.5
+            });
+            const icon = new THREE.Mesh(iconGeo, iconMat);
+            icon.position.y = 2.7;
+            npcGroup.add(icon);
+
+            // Position group and add to scene
+            npcGroup.position.set(npc.position.x, 0, npc.position.z);
+            scene.add(npcGroup);
+
+            npc.icon = icon;
+
             return {
                 type: 'npc',
                 npc: npc,
@@ -1816,7 +1975,10 @@ function createNPCMesh(npc) {
                 interactable: true,
                 interact: function() { interactWithNPC(npc); }
             };
+        } catch (e) {
+            console.error('createNPCMesh: error cloning/adding model for', npc.id, e);
         }
+    } else {
         // Body
         const bodyGeo = new THREE.CylinderGeometry(0.3, 0.4, 1.5, 8);
         const bodyMat = new THREE.MeshStandardMaterial({ 
@@ -1860,6 +2022,13 @@ function createNPCMesh(npc) {
     npcGroup.add(icon);
     
     npcGroup.position.set(npc.position.x, 0, npc.position.z);
+    // Add a small red origin marker so it's easier to find NPC positions when models are invisible
+    const originMarker = new THREE.Mesh(
+        new THREE.SphereGeometry(0.05, 8, 8),
+        new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 0.5 })
+    );
+    originMarker.position.set(0, 0, 0);
+    npcGroup.add(originMarker);
     scene.add(npcGroup);
     
     npc.mesh = npcGroup;
@@ -1882,10 +2051,12 @@ function createNPCMesh(npc) {
     // Show loading message
     addMessage('Loading character assets...', 'info');
     
-    // Load assets (Baradun and Baelin); masks are disabled
+    // Load assets (Greg, Bodger, Baradun and Baelin); masks are disabled
     await Promise.all([
         loadBaradunCharacter(),
-        loadBaelinCharacter()
+        loadBaelinCharacter(),
+        loadGregCharacter(),
+        loadBodgerCharacter()
     ]);
     
     addMessage('✓ Assets loaded!', 'success');
@@ -2099,7 +2270,9 @@ function sellItem(item) {
         playerInventory.addGold(price);
         document.getElementById('trade-gold-amount').textContent = playerInventory.gold;
         addMessage(`Sold ${item.icon} ${item.name} for ${price} gold`, 'success');
-        openTrading(merchant); // Refresh trading UI
+    // Refresh trading UI - find the merchant (bodger) by id
+    const bodgerNpc = npcs.find(n => n.id === 'bodger');
+    if (bodgerNpc) openTrading(bodgerNpc);
     }
 }
 

@@ -48,6 +48,86 @@ Comprehensive quest management:
 - Quest giver and location tracking
 
 ### Three.js Integration
+
+**Features:**
+- Interactive 3D character visualization
+- WoW-style camera controls (right-click to rotate, mouse wheel to zoom)
+- Character animations (idle, walking, running, attacking, resting)
+- Populated 3D world with environment objects
+- NPC interactions and dialogue
+- Inventory and equipment management
+- Trading system with merchants
+- Goblin enemies with respawn mechanics
+
+**Demos:**
+1. **Basic Character Demo** (`/` or `/index.html`) - 3D character with animations
+2. **Quest Demo** (`/quest-demo.html`) - Interactive quest progression with UI
+3. **Integrated Quest Demo** (`/integrated-demo.html`) - 3D world with quest overlay
+4. **World Demo** (`/world-demo.html`) - Full 3D environment with movement
+5. **RPG Demo** (`/world-rpg.html`) - **NEW!** Complete RPG with NPCs, inventory, and trading
+
+### Item System
+
+```javascript
+const { Item } = require('./src/models');
+
+const healthPotion = new Item('health_pot', 'Health Potion', {
+  icon: '🧪',
+  type: 'consumable',
+  value: 50,
+  stats: { healing: 50 }
+});
+```
+
+**Item Types:**
+- Weapons (with damage stats)
+- Armor (with armor and slot info)
+- Consumables (with healing/mana restore effects)
+- Quest items
+
+**Rarity Levels:** common, uncommon, rare, epic, legendary
+
+### Inventory System
+
+```javascript
+const { Inventory } = require('./src/models');
+
+const inventory = new Inventory(20); // 20 slots
+inventory.addGold(100);
+inventory.addItem(healthPotion);
+inventory.equipItem('iron_sword');
+```
+
+**Features:**
+- 20-slot inventory
+- Gold management
+- Equipment slots (head, chest, legs, weapon, shield)
+- Item stacking for consumables
+- Equipment stat bonuses
+
+### NPC System
+
+```javascript
+const { NPC } = require('./src/models');
+
+const merchant = new NPC('merchant_001', 'Traveling Merchant', {
+  type: 'merchant',
+  position: { x: -10, z: 10 },
+  dialogue: ['Welcome to my shop!']
+});
+```
+
+**NPC Types:**
+- Quest Givers - Provide quests and dialogue
+- Merchants - Trade items with dynamic pricing
+- Guards - (Future implementation)
+
+**Merchant Features:**
+- Buy items from players (50% of value)
+- Sell items to players (150% of value)
+- Dynamic inventory
+
+
 3D visualization and rendering:
 - Character rendering with 3D models
 - Real-time animations (rotation, sword swings, particle effects)
@@ -247,13 +327,17 @@ npm run demo
 
 This is the foundation for a Three.js-based MMORPG with generative AI features. Future additions will include:
 
-- 3D character rendering with Three.js
+- ~~3D character rendering with Three.js~~ ✅ Complete
+- ~~Inventory and equipment system~~ ✅ Complete
+- ~~NPC AI behaviors~~ ✅ Complete (basic)
 - AI-generated quests and storylines
 - Multiplayer networking
-- Combat system implementation
-- Inventory and equipment system
+- Advanced combat system implementation
 - World generation and exploration
-- NPC AI behaviors
+- More NPC types and behaviors
+- Crafting system
+- Character progression and leveling
+- Procedural content generation
 
 ## License
 

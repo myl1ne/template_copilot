@@ -310,6 +310,133 @@ function createChest(x, z) {
     };
 }
 
+// Helper function to create a MAGICAL chest (something fun!)
+function createMagicalChest(x, z) {
+    const chest = new THREE.Group();
+    
+    // Base
+    const baseGeo = new THREE.BoxGeometry(0.8, 0.5, 0.6);
+    const baseMat = new THREE.MeshStandardMaterial({ 
+        color: 0x9333ea, // Purple/magical color
+        metalness: 0.6,
+        roughness: 0.3,
+        emissive: 0x9333ea,
+        emissiveIntensity: 0.3
+    });
+    const base = new THREE.Mesh(baseGeo, baseMat);
+    base.position.y = 0.25;
+    base.castShadow = true;
+    chest.add(base);
+    
+    // Magical lid (animated)
+    const lidGeo = new THREE.BoxGeometry(0.85, 0.15, 0.65);
+    const lidMat = new THREE.MeshStandardMaterial({ 
+        color: 0xa855f7, // Lighter purple
+        metalness: 0.7,
+        roughness: 0.2,
+        emissive: 0xa855f7,
+        emissiveIntensity: 0.4
+    });
+    const lid = new THREE.Mesh(lidGeo, lidMat);
+    lid.position.set(0, 0.575, -0.3);
+    lid.castShadow = true;
+    chest.add(lid);
+    
+    // Magic lock (glowing)
+    const lockGeo = new THREE.SphereGeometry(0.1, 8, 8);
+    const lockMat = new THREE.MeshStandardMaterial({ 
+        color: 0xfbbf24,
+        emissive: 0xfbbf24,
+        emissiveIntensity: 0.8,
+        metalness: 0.9
+    });
+    const lock = new THREE.Mesh(lockGeo, lockMat);
+    lock.position.set(0, 0.25, 0.35);
+    chest.add(lock);
+    
+    // Add sparkle particles around chest
+    const particlesGeo = new THREE.BufferGeometry();
+    const particleCount = 30;
+    const positions = new Float32Array(particleCount * 3);
+    
+    for (let i = 0; i < particleCount; i++) {
+        const angle = (i / particleCount) * Math.PI * 2;
+        const radius = 1 + Math.random() * 0.5;
+        positions[i * 3] = Math.cos(angle) * radius;
+        positions[i * 3 + 1] = Math.random() * 2;
+        positions[i * 3 + 2] = Math.sin(angle) * radius;
+    }
+    
+    particlesGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const particlesMat = new THREE.PointsMaterial({
+        color: 0xfbbf24,
+        size: 0.1,
+        transparent: true,
+        opacity: 0.8
+    });
+    const particles = new THREE.Points(particlesGeo, particlesMat);
+    chest.add(particles);
+    
+    chest.position.set(x, 0, z);
+    scene.add(chest);
+    
+    // Animate particles
+    let animationTime = 0;
+    const animateParticles = () => {
+        animationTime += 0.02;
+        const positions = particles.geometry.attributes.position.array;
+        for (let i = 0; i < particleCount; i++) {
+            const angle = (i / particleCount) * Math.PI * 2 + animationTime;
+            const radius = 1 + Math.sin(animationTime * 2 + i) * 0.3;
+            const height = 1 + Math.sin(animationTime * 3 + i * 2) * 0.5;
+            positions[i * 3] = Math.cos(angle) * radius;
+            positions[i * 3 + 1] = height;
+            positions[i * 3 + 2] = Math.sin(angle) * radius;
+        }
+        particles.geometry.attributes.position.needsUpdate = true;
+    };
+    
+    return {
+        type: 'magical_chest',
+        position: { x, y: 0, z },
+        mesh: chest,
+        interactable: true,
+        opened: false,
+        particles: particles,
+        animateParticles: animateParticles,
+        interact: function() {
+            if (!this.opened) {
+                this.opened = true;
+                lid.rotation.x = -Math.PI / 3;
+                lock.visible = false;
+                
+                // Random magical loot!
+                const lootOptions = [
+                    { gold: 250, item: null, message: '✨ You found 250 MAGICAL GOLD! ✨' },
+                    { gold: 150, item: new Item('mana_pot', 'Greater Mana Potion', '🔮', 'consumable', 100, { mana: 100 }), message: '✨ You found 150 gold and a Greater Mana Potion! ✨' },
+                    { gold: 200, item: new Item('magic_bread', 'Enchanted Bread', '🍞✨', 'consumable', 50, { healing: 100 }), message: '✨ You found 200 gold and Enchanted Bread! ✨' },
+                    { gold: 300, item: null, message: '🎰 JACKPOT! You found 300 GOLD! 🎰' },
+                ];
+                
+                const loot = lootOptions[Math.floor(Math.random() * lootOptions.length)];
+                
+                playerInventory.addGold(loot.gold);
+                if (loot.item) {
+                    playerInventory.addItem(loot.item);
+                }
+                updateInventoryUI();
+                
+                // Stop particle animation
+                this.particles.visible = false;
+                
+                return { message: loot.message, type: 'success' };
+            } else {
+                return { message: 'The magical chest has been emptied.', type: 'info' };
+            }
+        }
+    };
+}
+
 // Helper function to create a campfire
 function createCampfire(x, z) {
     const campfire = new THREE.Group();
@@ -713,6 +840,10 @@ environmentObjects.push(createCampfire(0, -10));
 environmentObjects.push(createHouse(15, 0));
 environmentObjects.push(createHouse(-15, 5));
 
+// Add magical chest (something fun!)
+const magicalChest = createMagicalChest(10, 10);
+environmentObjects.push(magicalChest);
+
 // Create goblin camp
 createGoblinCamp();
 
@@ -1045,6 +1176,13 @@ function animate() {
         }
     }
     
+    // Animate magical chest particles
+    environmentObjects.forEach(obj => {
+        if (obj.type === 'magical_chest' && obj.animateParticles && !obj.opened) {
+            obj.animateParticles();
+        }
+    });
+    
     updateCamera();
     renderer.render(scene, camera);
 }
@@ -1213,8 +1351,9 @@ function closeInventory() {
 }
 
 function updateInventoryUI() {
-    // Update gold
+    // Update gold (both in inventory and trading panels)
     document.getElementById('gold-amount').textContent = playerInventory.gold;
+    document.getElementById('trade-gold-amount').textContent = playerInventory.gold;
     document.getElementById('inv-count').textContent = playerInventory.items.length;
     document.getElementById('inv-max').textContent = playerInventory.maxSlots;
     
@@ -1541,3 +1680,7 @@ setInterval(() => {
         }
     });
 }, 50);
+
+// Initialize UI on page load
+updateInventoryUI();
+updateQuestUI();

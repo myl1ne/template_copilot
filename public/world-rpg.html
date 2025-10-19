@@ -508,6 +508,71 @@
             font-size: 10px;
             color: #cbd5e1;
         }
+        
+        /* Quest Panel Styles */
+        #quest-panel .quest-header {
+            border-bottom: 2px solid #eab308;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+        
+        #quest-panel .quest-header.completed {
+            border-bottom-color: #22c55e;
+        }
+        
+        #quest-panel .quest-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #eab308;
+            margin-bottom: 8px;
+        }
+        
+        #quest-panel .quest-header.completed .quest-title {
+            color: #22c55e;
+        }
+        
+        #quest-panel .quest-desc {
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+        
+        #quest-panel .objectives {
+            margin-top: 10px;
+        }
+        
+        #quest-panel .objective {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid #eab308;
+            padding: 8px 12px;
+            margin: 6px 0;
+            font-size: 13px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #quest-panel .objective.completed {
+            border-left-color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+        }
+        
+        #quest-panel .objective .progress {
+            color: #60a5fa;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        
+        #quest-panel .quest-reward {
+            background: rgba(234, 179, 8, 0.1);
+            border: 1px solid #eab308;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #fbbf24;
+        }
     </style>
 </head>
 <body>
@@ -630,6 +695,22 @@
         </div>
     </div>
     
+    <!-- Quest Panel -->
+    <div class="hud" id="quest-panel" style="
+        top: 20px;
+        right: 350px;
+        background: rgba(0, 0, 0, 0.85);
+        border-radius: 15px;
+        padding: 20px;
+        color: white;
+        min-width: 280px;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(234, 179, 8, 0.5);
+        max-width: 350px;
+    ">
+        <!-- Quest content will be added by JS -->
+    </div>
+
     <!-- Hotbar -->
     <div id="hotbar">
         <div class="hotbar-slot"><span class="key">1</span></div>

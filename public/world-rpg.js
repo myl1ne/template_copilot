@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
+import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 // Scene setup
 const scene = new THREE.Scene();
@@ -1654,6 +1655,7 @@ async function loadBaelinCharacter() {
         const targetHeight = 2.0;
         const scale = targetHeight / height;
         model.scale.set(scale, scale, scale);
+        model.scale.multiplyScalar(0.01); 
         
         loadedModels['baelin'] = model;
         
@@ -1702,6 +1704,7 @@ async function loadBaradunCharacter() {
         const scale = targetHeight / height;
         model.scale.set(scale, scale, scale);
         
+        model.scale.multiplyScalar(0.01); 
         loadedModels['baradun'] = model;
         
         // Smart animation detection by keyword
@@ -1763,7 +1766,9 @@ function createNPCMesh(npc) {
     // Use Baelin FBX model for quest giver (Village Elder)
     if (npc.id === 'elder' && loadedModels['baelin']) {
         // Clone the Baelin FBX and add it to the NPC group without modifying its authored transform.
-        const charModel = loadedModels['baelin'].clone();
+    const charModel = SkeletonUtils.clone(loadedModels['baelin']);
+    // apply a small uniform scale so authoring units match the scene (adjustable)
+    charModel.scale.multiplyScalar(0.012);
         charModel.rotation.y = Math.PI; // Face forward
         charModel.traverse((child) => {
             if (child.isMesh) {
@@ -1785,7 +1790,7 @@ function createNPCMesh(npc) {
         // Fallback to primitive shapes for other NPCs
         // Use Baradun FBX model for merchant if available
         if (npc.type === 'merchant' && loadedModels['baradun']) {
-            const bModel = loadedModels['baradun'].clone();
+            const bModel = SkeletonUtils.clone(loadedModels['baradun']);
             // We assume the Baradun prototype was normalized during load
             bModel.traverse((child) => {
                 if (child.isMesh) {

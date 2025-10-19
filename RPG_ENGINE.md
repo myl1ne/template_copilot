@@ -63,6 +63,24 @@ npm install
 
 ## Demos
 
+### Integrated 3D Quest Demo (Recommended)
+Experience the full RPG engine with 3D character visualization during quest progression:
+
+```bash
+npm run dev
+```
+
+Then open http://localhost:3000/integrated-demo.html to see:
+- **3D Character**: Fully rendered warrior in the game world
+- **Quest Progression**: Complete "The Village Rescue" quest with 4 objectives
+- **Dynamic Scenes**: Environment changes (lighting, enemies spawning)
+- **Real-time Combat**: HP/Mana bars update, sword animations during attacks
+- **Enemy AI**: Goblin warriors and boss appear in 3D space
+- **Quest UI Overlay**: Stats, objectives, and quest log over 3D scene
+- **Auto-play Mode**: Watch the entire quest unfold automatically
+
+This demo combines Three.js 3D rendering with the quest system for a complete RPG experience.
+
 ### Interactive Quest Demo with Automated Testing
 Experience a complete quest playthrough with visual testing:
 

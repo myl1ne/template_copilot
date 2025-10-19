@@ -22,14 +22,53 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-// Controls
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
-controls.minDistance = 5;
-controls.maxDistance = 30;
-controls.maxPolarAngle = Math.PI / 2.2;
-controls.target.set(0, 0, 0);
+// WoW-style Camera Controls
+let cameraDistance = 8;
+let cameraHeight = 3;
+let cameraAngleH = 0; // Horizontal rotation (around character)
+let cameraAngleV = 0.3; // Vertical angle (up/down)
+let isRightMouseDown = false;
+let lastMouseX = 0;
+let lastMouseY = 0;
+
+// Mouse controls for camera
+renderer.domElement.addEventListener('mousedown', (e) => {
+    if (e.button === 2) { // Right mouse button
+        isRightMouseDown = true;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+        renderer.domElement.style.cursor = 'grabbing';
+    }
+});
+
+renderer.domElement.addEventListener('mouseup', (e) => {
+    if (e.button === 2) {
+        isRightMouseDown = false;
+        renderer.domElement.style.cursor = 'default';
+    }
+});
+
+renderer.domElement.addEventListener('mousemove', (e) => {
+    if (isRightMouseDown) {
+        const deltaX = e.clientX - lastMouseX;
+        const deltaY = e.clientY - lastMouseY;
+        
+        cameraAngleH -= deltaX * 0.005;
+        cameraAngleV = Math.max(-0.5, Math.min(1.4, cameraAngleV + deltaY * 0.005));
+        
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+    }
+});
+
+// Mouse wheel for zoom
+renderer.domElement.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    cameraDistance = Math.max(3, Math.min(20, cameraDistance + e.deltaY * 0.01));
+});
+
+// Prevent context menu
+renderer.domElement.addEventListener('contextmenu', (e) => e.preventDefault());
 
 // Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -359,6 +398,165 @@ function createHouse(x, z) {
     };
 }
 
+// Helper function to create a goblin enemy
+function createGoblin(x, z) {
+    const goblin = new THREE.Group();
+    
+    // Body (greenish)
+    const bodyGeo = new THREE.CapsuleGeometry(0.3, 0.8, 4, 8);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0x4a7c59 });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 0.9;
+    body.castShadow = true;
+    goblin.add(body);
+    
+    // Head (green)
+    const headGeo = new THREE.SphereGeometry(0.25, 16, 16);
+    const headMat = new THREE.MeshStandardMaterial({ color: 0x3d6e49 });
+    const head = new THREE.Mesh(headGeo, headMat);
+    head.position.y = 1.6;
+    head.castShadow = true;
+    goblin.add(head);
+    
+    // Ears (pointy)
+    const earGeo = new THREE.ConeGeometry(0.1, 0.2, 8);
+    const earMat = new THREE.MeshStandardMaterial({ color: 0x3d6e49 });
+    const leftEar = new THREE.Mesh(earGeo, earMat);
+    leftEar.position.set(-0.2, 1.7, 0);
+    leftEar.rotation.z = -Math.PI / 4;
+    goblin.add(leftEar);
+    const rightEar = new THREE.Mesh(earGeo, earMat);
+    rightEar.position.set(0.2, 1.7, 0);
+    rightEar.rotation.z = Math.PI / 4;
+    goblin.add(rightEar);
+    
+    // Simple weapon (club)
+    const clubGeo = new THREE.CylinderGeometry(0.08, 0.12, 0.8, 8);
+    const clubMat = new THREE.MeshStandardMaterial({ color: 0x4a2511 });
+    const club = new THREE.Mesh(clubGeo, clubMat);
+    club.position.set(0.4, 1, 0);
+    club.rotation.z = Math.PI / 6;
+    club.castShadow = true;
+    goblin.add(club);
+    
+    goblin.position.set(x, 0, z);
+    scene.add(goblin);
+    
+    const spawnPosition = { x, z };
+    
+    return {
+        type: 'goblin',
+        position: { x, y: 0, z },
+        spawnPosition: spawnPosition,
+        mesh: goblin,
+        hp: 50,
+        maxHp: 50,
+        alive: true,
+        respawnTime: 30, // seconds
+        timeSinceDeath: 0,
+        interactable: true,
+        lastAttackTime: 0,
+        attackCooldown: 2,
+        interact: function() {
+            if (!this.alive) {
+                return { message: 'The goblin is already defeated!', type: 'info' };
+            }
+            
+            // Player attacks goblin
+            const currentTime = Date.now() / 1000;
+            if (currentTime - this.lastAttackTime < this.attackCooldown) {
+                return { message: 'Attack on cooldown!', type: 'warning' };
+            }
+            
+            this.lastAttackTime = currentTime;
+            const damage = Math.floor(15 + Math.random() * 10);
+            this.hp -= damage;
+            
+            if (this.hp <= 0) {
+                this.alive = false;
+                this.hp = 0;
+                this.timeSinceDeath = 0;
+                // Fade out the goblin
+                this.mesh.visible = false;
+                return { 
+                    message: `Goblin defeated! Dealt ${damage} damage. +50 XP`, 
+                    type: 'success' 
+                };
+            }
+            
+            return { 
+                message: `Hit goblin for ${damage} damage! (${this.hp}/${this.maxHp} HP remaining)`, 
+                type: 'warning' 
+            };
+        }
+    };
+}
+
+// Goblin camp location
+const goblinCampCenter = { x: -20, z: -20 };
+const goblins = [];
+
+// Create goblin camp with multiple goblins
+function createGoblinCamp() {
+    // Central campfire
+    const campfire = createCampfire(goblinCampCenter.x, goblinCampCenter.z);
+    environmentObjects.push(campfire);
+    
+    // Goblins around the camp
+    const goblinPositions = [
+        { x: -18, z: -20 },
+        { x: -22, z: -20 },
+        { x: -20, z: -18 },
+        { x: -20, z: -22 },
+        { x: -17, z: -17 },
+    ];
+    
+    goblinPositions.forEach(pos => {
+        const goblin = createGoblin(pos.x, pos.z);
+        goblins.push(goblin);
+        environmentObjects.push(goblin);
+    });
+    
+    // Camp signs
+    const sign1 = createSign(goblinCampCenter.x + 8, goblinCampCenter.z, 'Beware: Goblin Territory!');
+    environmentObjects.push(sign1);
+}
+
+// Helper function to create a sign
+function createSign(x, z, text) {
+    const sign = new THREE.Group();
+    
+    // Post
+    const postGeo = new THREE.CylinderGeometry(0.08, 0.08, 1.5, 8);
+    const postMat = new THREE.MeshStandardMaterial({ color: 0x4a2511 });
+    const post = new THREE.Mesh(postGeo, postMat);
+    post.position.y = 0.75;
+    post.castShadow = true;
+    sign.add(post);
+    
+    // Sign board
+    const boardGeo = new THREE.BoxGeometry(1.2, 0.6, 0.1);
+    const boardMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+    const board = new THREE.Mesh(boardGeo, boardMat);
+    board.position.y = 1.5;
+    board.castShadow = true;
+    sign.add(board);
+    
+    sign.position.set(x, 0, z);
+    scene.add(sign);
+    
+    return {
+        type: 'sign',
+        position: { x, y: 0, z },
+        mesh: sign,
+        text: text,
+        interactable: true,
+        interact: function() {
+            return { message: `Sign: "${this.text}"`, type: 'info' };
+        }
+    };
+}
+
 // Create environment
 // Trees
 for (let i = 0; i < 20; i++) {
@@ -380,9 +578,11 @@ for (let i = 0; i < 15; i++) {
 environmentObjects.push(createChest(5, -5));
 environmentObjects.push(createChest(-7, 8));
 environmentObjects.push(createCampfire(0, -10));
-environmentObjects.push(createCampfire(-12, -12));
 environmentObjects.push(createHouse(15, 0));
 environmentObjects.push(createHouse(-15, 5));
+
+// Create goblin camp
+createGoblinCamp();
 
 // Player state
 const player = {
@@ -571,21 +771,28 @@ window.addEventListener('keydown', (e) => {
     }
 });
 
-// Update camera to follow player
+// Update camera to follow player (WoW-style)
 function updateCamera() {
-    const targetPosition = new THREE.Vector3(
+    // Calculate camera position based on angles
+    const offsetX = Math.sin(cameraAngleH) * Math.cos(cameraAngleV) * cameraDistance;
+    const offsetY = Math.sin(cameraAngleV) * cameraDistance + cameraHeight;
+    const offsetZ = Math.cos(cameraAngleH) * Math.cos(cameraAngleV) * cameraDistance;
+    
+    const idealPosition = new THREE.Vector3(
+        characterGroup.position.x + offsetX,
+        characterGroup.position.y + offsetY,
+        characterGroup.position.z + offsetZ
+    );
+    
+    const lookAtPosition = new THREE.Vector3(
         characterGroup.position.x,
-        characterGroup.position.y,
+        characterGroup.position.y + 1.5,
         characterGroup.position.z
     );
     
-    controls.target.lerp(targetPosition, 0.1);
-    
-    const idealOffset = new THREE.Vector3(0, 5, 10);
-    idealOffset.applyQuaternion(characterGroup.quaternion);
-    const idealPosition = targetPosition.clone().add(idealOffset);
-    
+    // Smooth camera movement
     camera.position.lerp(idealPosition, 0.1);
+    camera.lookAt(lookAtPosition);
 }
 
 // Animation loop
@@ -609,22 +816,44 @@ function animate() {
         player.velocity.x = 0;
         player.velocity.z = 0;
         
-        if (forward) player.velocity.z -= speed * delta;
-        if (backward) player.velocity.z += speed * delta;
-        if (left) player.velocity.x -= speed * delta;
-        if (right) player.velocity.x += speed * delta;
+        // Calculate movement direction relative to camera
+        let moveX = 0;
+        let moveZ = 0;
+        
+        if (forward) {
+            moveZ -= 1;
+        }
+        if (backward) {
+            moveZ += 1;
+        }
+        if (left) {
+            moveX -= 1;
+        }
+        if (right) {
+            moveX += 1;
+        }
         
         const isMoving = forward || backward || left || right;
         
         if (isMoving) {
+            // Normalize diagonal movement
+            const length = Math.sqrt(moveX * moveX + moveZ * moveZ);
+            if (length > 0) {
+                moveX /= length;
+                moveZ /= length;
+            }
+            
+            // Apply camera rotation to movement
+            const moveAngle = Math.atan2(moveX, moveZ) + cameraAngleH;
+            player.velocity.x = Math.sin(moveAngle) * speed * delta;
+            player.velocity.z = Math.cos(moveAngle) * speed * delta;
+            
             player.position.x += player.velocity.x;
             player.position.z += player.velocity.z;
             
-            // Update character rotation
-            if (player.velocity.x !== 0 || player.velocity.z !== 0) {
-                player.rotation = Math.atan2(player.velocity.x, player.velocity.z);
-                characterGroup.rotation.y = player.rotation;
-            }
+            // Update character rotation to face movement direction
+            player.rotation = moveAngle;
+            characterGroup.rotation.y = player.rotation;
             
             // Update animation state
             if (player.isRunning) {
@@ -659,8 +888,32 @@ function animate() {
         }
     }
     
+    // Goblin respawn logic
+    for (const goblin of goblins) {
+        if (!goblin.alive) {
+            goblin.timeSinceDeath += delta;
+            
+            if (goblin.timeSinceDeath >= goblin.respawnTime) {
+                // Respawn goblin
+                goblin.hp = goblin.maxHp;
+                goblin.alive = true;
+                goblin.timeSinceDeath = 0;
+                goblin.mesh.visible = true;
+                goblin.position.x = goblin.spawnPosition.x;
+                goblin.position.z = goblin.spawnPosition.z;
+                goblin.mesh.position.set(goblin.spawnPosition.x, 0, goblin.spawnPosition.z);
+                addMessage('A goblin has respawned!', 'warning');
+            }
+        } else {
+            // Idle animation for alive goblins
+            if (goblin.mesh.visible) {
+                goblin.mesh.rotation.y += delta * 0.5;
+                goblin.mesh.children[0].position.y = 0.9 + Math.sin(Date.now() * 0.002) * 0.05;
+            }
+        }
+    }
+    
     updateCamera();
-    controls.update();
     renderer.render(scene, camera);
 }
 

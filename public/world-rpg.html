@@ -463,6 +463,210 @@
             background: #3b82f6;
         }
         
+        /* Skills Panel */
+        #skills-panel {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            backdrop-filter: blur(15px);
+            border: 3px solid rgba(168, 85, 247, 0.5);
+            pointer-events: auto;
+            z-index: 1000;
+        }
+        
+        #skills-panel.show {
+            display: block;
+        }
+        
+        #skills-panel h2 {
+            margin: 0 0 20px 0;
+            color: #a78bfa;
+            font-size: 24px;
+            border-bottom: 2px solid #a78bfa;
+            padding-bottom: 10px;
+        }
+        
+        .skills-section {
+            margin: 20px 0;
+        }
+        
+        .skills-section h3 {
+            color: #60a5fa;
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        
+        .skill-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            transition: all 0.2s;
+        }
+        
+        .skill-item:hover {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: #a78bfa;
+        }
+        
+        .skill-item.learned {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+        }
+        
+        .skill-item.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .skill-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .skill-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #cbd5e1;
+        }
+        
+        .skill-item.learned .skill-name {
+            color: #22c55e;
+        }
+        
+        .skill-cost {
+            color: #60a5fa;
+            font-size: 14px;
+        }
+        
+        .skill-desc {
+            color: #94a3b8;
+            font-size: 13px;
+            margin: 8px 0;
+        }
+        
+        .skill-stats {
+            display: flex;
+            gap: 15px;
+            margin: 8px 0;
+            font-size: 12px;
+        }
+        
+        .skill-stat {
+            color: #cbd5e1;
+        }
+        
+        .skill-requirements {
+            font-size: 12px;
+            color: #fbbf24;
+            margin: 8px 0;
+        }
+        
+        .skill-requirements.met {
+            color: #22c55e;
+        }
+        
+        .learn-btn {
+            background: #a78bfa;
+            color: black;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 8px;
+            transition: all 0.2s;
+        }
+        
+        .learn-btn:hover {
+            background: #8b5cf6;
+            transform: scale(1.05);
+        }
+        
+        .learn-btn:disabled {
+            background: #4b5563;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .attribute-section {
+            background: rgba(255, 215, 0, 0.1);
+            border: 2px solid #fbbf24;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .attribute-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+        }
+        
+        .attribute-name {
+            font-weight: bold;
+            color: #cbd5e1;
+            min-width: 120px;
+        }
+        
+        .attribute-value {
+            color: #fbbf24;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .attr-btn {
+            background: #fbbf24;
+            color: black;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .attr-btn:hover {
+            background: #f59e0b;
+            transform: scale(1.1);
+        }
+        
+        .attr-btn:disabled {
+            background: #4b5563;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .hotkey-hint {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 10px;
+            color: #fbbf24;
+            font-weight: bold;
+        }
+        
         /* Hotbar */
         #hotbar {
             position: absolute;
@@ -586,6 +790,16 @@
     
     <div class="hud" id="stats-panel">
         <h3>🛡️ Thorin the Brave</h3>
+        <div style="margin-bottom: 10px; font-size: 12px; color: #94a3b8;">
+            <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                <span>Level:</span>
+                <span id="level-text" style="color: #fbbf24; font-weight: bold;">1</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                <span>XP:</span>
+                <span id="xp-text" style="color: #60a5fa;">0 / 400</span>
+            </div>
+        </div>
         <div class="stat-bar">
             <div class="stat-label">
                 <span>HP</span>
@@ -593,6 +807,15 @@
             </div>
             <div class="bar">
                 <div class="bar-fill hp" id="hp-bar" style="width: 100%">100%</div>
+            </div>
+        </div>
+        <div class="stat-bar">
+            <div class="stat-label">
+                <span>Mana</span>
+                <span id="mana-text">50 / 50</span>
+            </div>
+            <div class="bar">
+                <div class="bar-fill" id="mana-bar" style="width: 100%; background: linear-gradient(90deg, #60a5fa 0%, #3b82f6 100%);">100%</div>
             </div>
         </div>
         <div class="stat-bar">
@@ -605,6 +828,14 @@
             </div>
         </div>
         <div style="margin-top: 15px; font-size: 12px; color: #94a3b8;">
+            <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                <span>Attribute Points:</span>
+                <span id="attr-points-text" style="color: #fbbf24; font-weight: bold;">0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin: 5px 0;">
+                <span>Skill Points:</span>
+                <span id="skill-points-text" style="color: #a78bfa; font-weight: bold;">0</span>
+            </div>
             <div style="display: flex; justify-content: space-between; margin: 5px 0;">
                 <span>Animation:</span>
                 <span id="anim-state" style="color: #4ade80;">Idle</span>
@@ -632,9 +863,11 @@
         <p><strong>WASD</strong> - Move</p>
         <p><strong>Shift</strong> - Run</p>
         <p><strong>Space</strong> - Attack</p>
+        <p><strong>1-5</strong> - Use Skills</p>
         <p><strong>R</strong> - Rest/Sit</p>
         <p><strong>E</strong> - Interact</p>
         <p><strong>I</strong> - Inventory</p>
+        <p><strong>K</strong> - Skills</p>
         <p><strong>Right Mouse</strong> - Rotate Camera</p>
         <p><strong>Mouse Wheel</strong> - Zoom</p>
     </div>
@@ -816,6 +1049,37 @@
                 stroke-dashoffset="163.36"
                 style="transition: stroke-dashoffset 0.1s linear;" />
         </svg>
+    </div>
+    
+    <!-- Skills Panel -->
+    <div id="skills-panel">
+        <h2>🔮 Skills & Abilities</h2>
+        
+        <!-- Attribute Points Section -->
+        <div class="attribute-section">
+            <h3 style="color: #fbbf24; margin-top: 0;">⬆️ Attribute Points: <span id="attr-points-available">0</span></h3>
+            <div id="attributes-list">
+                <!-- Attributes will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Learned Skills Section -->
+        <div class="skills-section">
+            <h3>✅ Learned Skills (<span id="learned-count">0</span>)</h3>
+            <div id="learned-skills-list">
+                <!-- Learned skills will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Available Spells Section -->
+        <div class="skills-section">
+            <h3>📖 Available Spells (<span id="spell-points-available">0</span> Skill Points)</h3>
+            <div id="available-spells-list">
+                <!-- Available spells will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <button class="close-btn" onclick="closeSkillsPanel()">Close (K)</button>
     </div>
     
     <script type="module" src="/world-rpg.js"></script>

@@ -1,8 +1,8 @@
 /**
- * Character class for RPG Engine
- * Represents a character with combat stats, attributes, and skills
+ * Character class for RPG Engine (Browser Version)
+ * Represents a character with combat stats, attributes, skills, and progression
  */
-class Character {
+export class Character {
   /**
    * Create a new character
    * @param {string} name - Character name
@@ -321,5 +321,3 @@ class Character {
     };
   }
 }
-
-module.exports = Character;

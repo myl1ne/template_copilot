@@ -8,6 +8,7 @@
   },
   "scripts": {
     "demo": "node src/examples/demo.js",
+    "demo:progression": "node src/examples/progression-demo.js",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",

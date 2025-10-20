@@ -1,8 +1,8 @@
 /**
- * Skill class for RPG Engine
+ * Skill class for RPG Engine (Browser Version)
  * Represents a skill that a character can learn and use
  */
-class Skill {
+export class Skill {
   /**
    * Create a new skill
    * @param {string} name - Skill name
@@ -77,5 +77,3 @@ class Skill {
     };
   }
 }
-
-module.exports = Skill;

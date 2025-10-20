@@ -138,19 +138,23 @@ export class TerrainGenerator {
             this.segments
         );
 
+        // Rotate geometry first, then apply heights
+        geometry.rotateX(-Math.PI / 2);
+
         // Apply heightmap
         const positions = geometry.attributes.position;
         const colors = [];
         
         for (let i = 0; i < positions.count; i++) {
             const x = positions.getX(i);
-            const y = positions.getY(i);
+            const z = positions.getZ(i);
             
-            const height = this.generateHeight(x, y);
-            positions.setZ(i, height);
+            const height = this.generateHeight(x, z);
+            // After rotation, Y is up, so we set the Y position
+            positions.setY(i, height);
             
             // Get biome color
-            const biome = this.getBiome(height, x, y);
+            const biome = this.getBiome(height, x, z);
             colors.push(biome.color.r, biome.color.g, biome.color.b);
         }
         
@@ -168,7 +172,6 @@ export class TerrainGenerator {
         });
 
         const terrain = new THREE.Mesh(geometry, material);
-        terrain.rotation.x = -Math.PI / 2;
         terrain.receiveShadow = true;
         terrain.castShadow = false;
 

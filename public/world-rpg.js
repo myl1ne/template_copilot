@@ -25,8 +25,8 @@ import { SkillSystem } from './modules/SkillSystem.js';
 import { WorldInitializer } from './modules/WorldInitializer.js';
 
 // ===== INITIALIZE WORLD SETUP =====
-const worldSetup = new WorldSetup();
-const { scene, camera, renderer } = worldSetup.init(document.getElementById('canvas-container'));
+const worldSetup = new WorldSetup({ useAdvancedTerrain: true });
+const { scene, camera, renderer, terrainGenerator } = worldSetup.init(document.getElementById('canvas-container'));
 
 // ===== INITIALIZE UI MANAGER =====
 const uiManager = new UIManager();
@@ -84,7 +84,8 @@ const worldInitializer = new WorldInitializer(
   goblinFactory,
   monsterFactory,
   characterLoader,
-  addMessage
+  addMessage,
+  terrainGenerator
 );
 
 // ===== INITIALIZE DIALOGUE SYSTEM =====
@@ -956,6 +957,9 @@ function animate() {
   
   // Update minimap
   uiManager.updateMinimap(player, questManager.getActiveQuests());
+  
+  // Animate water if using advanced terrain
+  worldSetup.animate(delta);
   
   cameraController.update();
   renderer.render(scene, camera);

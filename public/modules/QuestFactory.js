@@ -281,7 +281,7 @@ export class QuestFactory {
             options: { active: false, available: false, questGiver: 'Forest Hermit' }
         });
 
-        // Bandit Camp Quest
+        // Bandit Camp Quest - Given by Town Guard
         quests['bandit_camp'] = this.createKillQuest('bandit_camp', {
             name: 'Bandits on the Road',
             description: 'A group of bandits has set up camp along the main trade route. Clear them out to restore safe passage.',
@@ -294,7 +294,7 @@ export class QuestFactory {
             options: { active: false, available: false, questGiver: 'Town Guard' }
         });
 
-        // Lost Item Quest
+        // Lost Ring Quest - Given by Town Guard
         quests['lost_ring'] = this.createDeliveryQuest('lost_ring', {
             name: 'The Lost Ring',
             description: 'A villager has lost their precious family ring. Search the forest and return it.',
@@ -302,10 +302,10 @@ export class QuestFactory {
             deliverTo: 'Worried Villager',
             item: 'a golden ring',
             rewards: { xp: 250, gold: 100 },
-            options: { active: false, available: false, questGiver: 'Village Elder' }
+            options: { active: false, available: false, questGiver: 'Town Guard' }
         });
 
-        // Exploration Quest
+        // Exploration Quest - Given by Forest Hermit
         quests['ancient_ruins'] = this.createExplorationQuest('ancient_ruins', {
             name: 'Discover the Ancient Ruins',
             description: 'Legends speak of ancient ruins hidden deep in the wilderness. Find them and report back.',
@@ -315,16 +315,16 @@ export class QuestFactory {
             options: { active: false, available: false, questGiver: 'Forest Hermit' }
         });
 
-        // Slime Collection Quest
+        // Slime Collection Quest - Given by Forest Hermit
         quests['slime_parts'] = this.createCollectionQuest('slime_parts', {
             name: 'Alchemical Ingredients',
-            description: 'The Traveling Merchant needs slime essences for his potions. Defeat slimes and collect their cores.',
+            description: 'The Forest Hermit needs slime essences for his potions. Defeat slimes and collect their cores.',
             items: [
                 { name: 'Slime Core', count: 5 }
             ],
-            returnTo: 'Traveling Merchant',
+            returnTo: 'Forest Hermit',
             rewards: { xp: 350, gold: 140 },
-            options: { active: false, available: false, questGiver: 'Traveling Merchant' }
+            options: { active: false, available: false, questGiver: 'Forest Hermit' }
         });
 
         return quests;

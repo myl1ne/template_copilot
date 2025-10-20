@@ -217,13 +217,13 @@ export class NPCFactory {
             this.createNPC(
                 'guard',
                 'Town Guard',
-                'default',
+                'quest_giver',
                 { x: 15, z: 15 },
                 'greg',
                 [
                     "Halt! State your business.",
                     "The town is safe under my watch.",
-                    "Move along, citizen."
+                    "I have duties to protect this area."
                 ]
             )
         ];

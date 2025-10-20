@@ -771,6 +771,36 @@
         <div class="hotbar-slot"><span class="key">5</span></div>
     </div>
     
+    <!-- Attack Cooldown Icon -->
+    <div id="attack-cooldown" style="
+        position: absolute;
+        bottom: 90px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 60px;
+        background: rgba(0, 0, 0, 0.8);
+        border: 3px solid #4ade80;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        pointer-events: none;
+    ">
+        ⚔️
+        <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: rotate(-90deg);">
+            <circle id="cooldown-circle" cx="30" cy="30" r="26" 
+                fill="none" 
+                stroke="#ef4444" 
+                stroke-width="4" 
+                stroke-dasharray="163.36" 
+                stroke-dashoffset="163.36"
+                style="transition: stroke-dashoffset 0.1s linear;" />
+        </svg>
+    </div>
+    
     <script type="module" src="/world-rpg.js"></script>
 </body>
 </html>

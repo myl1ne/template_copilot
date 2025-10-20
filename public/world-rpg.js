@@ -620,8 +620,10 @@ function showDialogue(npc) {
         
         if (npc.id === 'hermit') {
             const herbQuest = quests['herb_collection'];
+            const ruinsQuest = quests['ancient_ruins'];
+            const slimeQuest = quests['slime_parts'];
             
-            if (activeQuest.id === 'merchant_delivery' && !activeQuest.objectives[1].completed) {
+            if (activeQuest && activeQuest.id === 'merchant_delivery' && !activeQuest.objectives[1].completed) {
                 const foundBtn = document.createElement('button');
                 foundBtn.className = 'dialogue-btn';
                 foundBtn.textContent = 'I found you! (Complete objective)';
@@ -633,7 +635,7 @@ function showDialogue(npc) {
                 options.appendChild(foundBtn);
             }
             
-            if (activeQuest.id === 'merchant_delivery' && activeQuest.objectives[0].completed && !activeQuest.objectives[2].completed) {
+            if (activeQuest && activeQuest.id === 'merchant_delivery' && activeQuest.objectives[0].completed && !activeQuest.objectives[2].completed) {
                 const deliverBtn = document.createElement('button');
                 deliverBtn.className = 'dialogue-btn';
                 deliverBtn.textContent = 'Deliver the package';
@@ -674,10 +676,72 @@ function showDialogue(npc) {
                 };
                 options.appendChild(herbBtn);
             }
+            
+            // Offer ancient ruins quest
+            if (quests['village_rescue'].completed && !ruinsQuest.active && !ruinsQuest.completed) {
+                const ruinsBtn = document.createElement('button');
+                ruinsBtn.className = 'dialogue-btn';
+                ruinsBtn.textContent = 'Know any mysteries?';
+                ruinsBtn.onclick = () => {
+                    document.getElementById('dialogue-text').textContent = 
+                        "Indeed! Ancient ruins lie hidden in these lands. If you discover them, report back to me. I collect knowledge of such places.";
+                    
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'dialogue-btn';
+                    acceptBtn.textContent = 'I\'ll explore the ruins!';
+                    acceptBtn.onclick = () => {
+                        activateQuest('ancient_ruins');
+                        document.getElementById('dialogue-text').textContent = 
+                            "Fascinating! Look to the north, east, and west. The ruins await discovery.";
+                        setTimeout(() => closeDialogue(), 1500);
+                    };
+                    options.innerHTML = '';
+                    options.appendChild(acceptBtn);
+                    
+                    const declineBtn = document.createElement('button');
+                    declineBtn.className = 'dialogue-btn secondary';
+                    declineBtn.textContent = 'Not interested';
+                    declineBtn.onclick = closeDialogue;
+                    options.appendChild(declineBtn);
+                };
+                options.appendChild(ruinsBtn);
+            }
+            
+            // Offer slime quest
+            if (herbQuest.completed && !slimeQuest.active && !slimeQuest.completed) {
+                const slimeBtn = document.createElement('button');
+                slimeBtn.className = 'dialogue-btn';
+                slimeBtn.textContent = 'Need more ingredients?';
+                slimeBtn.onclick = () => {
+                    document.getElementById('dialogue-text').textContent = 
+                        "Ah yes! Slime cores are essential for my potions. Could you gather some for me?";
+                    
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'dialogue-btn';
+                    acceptBtn.textContent = 'I\'ll collect slime cores!';
+                    acceptBtn.onclick = () => {
+                        activateQuest('slime_parts');
+                        document.getElementById('dialogue-text').textContent = 
+                            "Excellent! I need 5 cores. Slimes can be found in damp areas.";
+                        setTimeout(() => closeDialogue(), 1500);
+                    };
+                    options.innerHTML = '';
+                    options.appendChild(acceptBtn);
+                    
+                    const declineBtn = document.createElement('button');
+                    declineBtn.className = 'dialogue-btn secondary';
+                    declineBtn.textContent = 'Maybe later';
+                    declineBtn.onclick = closeDialogue;
+                    options.appendChild(declineBtn);
+                };
+                options.appendChild(slimeBtn);
+            }
         }
         
         if (npc.id === 'guard') {
             const spiderQuest = quests['spider_cave'];
+            const banditQuest = quests['bandit_camp'];
+            const lostRingQuest = quests['lost_ring'];
             
             // Offer spider quest
             if (quests['village_rescue'].completed && !spiderQuest.active && !spiderQuest.completed) {
@@ -709,6 +773,66 @@ function showDialogue(npc) {
                 options.appendChild(spiderBtn);
             }
             
+            // Offer bandit quest after spider quest
+            if (spiderQuest.completed && !banditQuest.active && !banditQuest.completed) {
+                const banditBtn = document.createElement('button');
+                banditBtn.className = 'dialogue-btn';
+                banditBtn.textContent = 'What else needs protecting?';
+                banditBtn.onclick = () => {
+                    document.getElementById('dialogue-text').textContent = 
+                        "Bandits have set up camp on the main trade route. They're robbing travelers. Can you deal with them?";
+                    
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'dialogue-btn';
+                    acceptBtn.textContent = 'I\'ll clear out the bandits!';
+                    acceptBtn.onclick = () => {
+                        activateQuest('bandit_camp');
+                        document.getElementById('dialogue-text').textContent = 
+                            "Good! The bandits are camped near the old crossroads. Clear them out!";
+                        setTimeout(() => closeDialogue(), 1500);
+                    };
+                    options.innerHTML = '';
+                    options.appendChild(acceptBtn);
+                    
+                    const declineBtn = document.createElement('button');
+                    declineBtn.className = 'dialogue-btn secondary';
+                    declineBtn.textContent = 'Maybe later';
+                    declineBtn.onclick = closeDialogue;
+                    options.appendChild(declineBtn);
+                };
+                options.appendChild(banditBtn);
+            }
+            
+            // Offer lost ring quest
+            if (quests['village_rescue'].completed && !lostRingQuest.active && !lostRingQuest.completed) {
+                const ringBtn = document.createElement('button');
+                ringBtn.className = 'dialogue-btn';
+                ringBtn.textContent = 'Anyone need help?';
+                ringBtn.onclick = () => {
+                    document.getElementById('dialogue-text').textContent = 
+                        "A villager lost their family ring in the forest. If you find it, return it to them. They'll be grateful.";
+                    
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'dialogue-btn';
+                    acceptBtn.textContent = 'I\'ll look for the ring!';
+                    acceptBtn.onclick = () => {
+                        activateQuest('lost_ring');
+                        document.getElementById('dialogue-text').textContent = 
+                            "Check near the old oak trees. The ring is gold with an emerald stone.";
+                        setTimeout(() => closeDialogue(), 1500);
+                    };
+                    options.innerHTML = '';
+                    options.appendChild(acceptBtn);
+                    
+                    const declineBtn = document.createElement('button');
+                    declineBtn.className = 'dialogue-btn secondary';
+                    declineBtn.textContent = 'Not now';
+                    declineBtn.onclick = closeDialogue;
+                    options.appendChild(declineBtn);
+                };
+                options.appendChild(ringBtn);
+            }
+            
             // Allow completing spider quest
             if (spiderQuest.active && !spiderQuest.completed &&
                 spiderQuest.objectives.every(obj => obj.id.startsWith('kill_') ? obj.completed : true)) {
@@ -722,6 +846,21 @@ function showDialogue(npc) {
                     setTimeout(() => closeDialogue(), 2000);
                 };
                 options.appendChild(completeSpiderBtn);
+            }
+            
+            // Allow completing bandit quest
+            if (banditQuest.active && !banditQuest.completed &&
+                banditQuest.objectives.every(obj => obj.id.startsWith('kill_') ? obj.completed : true)) {
+                const completeBanditBtn = document.createElement('button');
+                completeBanditBtn.className = 'dialogue-btn';
+                completeBanditBtn.textContent = '✓ The bandits are defeated!';
+                completeBanditBtn.onclick = () => {
+                    updateQuestProgress('return_to_town_guard', 1);
+                    document.getElementById('dialogue-text').textContent = 
+                        "Outstanding! The roads are safe once more. Here is your reward.";
+                    setTimeout(() => closeDialogue(), 2000);
+                };
+                options.appendChild(completeBanditBtn);
             }
         }
     }
@@ -909,25 +1048,50 @@ const keys = {};
 window.addEventListener('keydown', (e) => { keys[e.key.toLowerCase()] = true; });
 window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
 
+// Track player attack cooldown
+let playerLastAttackTime = 0;
+const playerAttackCooldown = 0.8; // seconds
+const playerAttackRange = 3; // units
+
+// Update attack cooldown UI
+function updateAttackCooldownUI() {
+    const currentTime = Date.now() / 1000;
+    const timeSinceAttack = currentTime - playerLastAttackTime;
+    const cooldownRemaining = Math.max(0, playerAttackCooldown - timeSinceAttack);
+    const cooldownPercent = cooldownRemaining / playerAttackCooldown;
+    
+    const circle = document.getElementById('cooldown-circle');
+    const circumference = 163.36; // 2 * PI * 26
+    const offset = circumference * cooldownPercent;
+    
+    if (circle) {
+        circle.style.strokeDashoffset = offset;
+    }
+    
+    // Change icon color based on cooldown
+    const attackIcon = document.getElementById('attack-cooldown');
+    if (attackIcon) {
+        if (cooldownRemaining > 0) {
+            attackIcon.style.borderColor = '#ef4444';
+            attackIcon.style.opacity = '0.6';
+        } else {
+            attackIcon.style.borderColor = '#4ade80';
+            attackIcon.style.opacity = '1';
+        }
+    }
+}
+
 window.addEventListener('keydown', (e) => {
     if (e.key.toLowerCase() === 'e' && nearestInteractable) {
         const result = nearestInteractable.interact();
         if (result.npc) {
             interactWithNPC(result.npc);
-        } else {
+        } else if (result.type === 'chest' || result.type === 'magical_chest') {
+            // Non-combat interactions
             addMessage(result.message, result.type || 'info');
             if (result.healing) {
                 player.hp = Math.min(player.maxHp, player.hp + result.healing);
                 updateUI();
-            }
-            // Show monster health bar when hit
-            if (result.monsterHit) {
-                showMonsterHealthBar(result.monsterHit);
-                createAttackEffect(result.monsterHit.position);
-            }
-            // Hide health bar when defeated
-            if (result.defeated) {
-                hideMonsterHealthBar();
             }
         }
     }
@@ -935,6 +1099,46 @@ window.addEventListener('keydown', (e) => {
     if (e.key === ' ' && player.animationState !== 'attacking') {
         e.preventDefault();
         setAnimation('attacking');
+        
+        // Attack nearest monster in range
+        const currentTime = Date.now() / 1000;
+        if (currentTime - playerLastAttackTime >= playerAttackCooldown) {
+            let nearestMonster = null;
+            let nearestDist = playerAttackRange;
+            
+            // Check all monsters
+            for (const obj of environmentObjects) {
+                if ((obj.type === 'goblin' || obj.type === 'skeleton' || obj.type === 'spider' || 
+                     obj.type === 'wolf' || obj.type === 'goblin boss' || obj.type === 'skeleton lord' || 
+                     obj.type === 'dire wolf') && obj.alive) {
+                    const dx = obj.position.x - player.position.x;
+                    const dz = obj.position.z - player.position.z;
+                    const dist = Math.sqrt(dx * dx + dz * dz);
+                    if (dist < nearestDist) {
+                        nearestMonster = obj;
+                        nearestDist = dist;
+                    }
+                }
+            }
+            
+            if (nearestMonster) {
+                playerLastAttackTime = currentTime;
+                const result = nearestMonster.interact();
+                addMessage(result.message, result.type || 'info');
+                
+                // Show monster health bar when hit
+                if (result.monsterHit) {
+                    showMonsterHealthBar(result.monsterHit);
+                    createAttackEffect(result.monsterHit.position);
+                }
+                // Hide health bar when defeated
+                if (result.defeated) {
+                    hideMonsterHealthBar();
+                }
+            } else {
+                addMessage('No monster in range!', 'warning');
+            }
+        }
     }
     
     if (e.key.toLowerCase() === 'r' && player.animationState === 'idle') {
@@ -1032,6 +1236,68 @@ function createAttackEffect(position) {
     window.attackParticles.push(...particles);
 }
 
+// Create or update monster state halo
+function updateMonsterHalo(monster) {
+    if (!monster.alive || !monster.mesh) return;
+    
+    // Remove old halo if exists
+    if (monster.halo) {
+        monster.mesh.remove(monster.halo);
+        monster.halo.geometry.dispose();
+        monster.halo.material.dispose();
+        monster.halo = null;
+    }
+    
+    // Determine halo color based on state
+    let haloColor = 0xffffff; // Default white
+    let haloIntensity = 0.3;
+    
+    const dx = player.position.x - monster.position.x;
+    const dz = player.position.z - monster.position.z;
+    const distanceToPlayer = Math.sqrt(dx * dx + dz * dz);
+    
+    if (monster.stance === 'flee') {
+        if (monster.wasAttacked && monster.isRetreating) {
+            haloColor = 0xffff00; // Yellow when fleeing
+            haloIntensity = 0.5;
+        } else {
+            haloColor = 0x00ff00; // Green when idle
+            haloIntensity = 0.2;
+        }
+    } else if (monster.stance === 'defensive') {
+        if (monster.wasAttacked) {
+            haloColor = 0xffa500; // Orange when defensive and attacked
+            haloIntensity = 0.5;
+        } else {
+            haloColor = 0x00ff00; // Green when idle
+            haloIntensity = 0.2;
+        }
+    } else if (monster.stance === 'aggressive') {
+        if (distanceToPlayer < monster.aggroRange) {
+            haloColor = 0xff0000; // Red when aggressive
+            haloIntensity = 0.6;
+        } else {
+            haloColor = 0xffa500; // Orange when idle but aggressive type
+            haloIntensity = 0.3;
+        }
+    }
+    
+    // Create halo ring
+    const haloGeo = new THREE.RingGeometry(0.6, 0.8, 32);
+    const haloMat = new THREE.MeshBasicMaterial({ 
+        color: haloColor,
+        transparent: true,
+        opacity: haloIntensity,
+        side: THREE.DoubleSide
+    });
+    const halo = new THREE.Mesh(haloGeo, haloMat);
+    halo.rotation.x = -Math.PI / 2;
+    halo.position.y = 0.05;
+    
+    monster.mesh.add(halo);
+    monster.halo = halo;
+}
+
 // Update attack particles
 function updateAttackParticles(delta) {
     if (!window.attackParticles) return;
@@ -1114,6 +1380,9 @@ function updateMonsterAI(monster, delta, playerPos) {
             }
         }
     }
+    
+    // Update visual halo
+    updateMonsterHalo(monster);
 }
 
 // Monster attacks player
@@ -1465,6 +1734,9 @@ function animate() {
     
     // Update monster health bar
     updateMonsterHealthBar();
+    
+    // Update attack cooldown UI
+    updateAttackCooldownUI();
     
     cameraController.update();
     renderer.render(scene, camera);

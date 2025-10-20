@@ -62,6 +62,12 @@ Comprehensive quest management:
 - Interactive 3D character visualization
 - WoW-style camera controls (right-click to rotate, mouse wheel to zoom)
 - Character animations (idle, walking, running, attacking, resting)
+- **Advanced Level Design System:**
+  - Heightmap-based terrain with multi-octave noise
+  - 7 distinct biomes (water, beach, grassland, forest, desert, mountain, snow)
+  - Animated water with transparency and wave effects
+  - Composable terrain features (hills, valleys, plateaus, canyons, caves, bridges, ramps)
+  - Biome-aware object placement with variant types
 - Populated 3D world with environment objects
 - NPC interactions and dialogue with 4 unique FBX characters (Baelin, Baradun, Bodger, Greg)
 - Inventory and equipment management
@@ -74,7 +80,9 @@ Comprehensive quest management:
 2. **Quest Demo** (`/quest-demo.html`) - Interactive quest progression with UI
 3. **Integrated Quest Demo** (`/integrated-demo.html`) - 3D world with quest overlay
 4. **World Demo** (`/world-demo.html`) - Full 3D environment with movement
-5. **RPG Demo** (`/world-rpg.html`) - **NEW!** Complete RPG with NPCs, inventory, and trading
+5. **RPG Demo** (`/world-rpg.html`) - Complete RPG with NPCs, inventory, and trading
+6. **Terrain Demo** (`/terrain-demo.html`) - **NEW!** Heightmap terrain with biomes and water
+7. **Terrain Features Demo** (`/terrain-features-demo.html`) - **NEW!** Composable level design features
 
 ### Item System
 
@@ -136,6 +144,45 @@ const merchant = new NPC('merchant_001', 'Traveling Merchant', {
 - Buy items from players (50% of value)
 - Sell items to players (150% of value)
 - Dynamic inventory
+
+### Level Design System
+
+**NEW!** Advanced terrain generation and level design tools for creating rich, varied environments.
+
+```javascript
+import { TerrainGenerator } from './modules/TerrainGenerator.js';
+import { BiomeSystem } from './modules/BiomeSystem.js';
+import { WaterPlane } from './modules/WaterPlane.js';
+import { TerrainFeatures } from './modules/TerrainFeatures.js';
+
+// Generate heightmap terrain
+const terrain = new TerrainGenerator({
+  size: 100,
+  heightScale: 10,
+  waterLevel: 3
+});
+
+// Add biome-aware object placement
+const biomeSystem = new BiomeSystem(terrain, environmentFactory);
+biomeSystem.populateBiomeObjects(40, 'tree', createTreeCallback);
+
+// Add composable features
+const features = new TerrainFeatures(scene);
+features.createHill(x, z, 10, 5);
+features.createPlateau(x, z, 15, 15, 6);
+features.createBridge(x, z, 12, 3, 0);
+```
+
+**Features:**
+- **Heightmap Terrain** - Multi-octave noise for natural landscapes
+- **7 Biomes** - Water, beach, grassland, forest, desert, mountain, snow
+- **Animated Water** - Transparent water with wave motion
+- **Composable Features** - Hills, valleys, plateaus, canyons, caves, bridges, ramps
+- **Smart Object Placement** - Biome-aware vegetation and props
+- **Tree Variants** - Oak, pine, birch, palm, dead trees
+- **Rock Variants** - Normal, granite, sandstone, ice, mossy, smooth
+
+See [docs/LEVEL_DESIGN.md](docs/LEVEL_DESIGN.md) for complete documentation.
 
 
 3D visualization and rendering:
@@ -409,13 +456,14 @@ This is the foundation for a Three.js-based MMORPG with generative AI features. 
 - ~~Inventory and equipment system~~ ✅ Complete
 - ~~NPC AI behaviors~~ ✅ Complete (basic)
 - ~~Character progression and leveling~~ ✅ Complete
+- ~~Advanced level design with biomes and terrain features~~ ✅ Complete
 - AI-generated quests and storylines
 - Multiplayer networking
 - Advanced combat system implementation
-- World generation and exploration
 - More NPC types and behaviors
 - Crafting system
-- Procedural content generation
+- Procedural dungeon generation
+- Weather and time-of-day systems
 
 ## License
 

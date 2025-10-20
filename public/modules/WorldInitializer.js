@@ -4,6 +4,8 @@
  */
 import { GameConfig } from './GameConfig.js';
 import { Item } from './InventorySystem.js';
+import { BiomeSystem } from './BiomeSystem.js';
+import * as THREE from 'three';
 
 export class WorldInitializer {
   constructor(
@@ -13,7 +15,8 @@ export class WorldInitializer {
     goblinFactory,
     monsterFactory,
     characterLoader,
-    addMessageFn
+    addMessageFn,
+    terrainGenerator = null
   ) {
     this.scene = scene;
     this.npcFactory = npcFactory;
@@ -22,6 +25,11 @@ export class WorldInitializer {
     this.monsterFactory = monsterFactory;
     this.characterLoader = characterLoader;
     this.addMessage = addMessageFn;
+    this.terrainGenerator = terrainGenerator;
+    
+    // Initialize BiomeSystem if terrain generator is provided
+    this.biomeSystem = terrainGenerator ? 
+      new BiomeSystem(terrainGenerator, environmentFactory) : null;
     
     this.npcs = [];
     this.environmentObjects = [];
@@ -64,6 +72,12 @@ export class WorldInitializer {
       const npcObj = this.npcFactory.createNPCMesh(npc, this.scene);
       this.environmentObjects.push(npcObj);
 
+      // Position NPCs on terrain if available
+      if (this.terrainGenerator && npc.mesh) {
+        const terrainHeight = this.terrainGenerator.getHeightAt(npc.position.x, npc.position.z);
+        npc.mesh.position.y = terrainHeight;
+      }
+
       // For specific NPCs that were found buried, lift them slightly
       if (npc.id === 'elder' || npc.id === 'guard') {
         try {
@@ -71,7 +85,6 @@ export class WorldInitializer {
           let lift = 0.5; // fallback lift
           if (meshGroup && meshGroup.children && meshGroup.children.length > 0) {
             const firstChild = meshGroup.children.find(c => c.isMesh || c.isGroup) || meshGroup.children[0];
-            const THREE = await import('three');
             const bbox = new THREE.Box3().setFromObject(firstChild);
             const size = bbox.getSize(new THREE.Vector3());
             const h = size.y || 1.0;
@@ -90,39 +103,81 @@ export class WorldInitializer {
    * @param {Object} inventory - Inventory system
    */
   createEnvironmentObjects(inventory) {
-    // Trees
-    for (let i = 0; i < GameConfig.environment.trees; i++) {
-      const angle = (i / GameConfig.environment.trees) * Math.PI * 2;
-      const radius = GameConfig.environment.treeRadius.min + 
-                     Math.random() * (GameConfig.environment.treeRadius.max - GameConfig.environment.treeRadius.min);
-      const x = Math.cos(angle) * radius;
-      const z = Math.sin(angle) * radius;
-      this.environmentObjects.push(
-        this.environmentFactory.createTree(x, z, Item, inventory, this.addMessage)
+    if (this.biomeSystem) {
+      // Use biome-aware placement
+      const trees = this.biomeSystem.populateBiomeObjects(
+        GameConfig.environment.trees, 
+        'tree', 
+        (x, z, height, variant, biome) => {
+          return this.environmentFactory.createTree(x, z, Item, inventory, this.addMessage, variant, height);
+        }
       );
+      this.environmentObjects.push(...trees);
+      
+      const rocks = this.biomeSystem.populateBiomeObjects(
+        GameConfig.environment.rocks, 
+        'rock', 
+        (x, z, height, variant, biome) => {
+          return this.environmentFactory.createRock(x, z, 0.8 + Math.random() * 0.6, variant, height);
+        }
+      );
+      this.environmentObjects.push(...rocks);
+    } else {
+      // Legacy placement (no biome awareness)
+      for (let i = 0; i < GameConfig.environment.trees; i++) {
+        const angle = (i / GameConfig.environment.trees) * Math.PI * 2;
+        const radius = GameConfig.environment.treeRadius.min + 
+                       Math.random() * (GameConfig.environment.treeRadius.max - GameConfig.environment.treeRadius.min);
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+        this.environmentObjects.push(
+          this.environmentFactory.createTree(x, z, Item, inventory, this.addMessage)
+        );
+      }
+      
+      for (let i = 0; i < GameConfig.environment.rocks; i++) {
+        const x = (Math.random() - 0.5) * 40;
+        const z = (Math.random() - 0.5) * 40;
+        this.environmentObjects.push(
+          this.environmentFactory.createRock(x, z, 0.8 + Math.random() * 0.6)
+        );
+      }
     }
     
-    // Rocks
-    for (let i = 0; i < GameConfig.environment.rocks; i++) {
-      const x = (Math.random() - 0.5) * 40;
-      const z = (Math.random() - 0.5) * 40;
-      this.environmentObjects.push(
-        this.environmentFactory.createRock(x, z, 0.8 + Math.random() * 0.6)
-      );
-    }
+    // Place chests at terrain height if available
+    const chest1Height = this.terrainGenerator ? this.terrainGenerator.getHeightAt(5, -5) : 0;
+    const chest2Height = this.terrainGenerator ? this.terrainGenerator.getHeightAt(-7, 8) : 0;
     
-    // Chests
     this.environmentObjects.push(
       this.environmentFactory.createChest(5, -5, Item, inventory, () => {})
     );
+    if (this.terrainGenerator) {
+      this.environmentObjects[this.environmentObjects.length - 1].mesh.position.y = chest1Height + 0.2;
+    }
+    
     this.environmentObjects.push(
       this.environmentFactory.createChest(-7, 8, Item, inventory, () => {})
     );
+    if (this.terrainGenerator) {
+      this.environmentObjects[this.environmentObjects.length - 1].mesh.position.y = chest2Height + 0.2;
+    }
     
-    // Campfires and buildings
-    this.environmentObjects.push(this.environmentFactory.createCampfire(0, -10));
-    this.environmentObjects.push(this.environmentFactory.createHouse(15, 0));
-    this.environmentObjects.push(this.environmentFactory.createHouse(-15, 5));
+    // Campfires and buildings at terrain height
+    const campfireHeight = this.terrainGenerator ? this.terrainGenerator.getHeightAt(0, -10) : 0;
+    const house1Height = this.terrainGenerator ? this.terrainGenerator.getHeightAt(15, 0) : 0;
+    const house2Height = this.terrainGenerator ? this.terrainGenerator.getHeightAt(-15, 5) : 0;
+    
+    const campfire = this.environmentFactory.createCampfire(0, -10);
+    if (this.terrainGenerator) campfire.mesh.position.y = campfireHeight + 0.2;
+    this.environmentObjects.push(campfire);
+    
+    const house1 = this.environmentFactory.createHouse(15, 0);
+    if (this.terrainGenerator) house1.mesh.position.y = house1Height;
+    this.environmentObjects.push(house1);
+    
+    const house2 = this.environmentFactory.createHouse(-15, 5);
+    if (this.terrainGenerator) house2.mesh.position.y = house2Height;
+    this.environmentObjects.push(house2);
   }
 
   /**
@@ -138,17 +193,46 @@ export class WorldInitializer {
         (x, z) => this.environmentFactory.createCampfire(x, z),
         updateQuestProgressFn
       );
+    
+    // Position goblins on terrain
+    campGoblins.forEach(goblin => this.positionMonsterOnTerrain(goblin));
+    
+    // Position environment objects (campfires) on terrain
+    campObjects.forEach(obj => {
+      if (obj.mesh && this.terrainGenerator) {
+        const height = this.terrainGenerator.getHeightAt(obj.position.x, obj.position.z);
+        obj.mesh.position.y = height + 0.2; // Slight offset above ground
+        obj.position.y = height + 0.2;
+      }
+    });
+    
     this.goblins.push(...campGoblins);
     this.environmentObjects.push(...campObjects);
     
     // Add camp sign
-    this.environmentObjects.push(
-      this.environmentFactory.createSign(
-        goblinCampCenter.x + 8,
-        goblinCampCenter.z,
-        'Beware: Goblin Territory!'
-      )
+    const sign = this.environmentFactory.createSign(
+      goblinCampCenter.x + 8,
+      goblinCampCenter.z,
+      'Beware: Goblin Territory!'
     );
+    if (this.terrainGenerator && sign.mesh) {
+      const signHeight = this.terrainGenerator.getHeightAt(sign.position.x, sign.position.z);
+      sign.mesh.position.y = signHeight;
+      sign.position.y = signHeight;
+    }
+    this.environmentObjects.push(sign);
+  }
+
+  /**
+   * Position a monster on terrain height
+   * @param {Object} monster - Monster object
+   */
+  positionMonsterOnTerrain(monster) {
+    if (this.terrainGenerator && monster.mesh) {
+      const terrainHeight = this.terrainGenerator.getHeightAt(monster.position.x, monster.position.z);
+      monster.position.y = terrainHeight;
+      monster.mesh.position.y = terrainHeight;
+    }
   }
 
   /**
@@ -162,6 +246,7 @@ export class WorldInitializer {
       const x = graveyardCenter.x + Math.cos(angle) * 3;
       const z = graveyardCenter.z + Math.sin(angle) * 3;
       const skeleton = this.monsterFactory.createSkeleton(x, z, updateQuestProgressFn);
+      this.positionMonsterOnTerrain(skeleton);
       this.monsters.push(skeleton);
       this.environmentObjects.push(skeleton);
     }
@@ -172,15 +257,21 @@ export class WorldInitializer {
       graveyardCenter.z + 4,
       updateQuestProgressFn
     );
+    this.positionMonsterOnTerrain(skeletonBoss);
     this.monsters.push(skeletonBoss);
     this.environmentObjects.push(skeletonBoss);
-    this.environmentObjects.push(
-      this.environmentFactory.createSign(
-        graveyardCenter.x + 6,
-        graveyardCenter.z,
-        'Ancient Graveyard'
-      )
+    
+    const graveyardSign = this.environmentFactory.createSign(
+      graveyardCenter.x + 6,
+      graveyardCenter.z,
+      'Ancient Graveyard'
     );
+    if (this.terrainGenerator && graveyardSign.mesh) {
+      const signHeight = this.terrainGenerator.getHeightAt(graveyardSign.position.x, graveyardSign.position.z);
+      graveyardSign.mesh.position.y = signHeight;
+      graveyardSign.position.y = signHeight;
+    }
+    this.environmentObjects.push(graveyardSign);
   }
 
   /**
@@ -194,16 +285,22 @@ export class WorldInitializer {
       const x = spiderCaveCenter.x + Math.cos(angle) * 4;
       const z = spiderCaveCenter.z + Math.sin(angle) * 4;
       const spider = this.monsterFactory.createSpider(x, z, updateQuestProgressFn);
+      this.positionMonsterOnTerrain(spider);
       this.monsters.push(spider);
       this.environmentObjects.push(spider);
     }
-    this.environmentObjects.push(
-      this.environmentFactory.createSign(
-        spiderCaveCenter.x + 7,
-        spiderCaveCenter.z,
-        'Spider Den - Danger!'
-      )
+    
+    const spiderSign = this.environmentFactory.createSign(
+      spiderCaveCenter.x + 7,
+      spiderCaveCenter.z,
+      'Spider Den - Danger!'
     );
+    if (this.terrainGenerator && spiderSign.mesh) {
+      const signHeight = this.terrainGenerator.getHeightAt(spiderSign.position.x, spiderSign.position.z);
+      spiderSign.mesh.position.y = signHeight;
+      spiderSign.position.y = signHeight;
+    }
+    this.environmentObjects.push(spiderSign);
   }
 
   /**
@@ -217,6 +314,7 @@ export class WorldInitializer {
       const x = wolfPackCenter.x + Math.cos(angle) * 3.5;
       const z = wolfPackCenter.z + Math.sin(angle) * 3.5;
       const wolf = this.monsterFactory.createWolf(x, z, updateQuestProgressFn);
+      this.positionMonsterOnTerrain(wolf);
       this.monsters.push(wolf);
       this.environmentObjects.push(wolf);
     }
@@ -227,15 +325,21 @@ export class WorldInitializer {
       wolfPackCenter.z,
       updateQuestProgressFn
     );
+    this.positionMonsterOnTerrain(direWolf);
     this.monsters.push(direWolf);
     this.environmentObjects.push(direWolf);
-    this.environmentObjects.push(
-      this.environmentFactory.createSign(
-        wolfPackCenter.x + 6,
-        wolfPackCenter.z,
-        'Wolf Territory'
-      )
+    
+    const wolfSign = this.environmentFactory.createSign(
+      wolfPackCenter.x + 6,
+      wolfPackCenter.z,
+      'Wolf Territory'
     );
+    if (this.terrainGenerator && wolfSign.mesh) {
+      const signHeight = this.terrainGenerator.getHeightAt(wolfSign.position.x, wolfSign.position.z);
+      wolfSign.mesh.position.y = signHeight;
+      wolfSign.position.y = signHeight;
+    }
+    this.environmentObjects.push(wolfSign);
   }
 
   /**

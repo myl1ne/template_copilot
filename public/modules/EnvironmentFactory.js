@@ -9,24 +9,89 @@ export class EnvironmentFactory {
     }
 
     /**
-     * Create a tree
+     * Create a tree with biome-specific variants
      */
-    createTree(x, z, Item, playerInventory, addMessage) {
+    createTree(x, z, Item, playerInventory, addMessage, variant = 'oak', yOffset = 0) {
         const tree = new THREE.Group();
         
+        // Biome-specific tree properties
+        let trunkColor, leavesColor, leavesShape, trunkHeight, leavesSize;
+        
+        switch (variant) {
+            case 'pine':
+                trunkColor = 0x3d2817;
+                leavesColor = 0x1a4d2e;
+                leavesShape = 'cone';
+                trunkHeight = 4;
+                leavesSize = 1.2;
+                break;
+            case 'birch':
+                trunkColor = 0xf5f5dc;
+                leavesColor = 0x90ee90;
+                leavesShape = 'sphere';
+                trunkHeight = 3.5;
+                leavesSize = 1.3;
+                break;
+            case 'palm':
+                trunkColor = 0x8b7355;
+                leavesColor = 0x228b22;
+                leavesShape = 'palm';
+                trunkHeight = 4;
+                leavesSize = 2;
+                break;
+            case 'dead':
+                trunkColor = 0x3d3d3d;
+                leavesColor = 0x6b4423;
+                leavesShape = 'dead';
+                trunkHeight = 2.5;
+                leavesSize = 0.8;
+                break;
+            default: // oak
+                trunkColor = 0x4a2511;
+                leavesColor = 0x228b22;
+                leavesShape = 'sphere';
+                trunkHeight = 3;
+                leavesSize = 1.5;
+        }
+        
         // Trunk
-        const trunkGeo = new THREE.CylinderGeometry(0.3, 0.4, 3, 8);
-        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a2511 });
+        const trunkGeo = new THREE.CylinderGeometry(0.3, 0.4, trunkHeight, 8);
+        const trunkMat = new THREE.MeshStandardMaterial({ color: trunkColor });
         const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-        trunk.position.y = 1.5;
+        trunk.position.y = trunkHeight / 2;
         trunk.castShadow = true;
         tree.add(trunk);
         
-        // Leaves
-        const leavesGeo = new THREE.SphereGeometry(1.5, 8, 8);
-        const leavesMat = new THREE.MeshStandardMaterial({ color: 0x228b22 });
-        const leaves = new THREE.Mesh(leavesGeo, leavesMat);
-        leaves.position.y = 3.5;
+        // Leaves - different shapes based on variant
+        let leaves;
+        if (leavesShape === 'cone') {
+            const leavesGeo = new THREE.ConeGeometry(leavesSize, trunkHeight * 0.8, 8);
+            const leavesMat = new THREE.MeshStandardMaterial({ color: leavesColor });
+            leaves = new THREE.Mesh(leavesGeo, leavesMat);
+            leaves.position.y = trunkHeight * 0.9;
+        } else if (leavesShape === 'palm') {
+            // Palm fronds (simplified)
+            const leavesGeo = new THREE.CylinderGeometry(0, leavesSize, 0.5, 6);
+            const leavesMat = new THREE.MeshStandardMaterial({ color: leavesColor });
+            leaves = new THREE.Mesh(leavesGeo, leavesMat);
+            leaves.position.y = trunkHeight + 0.5;
+        } else if (leavesShape === 'dead') {
+            // Dead tree - just some sparse branches
+            const leavesGeo = new THREE.SphereGeometry(leavesSize, 6, 6);
+            const leavesMat = new THREE.MeshStandardMaterial({ 
+                color: leavesColor, 
+                transparent: true, 
+                opacity: 0.6 
+            });
+            leaves = new THREE.Mesh(leavesGeo, leavesMat);
+            leaves.position.y = trunkHeight + 0.3;
+        } else {
+            const leavesGeo = new THREE.SphereGeometry(leavesSize, 8, 8);
+            const leavesMat = new THREE.MeshStandardMaterial({ color: leavesColor });
+            leaves = new THREE.Mesh(leavesGeo, leavesMat);
+            leaves.position.y = trunkHeight + leavesSize * 0.5;
+        }
+        
         leaves.castShadow = true;
         tree.add(leaves);
         
@@ -66,7 +131,7 @@ export class EnvironmentFactory {
             apples.push(apple);
         }
         
-        tree.position.set(x, 0, z);
+        tree.position.set(x, yOffset, z);
         this.scene.add(tree);
         
         return {
@@ -112,13 +177,46 @@ export class EnvironmentFactory {
     }
 
     /**
-     * Create a rock
+     * Create a rock with biome-specific variants
      */
-    createRock(x, z, scale = 1) {
+    createRock(x, z, scale = 1, variant = 'normal', yOffset = 0) {
+        // Biome-specific rock properties
+        let rockColor, roughness;
+        
+        switch (variant) {
+            case 'sandstone':
+                rockColor = 0xdaa520;
+                roughness = 0.85;
+                break;
+            case 'granite':
+                rockColor = 0x4a4a4a;
+                roughness = 0.95;
+                break;
+            case 'ice':
+                rockColor = 0xb0e0e6;
+                roughness = 0.1;
+                break;
+            case 'mossy':
+                rockColor = 0x556b2f;
+                roughness = 0.9;
+                break;
+            case 'smooth':
+                rockColor = 0xa9a9a9;
+                roughness = 0.7;
+                break;
+            default: // normal
+                rockColor = 0x808080;
+                roughness = 0.9;
+        }
+        
         const rockGeo = new THREE.DodecahedronGeometry(0.8 * scale, 0);
-        const rockMat = new THREE.MeshStandardMaterial({ color: 0x808080, roughness: 0.9 });
+        const rockMat = new THREE.MeshStandardMaterial({ 
+            color: rockColor, 
+            roughness: roughness,
+            metalness: variant === 'ice' ? 0.3 : 0.0
+        });
         const rock = new THREE.Mesh(rockGeo, rockMat);
-        rock.position.set(x, 0.4 * scale, z);
+        rock.position.set(x, yOffset + 0.4 * scale, z);
         rock.rotation.set(Math.random(), Math.random(), Math.random());
         rock.castShadow = true;
         rock.receiveShadow = true;
@@ -126,7 +224,8 @@ export class EnvironmentFactory {
         
         return {
             type: 'rock',
-            position: { x, y: 0, z },
+            variant: variant,
+            position: { x, y: yOffset, z },
             mesh: rock,
             interactable: false
         };

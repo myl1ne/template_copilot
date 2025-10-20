@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Engine - Advanced Terrain Demo with Heightmaps & Biomes</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .hud {
+            position: absolute;
+            pointer-events: none;
+        }
+        
+        .hud * {
+            pointer-events: auto;
+        }
+        
+        #info-panel {
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            min-width: 280px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(74, 222, 128, 0.3);
+        }
+        
+        #info-panel h3 {
+            margin: 0 0 15px 0;
+            color: #4ade80;
+            font-size: 18px;
+            border-bottom: 2px solid #4ade80;
+            padding-bottom: 8px;
+        }
+
+        #info-panel h4 {
+            margin: 15px 0 8px 0;
+            color: #60a5fa;
+            font-size: 14px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 13px;
+        }
+
+        .info-label {
+            color: #94a3b8;
+        }
+
+        .info-value {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .biome-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            margin-right: 8px;
+        }
+        
+        #controls-help {
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(74, 222, 128, 0.3);
+            max-width: 300px;
+        }
+        
+        #controls-help h4 {
+            margin: 0 0 10px 0;
+            color: #4ade80;
+            font-size: 14px;
+        }
+        
+        #controls-help .control-item {
+            margin: 8px 0;
+            font-size: 12px;
+        }
+
+        #legend {
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(74, 222, 128, 0.3);
+        }
+
+        #legend h4 {
+            margin: 0 0 10px 0;
+            color: #4ade80;
+            font-size: 14px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 6px 0;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    
+    <!-- Info Panel -->
+    <div id="info-panel" class="hud">
+        <h3>🗺️ Terrain System</h3>
+        <div class="info-row">
+            <span class="info-label">Camera Position:</span>
+            <span class="info-value" id="camera-pos">0, 0, 0</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Looking At:</span>
+            <span class="info-value" id="look-at">0, 0, 0</span>
+        </div>
+        
+        <h4>Terrain Features</h4>
+        <div class="info-row">
+            <span class="info-label">Heightmap:</span>
+            <span class="info-value">Multi-octave Noise</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Biomes:</span>
+            <span class="info-value" id="biome-count">7</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Water Level:</span>
+            <span class="info-value">5.0 units</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Trees Placed:</span>
+            <span class="info-value" id="tree-count">0</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Rocks Placed:</span>
+            <span class="info-value" id="rock-count">0</span>
+        </div>
+
+        <h4>Current Biome</h4>
+        <div id="current-biome" style="font-size: 13px; color: #60a5fa;">
+            Grassland
+        </div>
+    </div>
+
+    <!-- Biome Legend -->
+    <div id="legend" class="hud">
+        <h4>🌍 Biome Legend</h4>
+        <div class="legend-item">
+            <span class="biome-indicator" style="background: #1e90ff;"></span>
+            Water
+        </div>
+        <div class="legend-item">
+            <span class="biome-indicator" style="background: #f4e4c1;"></span>
+            Beach/Sand
+        </div>
+        <div class="legend-item">
+            <span class="biome-indicator" style="background: #3a7d44;"></span>
+            Grassland
+        </div>
+        <div class="legend-item">
+            <span class="biome-indicator" style="background: #2d5016;"></span>
+            Forest
+        </div>
+        <div class="legend-item">
+            <span class="biome-indicator" style="background: #daa520;"></span>
+            Desert
+        </div>
+        <div class="legend-item">
+            <span class="biome-indicator" style="background: #696969;"></span>
+            Mountain
+        </div>
+        <div class="legend-item">
+            <span class="biome-indicator" style="background: #ffffff;"></span>
+            Snow
+        </div>
+    </div>
+    
+    <!-- Controls Help -->
+    <div id="controls-help" class="hud">
+        <h4>🎮 Camera Controls</h4>
+        <div class="control-item">🖱️ <strong>Left Click + Drag:</strong> Rotate camera</div>
+        <div class="control-item">🖱️ <strong>Right Click + Drag:</strong> Pan camera</div>
+        <div class="control-item">⚙️ <strong>Mouse Wheel:</strong> Zoom in/out</div>
+        <div class="control-item">⌨️ <strong>Arrow Keys:</strong> Move view</div>
+        <div class="control-item">⌨️ <strong>Space:</strong> Reset camera</div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { WorldSetup } from './modules/WorldSetup.js';
+        import { EnvironmentFactory } from './modules/EnvironmentFactory.js';
+        import { BiomeSystem } from './modules/BiomeSystem.js';
+
+        // Initialize scene
+        const container = document.getElementById('canvas-container');
+        const worldSetup = new WorldSetup({ useAdvancedTerrain: true });
+        
+        // Note: WorldSetup will create terrain with waterLevel: 3, heightScale: 10
+        const { scene, camera, renderer, terrainGenerator } = worldSetup.init(container);
+
+        // Position camera for a good overview
+        camera.position.set(40, 30, 40);
+        camera.lookAt(0, 0, 0);
+
+        // Add orbit controls
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 10;
+        controls.maxDistance = 100;
+        controls.maxPolarAngle = Math.PI / 2.1; // Prevent going below ground
+
+        // Initialize environment factory and biome system
+        const environmentFactory = new EnvironmentFactory(scene);
+        const biomeSystem = new BiomeSystem(terrainGenerator, environmentFactory);
+
+        // Populate world with biome-appropriate objects
+        console.log('Populating world with biome-aware objects...');
+        
+        let treeCount = 0;
+        let rockCount = 0;
+
+        // Place trees (biome-aware)
+        const trees = biomeSystem.populateBiomeObjects(40, 'tree', (x, z, height, variant, biomeType) => {
+            const tree = environmentFactory.createTree(x, z, null, null, null, variant, height);
+            treeCount++;
+            return tree;
+        });
+
+        // Place rocks (biome-aware)
+        const rocks = biomeSystem.populateBiomeObjects(30, 'rock', (x, z, height, variant, biomeType) => {
+            const rock = environmentFactory.createRock(x, z, 1, variant, height);
+            rockCount++;
+            return rock;
+        });
+
+        document.getElementById('tree-count').textContent = treeCount;
+        document.getElementById('rock-count').textContent = rockCount;
+
+        // Analyze and log biome distribution
+        const biomeDistribution = biomeSystem.analyzeBiomeDistribution(1000);
+        console.log('Biome Distribution:', biomeDistribution);
+
+        // Update current biome based on camera position
+        function updateCurrentBiome() {
+            const lookTarget = controls.target;
+            const biome = terrainGenerator.getBiomeAt(lookTarget.x, lookTarget.z);
+            const biomeEl = document.getElementById('current-biome');
+            
+            // Capitalize biome type
+            const biomeType = biome.type.charAt(0).toUpperCase() + biome.type.slice(1);
+            biomeEl.textContent = biomeType;
+            
+            // Color code the text
+            const colorMap = {
+                water: '#1e90ff',
+                beach: '#f4e4c1',
+                grassland: '#3a7d44',
+                forest: '#2d5016',
+                desert: '#daa520',
+                mountain: '#696969',
+                snow: '#ffffff'
+            };
+            biomeEl.style.color = colorMap[biome.type] || '#60a5fa';
+        }
+
+        // Animation loop
+        const clock = new THREE.Clock();
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const deltaTime = clock.getDelta();
+            
+            // Animate water
+            worldSetup.animate(deltaTime);
+            
+            // Update controls
+            controls.update();
+            
+            // Update UI
+            const pos = camera.position;
+            document.getElementById('camera-pos').textContent = 
+                `${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)}`;
+            
+            const target = controls.target;
+            document.getElementById('look-at').textContent = 
+                `${target.x.toFixed(1)}, ${target.y.toFixed(1)}, ${target.z.toFixed(1)}`;
+            
+            updateCurrentBiome();
+            
+            // Render
+            renderer.render(scene, camera);
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (event) => {
+            const moveSpeed = 2;
+            const target = controls.target;
+            
+            switch(event.key) {
+                case 'ArrowUp':
+                    target.z -= moveSpeed;
+                    break;
+                case 'ArrowDown':
+                    target.z += moveSpeed;
+                    break;
+                case 'ArrowLeft':
+                    target.x -= moveSpeed;
+                    break;
+                case 'ArrowRight':
+                    target.x += moveSpeed;
+                    break;
+                case ' ':
+                    // Reset camera
+                    controls.target.set(0, 0, 0);
+                    camera.position.set(40, 30, 40);
+                    break;
+            }
+        });
+
+        // Start animation
+        animate();
+
+        console.log('🗺️ Advanced Terrain Demo loaded!');
+        console.log('Features: Heightmap terrain, biomes, water, biome-aware object placement');
+    </script>
+</body>
+</html>

@@ -6,6 +6,8 @@ import { CameraController } from './modules/CameraController.js';
 import { GoblinFactory } from './modules/GoblinFactory.js';
 import { MonsterFactory } from './modules/MonsterFactory.js';
 import { QuestFactory } from './modules/QuestFactory.js';
+import { Character } from './modules/Character.js';
+import { Skill } from './modules/Skill.js';
 
 // ===== SCENE SETUP =====
 const scene = new THREE.Scene();
@@ -140,20 +142,76 @@ characterGroup.add(swordGroup);
 scene.add(characterGroup);
 
 // ===== PLAYER STATE =====
-const player = {
+const player = new Character('Thorin the Brave', {
     hp: 150,
     maxHp: 150,
-    stamina: 100,
-    maxStamina: 100,
-    position: { x: 0, y: 0, z: 0 },
-    rotation: 0,
-    velocity: { x: 0, z: 0 },
-    speed: 3,
-    runSpeed: 6,
-    isRunning: false,
-    animationState: 'idle',
-    animationTime: 0
-};
+    mana: 50,
+    maxMana: 50,
+    armor: 10,
+    hpRegen: 2,
+    manaRegen: 1,
+    str: 18,
+    dex: 12,
+    con: 16,
+    int: 8,
+    wiz: 10,
+    cha: 14
+});
+
+// Add movement and animation properties directly
+player.position = { x: 0, y: 0, z: 0 };
+player.rotation = 0;
+player.velocity = { x: 0, z: 0 };
+player.speed = 3;
+player.runSpeed = 6;
+player.isRunning = false;
+player.animationState = 'idle';
+player.animationTime = 0;
+player.stamina = 100;
+player.maxStamina = 100;
+
+// Initialize with starter skills
+const powerStrike = new Skill('Power Strike', {
+    description: 'A powerful melee attack',
+    manaCost: 15,
+    damage: 50,
+    type: 'active',
+    targetType: 'single',
+    requirements: { str: 15 }
+});
+
+const secondWind = new Skill('Second Wind', {
+    description: 'Restore HP over time',
+    manaCost: 20,
+    healing: 30,
+    type: 'active',
+    targetType: 'self',
+    requirements: { con: 12 }
+});
+
+player.addSkill(powerStrike);
+player.addSkill(secondWind);
+
+// Add available spells to learn
+const fireball = new Skill('Fireball', {
+    description: 'A blazing ball of fire',
+    manaCost: 25,
+    damage: 60,
+    type: 'active',
+    targetType: 'single',
+    requirements: { int: 10, level: 3 }
+});
+
+const iceShield = new Skill('Ice Shield', {
+    description: 'Creates a protective shield of ice',
+    manaCost: 30,
+    type: 'buff',
+    targetType: 'self',
+    requirements: { int: 12, wiz: 12, level: 5 }
+});
+
+player.addAvailableSpell(fireball);
+player.addAvailableSpell(iceShield);
 
 // ===== ITEM CLASS =====
 class Item {
@@ -244,8 +302,20 @@ function updateQuestProgress(objectiveId, amount = 1) {
             if (quest.objectives.every(obj => obj.completed)) {
                 quest.completed = true;
                 playerInventory.addGold(quest.rewards.gold);
+                
+                // Grant quest XP
+                const xpResult = player.gainExperience(quest.rewards.xp);
                 addMessage(`🎉 QUEST COMPLETE! Rewards: ${quest.rewards.xp} XP, ${quest.rewards.gold} Gold`, 'success');
+                
+                if (xpResult.leveledUp) {
+                    addMessage(`🎉 LEVEL UP! You are now level ${xpResult.currentLevel}!`, 'success');
+                    addMessage(`   ⬆️ +${player.availableAttributePoints} Attribute Points`, 'info');
+                    addMessage(`   🌟 +${player.availableSkillPoints} Skill Point`, 'info');
+                    createLevelUpEffect();
+                }
+                
                 updateQuestUI();
+                updateUI();
                 
                 if (quest.id === 'village_rescue') {
                     quests['merchant_delivery'].available = true;
@@ -282,15 +352,25 @@ const monsters = [];
 
 // ===== UI FUNCTIONS =====
 function updateUI() {
-    const hpPercent = (player.hp / player.maxHp) * 100;
+    const hpPercent = (player.stats.hp / player.stats.maxHp) * 100;
     document.getElementById('hp-bar').style.width = hpPercent + '%';
     document.getElementById('hp-bar').textContent = Math.round(hpPercent) + '%';
-    document.getElementById('hp-text').textContent = `${Math.round(player.hp)} / ${player.maxHp}`;
+    document.getElementById('hp-text').textContent = `${Math.round(player.stats.hp)} / ${player.stats.maxHp}`;
+    
+    const manaPercent = (player.stats.mana / player.stats.maxMana) * 100;
+    document.getElementById('mana-bar').style.width = manaPercent + '%';
+    document.getElementById('mana-bar').textContent = Math.round(manaPercent) + '%';
+    document.getElementById('mana-text').textContent = `${Math.round(player.stats.mana)} / ${player.stats.maxMana}`;
     
     const staminaPercent = (player.stamina / player.maxStamina) * 100;
     document.getElementById('stamina-bar').style.width = staminaPercent + '%';
     document.getElementById('stamina-bar').textContent = Math.round(staminaPercent) + '%';
     document.getElementById('stamina-text').textContent = `${Math.round(player.stamina)} / ${player.maxStamina}`;
+    
+    document.getElementById('level-text').textContent = player.level;
+    document.getElementById('xp-text').textContent = `${player.experience} / ${player.experienceToNextLevel}`;
+    document.getElementById('attr-points-text').textContent = player.availableAttributePoints;
+    document.getElementById('skill-points-text').textContent = player.availableSkillPoints;
     
     document.getElementById('pos-text').textContent = `${Math.round(player.position.x)}, ${Math.round(player.position.z)}`;
 }
@@ -502,8 +582,8 @@ function updateInventoryUI() {
 function useItem(item) {
     if (item.type === 'consumable') {
         if (item.stats.healing) {
-            player.hp = Math.min(player.maxHp, player.hp + item.stats.healing);
-            addMessage(`Used ${item.icon} ${item.name}, restored ${item.stats.healing} HP`, 'success');
+            const healed = player.heal(item.stats.healing);
+            addMessage(`Used ${item.icon} ${item.name}, restored ${healed} HP`, 'success');
             updateUI();
         }
         playerInventory.removeItem(item.id);
@@ -1149,8 +1229,8 @@ function updateAnimation(delta) {
                 swordGroup.position.y = 1.3;
                 shield.position.y = 1.3;
                 setAnimation('idle');
-                player.hp = Math.min(player.maxHp, player.hp + 30);
-                addMessage('Rested and recovered 30 HP', 'success');
+                const healed = player.heal(30);
+                addMessage(`Rested and recovered ${healed} HP`, 'success');
                 updateUI();
             }
             break;
@@ -1204,7 +1284,7 @@ window.addEventListener('keydown', (e) => {
             // Non-combat interactions
             addMessage(result.message, result.type || 'info');
             if (result.healing) {
-                player.hp = Math.min(player.maxHp, player.hp + result.healing);
+                player.heal(result.healing);
                 updateUI();
             }
         }
@@ -1245,9 +1325,32 @@ window.addEventListener('keydown', (e) => {
                     showMonsterHealthBar(result.monsterHit);
                     createAttackEffect(result.monsterHit.position);
                 }
-                // Hide health bar when defeated
+                // Hide health bar when defeated and grant XP
                 if (result.defeated) {
                     hideMonsterHealthBar();
+                    // Grant XP based on monster type
+                    let xpReward = 50; // Default XP
+                    if (nearestMonster.type === 'goblin boss' || nearestMonster.type === 'skeleton lord') {
+                        xpReward = 200;
+                    } else if (nearestMonster.type === 'dire wolf') {
+                        xpReward = 150;
+                    } else if (nearestMonster.type === 'skeleton' || nearestMonster.type === 'wolf') {
+                        xpReward = 75;
+                    } else if (nearestMonster.type === 'spider') {
+                        xpReward = 60;
+                    }
+                    
+                    const xpResult = player.gainExperience(xpReward);
+                    addMessage(`💰 Gained ${xpReward} XP!`, 'success');
+                    
+                    if (xpResult.leveledUp) {
+                        addMessage(`🎉 LEVEL UP! You are now level ${xpResult.currentLevel}!`, 'success');
+                        addMessage(`   ⬆️ +${player.availableAttributePoints} Attribute Points`, 'info');
+                        addMessage(`   🌟 +${player.availableSkillPoints} Skill Point`, 'info');
+                        // Create a level up visual effect
+                        createLevelUpEffect();
+                    }
+                    updateUI();
                 }
             } else {
                 addMessage('No monster in range!', 'warning');
@@ -1339,6 +1442,44 @@ function createAttackEffect(position) {
         };
         
         particle.life = 1.0;
+        scene.add(particle);
+        particles.push(particle);
+    }
+    
+    // Store particles for animation
+    if (!window.attackParticles) {
+        window.attackParticles = [];
+    }
+    window.attackParticles.push(...particles);
+}
+
+// Create level-up visual effect
+function createLevelUpEffect() {
+    const particleCount = 30;
+    const particles = [];
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particleGeo = new THREE.SphereGeometry(0.15, 8, 8);
+        const particleMat = new THREE.MeshBasicMaterial({ 
+            color: 0xffd700, // Gold color
+            transparent: true,
+            opacity: 1
+        });
+        const particle = new THREE.Mesh(particleGeo, particleMat);
+        
+        particle.position.set(
+            player.position.x + (Math.random() - 0.5) * 2,
+            0.5 + Math.random() * 2,
+            player.position.z + (Math.random() - 0.5) * 2
+        );
+        
+        particle.velocity = {
+            x: (Math.random() - 0.5) * 0.05,
+            y: Math.random() * 0.2 + 0.1,
+            z: (Math.random() - 0.5) * 0.05
+        };
+        
+        particle.life = 2.0;
         scene.add(particle);
         particles.push(particle);
     }
@@ -1556,20 +1697,20 @@ function monsterAttackPlayer(monster) {
     
     monster.lastAttackTime = currentTime;
     const monsterDamage = Math.floor(monster.damage * 0.5 + Math.random() * monster.damage * 0.5);
-    player.hp = Math.max(0, player.hp - monsterDamage);
+    const actualDamage = player.takeDamage(monsterDamage);
     
-    addMessage(`💥 ${monster.type.toUpperCase()} attacks you for ${monsterDamage} damage!`, 'warning');
+    addMessage(`💥 ${monster.type.toUpperCase()} attacks you for ${actualDamage} damage (${monsterDamage} reduced by armor)!`, 'warning');
     updateUI();
     
     // Create attack effect on player
     createAttackEffect(player.position);
     
     // Check if player died
-    if (player.hp <= 0) {
+    if (!player.isAlive()) {
         addMessage('💀 You have been defeated!', 'warning');
         // Respawn player
         setTimeout(() => {
-            player.hp = player.maxHp;
+            player.stats.hp = player.stats.maxHp;
             player.position.x = 0;
             player.position.z = 0;
             characterGroup.position.set(0, 0, 0);

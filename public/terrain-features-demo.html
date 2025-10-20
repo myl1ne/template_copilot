@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Engine - Composable Terrain Features Demo</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        .hud {
+            position: absolute;
+            pointer-events: none;
+        }
+        
+        .hud * {
+            pointer-events: auto;
+        }
+        
+        #info-panel {
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            min-width: 280px;
+            max-width: 320px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(74, 222, 128, 0.3);
+        }
+        
+        #info-panel h3 {
+            margin: 0 0 15px 0;
+            color: #4ade80;
+            font-size: 18px;
+            border-bottom: 2px solid #4ade80;
+            padding-bottom: 8px;
+        }
+
+        #info-panel h4 {
+            margin: 15px 0 8px 0;
+            color: #60a5fa;
+            font-size: 14px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 8px 0;
+        }
+
+        .feature-list li {
+            margin: 6px 0;
+            font-size: 12px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "▸";
+            position: absolute;
+            left: 5px;
+            color: #4ade80;
+        }
+        
+        #controls-help {
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(74, 222, 128, 0.3);
+        }
+        
+        #controls-help h4 {
+            margin: 0 0 10px 0;
+            color: #4ade80;
+            font-size: 14px;
+        }
+        
+        #controls-help .control-item {
+            margin: 8px 0;
+            font-size: 12px;
+        }
+
+        #feature-legend {
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(74, 222, 128, 0.3);
+            max-width: 200px;
+        }
+
+        #feature-legend h4 {
+            margin: 0 0 10px 0;
+            color: #4ade80;
+            font-size: 14px;
+        }
+
+        .description {
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.5;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    
+    <!-- Info Panel -->
+    <div id="info-panel" class="hud">
+        <h3>🏗️ Terrain Features</h3>
+        <p class="description">
+            Modular terrain components that can be combined to create complex level designs.
+        </p>
+        
+        <h4>Featured Elements</h4>
+        <ul class="feature-list">
+            <li>Hills & Valleys</li>
+            <li>Plateaus & Mesas</li>
+            <li>Canyons & Ravines</li>
+            <li>Cave Entrances</li>
+            <li>Bridges</li>
+            <li>Ramps</li>
+        </ul>
+
+        <h4>Design Principles</h4>
+        <ul class="feature-list">
+            <li>Composable modules</li>
+            <li>Reusable components</li>
+            <li>Easy to combine</li>
+            <li>Performance optimized</li>
+        </ul>
+    </div>
+
+    <!-- Feature Legend -->
+    <div id="feature-legend" class="hud">
+        <h4>🗺️ Feature Map</h4>
+        <p style="font-size: 11px; color: #94a3b8; margin: 0;">
+            Hills (green spheres)<br/>
+            Plateaus (brown blocks)<br/>
+            Valley (depression)<br/>
+            Canyon (ravine)<br/>
+            Cave (dark entrance)<br/>
+            Bridges (wood)<br/>
+            Ramps (slopes)
+        </p>
+    </div>
+    
+    <!-- Controls Help -->
+    <div id="controls-help" class="hud">
+        <h4>🎮 Camera Controls</h4>
+        <div class="control-item">🖱️ <strong>Left Click + Drag:</strong> Rotate</div>
+        <div class="control-item">🖱️ <strong>Right Click + Drag:</strong> Pan</div>
+        <div class="control-item">⚙️ <strong>Mouse Wheel:</strong> Zoom</div>
+        <div class="control-item">⌨️ <strong>Arrow Keys:</strong> Move view</div>
+        <div class="control-item">⌨️ <strong>Space:</strong> Reset camera</div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { WorldSetup } from './modules/WorldSetup.js';
+        import { TerrainFeatures } from './modules/TerrainFeatures.js';
+
+        // Initialize scene (use simple terrain as base)
+        const container = document.getElementById('canvas-container');
+        const worldSetup = new WorldSetup({ useAdvancedTerrain: false });
+        const { scene, camera, renderer } = worldSetup.init(container);
+
+        // Position camera for a good overview
+        camera.position.set(0, 40, 50);
+        camera.lookAt(0, 0, 0);
+
+        // Add orbit controls
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 15;
+        controls.maxDistance = 100;
+        controls.maxPolarAngle = Math.PI / 2.1;
+
+        // Initialize terrain features
+        const terrainFeatures = new TerrainFeatures(scene);
+
+        console.log('Creating composable terrain features...');
+
+        // Create a varied landscape showcasing different features
+
+        // Hills (scattered around)
+        terrainFeatures.createHill(-20, -20, 8, 4, { color: 0x3a7d44 });
+        terrainFeatures.createHill(25, 15, 6, 3, { color: 0x4a8b54 });
+        terrainFeatures.createHill(-15, 25, 7, 3.5, { color: 0x2d5016 });
+
+        // Plateau (elevated flat area)
+        terrainFeatures.createPlateau(0, -15, 12, 12, 5, { color: 0x8b7355 });
+
+        // Valley (depression)
+        terrainFeatures.createValley(20, -20, 10, 2, { color: 0x6b8e23 });
+
+        // Canyon (long ravine)
+        terrainFeatures.createCanyon(-25, 0, 25, 5, 6, Math.PI / 4, { color: 0xa0522d });
+
+        // Cave entrance
+        terrainFeatures.createCaveEntrance(15, 5, 3);
+
+        // Bridges (connecting areas)
+        terrainFeatures.createBridge(-10, 10, 12, 3, 0, { color: 0x8b4513 });
+        terrainFeatures.createBridge(10, -5, 10, 2.5, Math.PI / 2, { color: 0x8b4513 });
+
+        // Ramps (for traversing height differences)
+        terrainFeatures.createRamp(-5, -10, 8, 4, Math.PI / 6, { color: 0x6b8e23 });
+        terrainFeatures.createRamp(15, 15, 6, 3, -Math.PI / 3, { color: 0x556b2f });
+
+        // Add some decorative elements
+        // Small rocks scattered around
+        for (let i = 0; i < 15; i++) {
+            const x = (Math.random() - 0.5) * 60;
+            const z = (Math.random() - 0.5) * 60;
+            
+            const rockGeo = new THREE.DodecahedronGeometry(0.5 + Math.random() * 0.5, 0);
+            const rockMat = new THREE.MeshStandardMaterial({ 
+                color: 0x808080, 
+                roughness: 0.9 
+            });
+            const rock = new THREE.Mesh(rockGeo, rockMat);
+            rock.position.set(x, 0.3, z);
+            rock.rotation.set(Math.random(), Math.random(), Math.random());
+            rock.castShadow = true;
+            rock.receiveShadow = true;
+            scene.add(rock);
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Update controls
+            controls.update();
+            
+            // Render
+            renderer.render(scene, camera);
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (event) => {
+            const moveSpeed = 2;
+            const target = controls.target;
+            
+            switch(event.key) {
+                case 'ArrowUp':
+                    target.z -= moveSpeed;
+                    break;
+                case 'ArrowDown':
+                    target.z += moveSpeed;
+                    break;
+                case 'ArrowLeft':
+                    target.x -= moveSpeed;
+                    break;
+                case 'ArrowRight':
+                    target.x += moveSpeed;
+                    break;
+                case ' ':
+                    // Reset camera
+                    controls.target.set(0, 0, 0);
+                    camera.position.set(0, 40, 50);
+                    break;
+            }
+        });
+
+        // Start animation
+        animate();
+
+        console.log('🏗️ Composable Terrain Features Demo loaded!');
+        console.log('Features: Modular terrain elements for flexible level design');
+    </script>
+</body>
+</html>

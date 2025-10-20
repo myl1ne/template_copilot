@@ -551,7 +551,7 @@ function showDialogue(npc) {
                 completeBtn.className = 'dialogue-btn';
                 completeBtn.textContent = '✓ I defeated the goblins!';
                 completeBtn.onclick = () => {
-                    updateQuestProgress('return_to_elder', 1);
+                    updateQuestProgress('return_to_village_elder', 1);
                     document.getElementById('dialogue-text').textContent = 
                         "Excellent work, brave warrior! The village is safe once again. Please accept this reward for your heroic deeds!";
                     setTimeout(() => closeDialogue(), 2000);
@@ -607,7 +607,7 @@ function showDialogue(npc) {
                 completeSkeletonBtn.className = 'dialogue-btn';
                 completeSkeletonBtn.textContent = '✓ The undead are vanquished!';
                 completeSkeletonBtn.onclick = () => {
-                    updateQuestProgress('return_to_elder', 1);
+                    updateQuestProgress('return_to_village_elder', 1);
                     document.getElementById('dialogue-text').textContent = 
                         "Outstanding! You have proven yourself a true hero. The village owes you everything!";
                     setTimeout(() => closeDialogue(), 2000);

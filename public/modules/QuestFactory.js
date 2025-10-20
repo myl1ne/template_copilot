@@ -216,7 +216,7 @@ export class QuestFactory {
             bossType: 'Goblin Chief',
             returnTo: 'Village Elder',
             rewards: { xp: 500, gold: 100 },
-            options: { active: true, questGiver: 'Village Elder' }
+            options: { active: false, questGiver: 'Village Elder' }
         });
 
         // Merchant Delivery Quest

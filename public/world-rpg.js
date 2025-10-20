@@ -223,7 +223,7 @@ playerInventory.addItem(new Item('bread', 'Bread', '🍞', 'consumable', 5, { he
 const questFactory = new QuestFactory();
 const quests = questFactory.createStandardQuests();
 
-let activeQuest = quests['village_rescue'];
+let activeQuest = null;
 
 function updateQuestProgress(objectiveId, amount = 1) {
     if (!activeQuest || !activeQuest.active || activeQuest.completed) return;
@@ -311,7 +311,7 @@ function updateQuestUI() {
     const questPanel = document.getElementById('quest-panel');
     if (!questPanel) return;
     
-    if (activeQuest.active) {
+    if (activeQuest && activeQuest.active) {
         questPanel.innerHTML = `
             <div class="quest-header ${activeQuest.completed ? 'completed' : ''}">
                 <div class="quest-title">📜 ${activeQuest.name}</div>
@@ -330,6 +330,13 @@ function updateQuestUI() {
                     🎁 Rewards: ${activeQuest.rewards.xp} XP, ${activeQuest.rewards.gold} Gold
                 </div>
             ` : ''}
+        `;
+    } else {
+        questPanel.innerHTML = `
+            <div class="quest-header">
+                <div class="quest-title">📜 No Active Quest</div>
+                <div class="quest-desc">Visit NPCs to find quests!</div>
+            </div>
         `;
     }
 }
@@ -510,7 +517,34 @@ function showDialogue(npc) {
             const villageQuest = quests['village_rescue'];
             const skeletonQuest = quests['skeleton_threat'];
             
-            if (villageQuest.active && !villageQuest.completed &&
+            // Offer village rescue quest if not yet accepted
+            if (!villageQuest.active && !villageQuest.completed) {
+                const offerQuestBtn = document.createElement('button');
+                offerQuestBtn.className = 'dialogue-btn';
+                offerQuestBtn.textContent = 'What troubles the village?';
+                offerQuestBtn.onclick = () => {
+                    document.getElementById('dialogue-text').textContent = 
+                        "Brave adventurer! Goblins have been raiding our village. Their camp is to the south. Will you help us defeat them?";
+                    
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'dialogue-btn';
+                    acceptBtn.textContent = 'I will help!';
+                    acceptBtn.onclick = () => {
+                        activateQuest('village_rescue');
+                        document.getElementById('dialogue-text').textContent = 
+                            "Thank you, hero! The goblin camp is to the south, around coordinates (-20, -20). Defeat them and return to me!";
+                    };
+                    options.innerHTML = '';
+                    options.appendChild(acceptBtn);
+                    
+                    const declineBtn = document.createElement('button');
+                    declineBtn.className = 'dialogue-btn secondary';
+                    declineBtn.textContent = 'Not right now';
+                    declineBtn.onclick = closeDialogue;
+                    options.appendChild(declineBtn);
+                };
+                options.appendChild(offerQuestBtn);
+            } else if (villageQuest.active && !villageQuest.completed &&
                 villageQuest.objectives[0].completed && villageQuest.objectives[1].completed && 
                 !villageQuest.objectives[2].completed) {
                 const completeBtn = document.createElement('button');

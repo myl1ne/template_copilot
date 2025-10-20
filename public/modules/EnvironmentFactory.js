@@ -34,20 +34,23 @@ export class EnvironmentFactory {
         const apples = [];
         for (let i = 0; i < 3; i++) {
             const angle = (i / 3) * Math.PI * 2 + Math.random() * 0.5;
-            const radius = 0.8 + Math.random() * 0.4;
-            const appleGeo = new THREE.SphereGeometry(0.12, 8, 8);
+            const radius = 1.0 + Math.random() * 0.3;
+            const appleGeo = new THREE.SphereGeometry(0.2, 16, 16);
             const appleMat = new THREE.MeshStandardMaterial({ 
                 color: 0xff0000,
-                emissive: 0x330000,
-                emissiveIntensity: 0.2
+                emissive: 0xff0000,
+                emissiveIntensity: 0.4,
+                roughness: 0.6,
+                metalness: 0.1
             });
             const apple = new THREE.Mesh(appleGeo, appleMat);
             apple.position.set(
                 Math.cos(angle) * radius,
-                3.2 + Math.random() * 0.6,
+                3.3 + Math.random() * 0.5,
                 Math.sin(angle) * radius
             );
             apple.castShadow = true;
+            apple.receiveShadow = true;
             apple.visible = true;
             tree.add(apple);
             apples.push(apple);

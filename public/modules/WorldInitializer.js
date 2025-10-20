@@ -193,6 +193,10 @@ export class WorldInitializer {
         (x, z) => this.environmentFactory.createCampfire(x, z),
         updateQuestProgressFn
       );
+    
+    // Position goblins on terrain
+    campGoblins.forEach(goblin => this.positionMonsterOnTerrain(goblin));
+    
     this.goblins.push(...campGoblins);
     this.environmentObjects.push(...campObjects);
     
@@ -207,6 +211,18 @@ export class WorldInitializer {
   }
 
   /**
+   * Position a monster on terrain height
+   * @param {Object} monster - Monster object
+   */
+  positionMonsterOnTerrain(monster) {
+    if (this.terrainGenerator && monster.mesh) {
+      const terrainHeight = this.terrainGenerator.getHeightAt(monster.position.x, monster.position.z);
+      monster.position.y = terrainHeight;
+      monster.mesh.position.y = terrainHeight;
+    }
+  }
+
+  /**
    * Create skeleton graveyard
    * @param {Function} updateQuestProgressFn - Function to update quest progress
    */
@@ -217,6 +233,7 @@ export class WorldInitializer {
       const x = graveyardCenter.x + Math.cos(angle) * 3;
       const z = graveyardCenter.z + Math.sin(angle) * 3;
       const skeleton = this.monsterFactory.createSkeleton(x, z, updateQuestProgressFn);
+      this.positionMonsterOnTerrain(skeleton);
       this.monsters.push(skeleton);
       this.environmentObjects.push(skeleton);
     }
@@ -227,6 +244,7 @@ export class WorldInitializer {
       graveyardCenter.z + 4,
       updateQuestProgressFn
     );
+    this.positionMonsterOnTerrain(skeletonBoss);
     this.monsters.push(skeletonBoss);
     this.environmentObjects.push(skeletonBoss);
     this.environmentObjects.push(
@@ -249,6 +267,7 @@ export class WorldInitializer {
       const x = spiderCaveCenter.x + Math.cos(angle) * 4;
       const z = spiderCaveCenter.z + Math.sin(angle) * 4;
       const spider = this.monsterFactory.createSpider(x, z, updateQuestProgressFn);
+      this.positionMonsterOnTerrain(spider);
       this.monsters.push(spider);
       this.environmentObjects.push(spider);
     }
@@ -272,6 +291,7 @@ export class WorldInitializer {
       const x = wolfPackCenter.x + Math.cos(angle) * 3.5;
       const z = wolfPackCenter.z + Math.sin(angle) * 3.5;
       const wolf = this.monsterFactory.createWolf(x, z, updateQuestProgressFn);
+      this.positionMonsterOnTerrain(wolf);
       this.monsters.push(wolf);
       this.environmentObjects.push(wolf);
     }
@@ -282,6 +302,7 @@ export class WorldInitializer {
       wolfPackCenter.z,
       updateQuestProgressFn
     );
+    this.positionMonsterOnTerrain(direWolf);
     this.monsters.push(direWolf);
     this.environmentObjects.push(direWolf);
     this.environmentObjects.push(

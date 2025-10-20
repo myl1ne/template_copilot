@@ -667,7 +667,8 @@ function updateMonsterAI(monster, delta, playerPos) {
       const fleeZ = monster.position.z - dz * 0.02;
       monster.position.x = fleeX;
       monster.position.z = fleeZ;
-      monster.mesh.position.set(fleeX, 0, fleeZ);
+      const fleeY = terrainGenerator ? terrainGenerator.getHeightAt(fleeX, fleeZ) : 0;
+      monster.mesh.position.set(fleeX, fleeY, fleeZ);
       isEngaged = true;
     }
   } else if (monster.stance === 'defensive') {
@@ -682,7 +683,8 @@ function updateMonsterAI(monster, delta, playerPos) {
       const moveZ = monster.position.z + (dz / distanceToPlayer) * moveSpeed;
       monster.position.x = moveX;
       monster.position.z = moveZ;
-      monster.mesh.position.set(moveX, 0, moveZ);
+      const moveY = terrainGenerator ? terrainGenerator.getHeightAt(moveX, moveZ) : 0;
+      monster.mesh.position.set(moveX, moveY, moveZ);
       
       const angle = Math.atan2(dx, dz);
       monster.mesh.rotation.y = angle;
@@ -720,7 +722,8 @@ function updateMonsterAI(monster, delta, playerPos) {
       const moveZ = monster.position.z + (wanderDz / wanderDist) * wanderSpeed;
       monster.position.x = moveX;
       monster.position.z = moveZ;
-      monster.mesh.position.set(moveX, 0, moveZ);
+      const moveY = terrainGenerator ? terrainGenerator.getHeightAt(moveX, moveZ) : 0;
+      monster.mesh.position.set(moveX, moveY, moveZ);
       
       const wanderAngle = Math.atan2(wanderDx, wanderDz);
       monster.mesh.rotation.y = wanderAngle;
@@ -752,7 +755,8 @@ function monsterAttackPlayer(monster) {
       player.stats.hp = player.stats.maxHp;
       player.position.x = 0;
       player.position.z = 0;
-      characterGroup.position.set(0, 0, 0);
+      player.position.y = terrainGenerator ? terrainGenerator.getHeightAt(0, 0) : 0;
+      characterGroup.position.set(player.position.x, player.position.y, player.position.z);
       addMessage('You have respawned at the starting location.', 'info');
       updateUI();
     }, 3000);
@@ -774,6 +778,12 @@ function monsterAttackPlayer(monster) {
       );
     }
   );
+  
+  // Set player's initial Y position on terrain
+  if (terrainGenerator) {
+    player.position.y = terrainGenerator.getHeightAt(player.position.x, player.position.z);
+    characterGroup.position.y = player.position.y;
+  }
   
   // Initialize UI
   updateInventoryUI();
@@ -827,6 +837,11 @@ function animate() {
       player.position.x += player.velocity.x;
       player.position.z += player.velocity.z;
       
+      // Update player Y position to match terrain height
+      if (terrainGenerator) {
+        player.position.y = terrainGenerator.getHeightAt(player.position.x, player.position.z);
+      }
+      
       player.rotation = moveAngle;
       characterGroup.rotation.y = player.rotation;
       
@@ -842,6 +857,11 @@ function animate() {
         animationController.setState('idle');
       }
       player.stamina = Math.min(player.maxStamina, player.stamina + 15 * delta);
+      
+      // Update player Y position even when not moving to stay on terrain
+      if (terrainGenerator) {
+        player.position.y = terrainGenerator.getHeightAt(player.position.x, player.position.z);
+      }
     }
     
     characterGroup.position.set(player.position.x, player.position.y, player.position.z);
@@ -893,7 +913,8 @@ function animate() {
         goblin.mesh.visible = true;
         goblin.position.x = goblin.spawnPosition.x;
         goblin.position.z = goblin.spawnPosition.z;
-        goblin.mesh.position.set(goblin.spawnPosition.x, 0, goblin.spawnPosition.z);
+        const goblinY = terrainGenerator ? terrainGenerator.getHeightAt(goblin.spawnPosition.x, goblin.spawnPosition.z) : 0;
+        goblin.mesh.position.set(goblin.spawnPosition.x, goblinY, goblin.spawnPosition.z);
         goblin.wasAttacked = false;
         goblin.isRetreating = false;
         addMessage('A goblin has respawned!', 'warning');
@@ -920,7 +941,8 @@ function animate() {
         monster.mesh.visible = true;
         monster.position.x = monster.spawnPosition.x;
         monster.position.z = monster.spawnPosition.z;
-        monster.mesh.position.set(monster.spawnPosition.x, 0, monster.spawnPosition.z);
+        const monsterY = terrainGenerator ? terrainGenerator.getHeightAt(monster.spawnPosition.x, monster.spawnPosition.z) : 0;
+        monster.mesh.position.set(monster.spawnPosition.x, monsterY, monster.spawnPosition.z);
         monster.wasAttacked = false;
         monster.isRetreating = false;
         addMessage(`A ${monster.type} has respawned!`, 'warning');

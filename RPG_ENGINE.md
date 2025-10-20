@@ -153,6 +153,20 @@ npm install
 
 ## Demos
 
+### Progression System Demo (New!)
+See the leveling, experience, and spell learning system in action:
+
+```bash
+npm run demo:progression
+```
+
+Watch a mage character progress from level 1 to level 3, automatically:
+- Gain experience from defeating enemies
+- Level up with automatic HP/Mana increases
+- Spend attribute points (INT, WIZ)
+- Learn new spells as requirements are met
+- Full character progression tracking
+
 ### Integrated 3D Quest Demo (Recommended)
 Experience the full RPG engine with 3D character visualization during quest progression:
 

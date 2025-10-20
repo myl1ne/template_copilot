@@ -15,7 +15,9 @@ This project is designed for:
 ## Key Features
 
 - **Character System**: Comprehensive stats (HP, mana, armor, etc.) and attributes (STR, DEX, CON, INT, WIZ, CHA) with skill management
+- **Progression System**: Experience points, leveling, attribute points, and skill points for character advancement
 - **Skill System**: Flexible skill framework with levels, requirements, mana costs, and various effect types
+- **Spell Learning**: Learn new spells and abilities using skill points with attribute and level requirements
 - **Quest System**: Full-featured quest management with objectives, progress tracking, and rewards
 
 ## Quick Start
@@ -33,8 +35,11 @@ npm install
 
 ### Basic Usage
 ```bash
-# Run the demo to see all features in action
+# Run the main demo to see all features in action
 npm run demo
+
+# Run the progression system demo (leveling, XP, spell learning)
+npm run demo:progression
 ```
 
 For detailed usage examples, see [RPG_ENGINE.md](../RPG_ENGINE.md).

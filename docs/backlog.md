@@ -61,6 +61,12 @@ Currently no known bugs.
 
 ## ✅ Recently Completed
 
+- **Character Progression System** - Implemented XP, leveling, and attribute/skill points ✅
+  - **Completed**: October 20, 2025
+
+- **Spell Learning System** - Added spell selection with requirements and skill points ✅
+  - **Completed**: October 20, 2025
+
 - **Character Data Structure** - Implemented with all stats and attributes ✅
   - **Completed**: October 19, 2025
   

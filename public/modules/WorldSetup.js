@@ -4,14 +4,19 @@
  */
 import * as THREE from 'three';
 import { GameConfig } from './GameConfig.js';
+import { TerrainGenerator } from './TerrainGenerator.js';
+import { WaterPlane } from './WaterPlane.js';
 
 export class WorldSetup {
-  constructor() {
+  constructor(options = {}) {
     this.scene = null;
     this.camera = null;
     this.renderer = null;
     this.ground = null;
     this.gridHelper = null;
+    this.useAdvancedTerrain = options.useAdvancedTerrain !== false; // default true
+    this.terrainGenerator = null;
+    this.waterPlane = null;
   }
 
   /**
@@ -86,34 +91,65 @@ export class WorldSetup {
    */
   createGround() {
     const groundSize = GameConfig.world.groundSize;
-    const groundGeometry = new THREE.PlaneGeometry(groundSize, groundSize, 50, 50);
-    const groundMaterial = new THREE.MeshStandardMaterial({
-      color: GameConfig.world.groundColor,
-      roughness: 0.8,
-      metalness: 0.2
-    });
 
-    // Add terrain variation
-    const positions = groundGeometry.attributes.position;
-    for (let i = 0; i < positions.count; i++) {
-      const x = positions.getX(i);
-      const y = positions.getY(i);
-      const height = Math.sin(x * 0.1) * 0.5 + Math.cos(y * 0.1) * 0.5;
-      positions.setZ(i, height);
+    if (this.useAdvancedTerrain) {
+      // Use new heightmap-based terrain with biomes
+      this.terrainGenerator = new TerrainGenerator({
+        size: groundSize,
+        segments: 100,
+        heightScale: 10,
+        waterLevel: 3 // Water at height 3
+      });
+
+      this.ground = this.terrainGenerator.createTerrain();
+      this.scene.add(this.ground);
+
+      // Add water plane
+      this.waterPlane = new WaterPlane({
+        size: groundSize,
+        waterLevel: 3
+      });
+      const water = this.waterPlane.create();
+      this.scene.add(water);
+
+      // Optional: Add subtle grid helper (less visible on varied terrain)
+      this.gridHelper = new THREE.GridHelper(groundSize, 50, 0x000000, 0x000000);
+      this.gridHelper.material.opacity = 0.05;
+      this.gridHelper.material.transparent = true;
+      this.gridHelper.position.y = 0.1;
+      this.scene.add(this.gridHelper);
+
+    } else {
+      // Legacy simple terrain
+      const groundGeometry = new THREE.PlaneGeometry(groundSize, groundSize, 50, 50);
+      const groundMaterial = new THREE.MeshStandardMaterial({
+        color: GameConfig.world.groundColor,
+        roughness: 0.8,
+        metalness: 0.2
+      });
+
+      // Add terrain variation
+      const positions = groundGeometry.attributes.position;
+      for (let i = 0; i < positions.count; i++) {
+        const x = positions.getX(i);
+        const y = positions.getY(i);
+        const height = Math.sin(x * 0.1) * 0.5 + Math.cos(y * 0.1) * 0.5;
+        positions.setZ(i, height);
+      }
+      positions.needsUpdate = true;
+      groundGeometry.computeVertexNormals();
+
+      this.ground = new THREE.Mesh(groundGeometry, groundMaterial);
+      this.ground.rotation.x = -Math.PI / 2;
+      this.ground.receiveShadow = true;
+      this.scene.add(this.ground);
+
+      // Grid helper
+      this.gridHelper = new THREE.GridHelper(groundSize, 50, 0x000000, 0x000000);
+      this.gridHelper.material.opacity = 0.1;
+      this.gridHelper.material.transparent = true;
+      this.scene.add(this.gridHelper);
     }
-    positions.needsUpdate = true;
-    groundGeometry.computeVertexNormals();
-
-    this.ground = new THREE.Mesh(groundGeometry, groundMaterial);
-    this.ground.rotation.x = -Math.PI / 2;
-    this.ground.receiveShadow = true;
-    this.scene.add(this.ground);
-
-    // Grid helper
-    this.gridHelper = new THREE.GridHelper(groundSize, 50, 0x000000, 0x000000);
-    this.gridHelper.material.opacity = 0.1;
-    this.gridHelper.material.transparent = true;
-    this.scene.add(this.gridHelper);
   }
 
   /**
@@ -128,15 +164,37 @@ export class WorldSetup {
   }
 
   /**
+   * Animate world elements (water, etc.)
+   * Call this in your animation loop
+   * @param {number} deltaTime - Time since last frame
+   */
+  animate(deltaTime) {
+    if (this.waterPlane) {
+      this.waterPlane.animate(deltaTime);
+    }
+  }
+
+  /**
+   * Get terrain generator (for object placement)
+   * @returns {TerrainGenerator|null} Terrain generator or null
+   */
+  getTerrainGenerator() {
+    return this.terrainGenerator;
+  }
+
+  /**
    * Initialize the complete world
    * @param {HTMLElement} container - DOM element to attach the renderer
-   * @returns {Object} - { scene, camera, renderer }
+   * @returns {Object} - { scene, camera, renderer, terrainGenerator }
    */
   init(container) {
     const result = this.initScene(container);
     this.addLighting();
     this.createGround();
     this.setupResizeHandler();
-    return result;
+    return { 
+      ...result, 
+      terrainGenerator: this.terrainGenerator 
+    };
   }
 }

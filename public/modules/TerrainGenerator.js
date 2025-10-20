@@ -20,26 +20,29 @@ export class TerrainGenerator {
      * @returns {number} Height value
      */
     generateHeight(x, z) {
-        // Simple noise function (deterministic based on seed)
+        // Enhanced noise function for more pronounced terrain variation
         const noise = (x, z, scale, seed) => {
             const sx = (x / scale) + seed;
             const sz = (z / scale) + seed;
+            // Use more aggressive frequency multipliers for better variation
             return (
-                Math.sin(sx * 0.1) * Math.cos(sz * 0.1) * 0.5 +
-                Math.sin(sx * 0.3) * Math.cos(sz * 0.3) * 0.25 +
-                Math.sin(sx * 0.7) * Math.cos(sz * 0.7) * 0.125
+                Math.sin(sx * 0.15) * Math.cos(sz * 0.15) * 1.0 +
+                Math.sin(sx * 0.4) * Math.cos(sz * 0.4) * 0.5 +
+                Math.sin(sx * 0.9) * Math.cos(sz * 0.9) * 0.25 +
+                Math.sin(sx * 1.5) * Math.cos(sz * 1.5) * 0.125
             );
         };
 
-        // Multi-octave noise for more natural terrain
+        // Multi-octave noise for more natural terrain with better amplitude
         let height = 0;
-        height += noise(x, z, 50, this.seed) * 1.0;      // Large features
-        height += noise(x, z, 25, this.seed + 1) * 0.5;  // Medium features
-        height += noise(x, z, 10, this.seed + 2) * 0.25; // Small details
+        height += noise(x, z, 40, this.seed) * 1.2;       // Large features (increased)
+        height += noise(x, z, 20, this.seed + 1) * 0.6;   // Medium features
+        height += noise(x, z, 8, this.seed + 2) * 0.3;    // Small details
+        height += noise(x, z, 4, this.seed + 3) * 0.15;   // Fine details
         
-        // Normalize to 0-1 range, then scale and offset
-        // noise function returns values roughly between -1 and 1
-        const normalizedHeight = (height + 1) / 2; // Now 0 to 1
+        // The noise function now returns values roughly between -2 and 2
+        // Normalize to 0-1 range with better distribution
+        const normalizedHeight = Math.max(0, Math.min(1, (height + 2) / 4));
         return normalizedHeight * this.heightScale;
     }
 

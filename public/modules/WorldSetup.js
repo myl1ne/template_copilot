@@ -97,8 +97,8 @@ export class WorldSetup {
       this.terrainGenerator = new TerrainGenerator({
         size: groundSize,
         segments: 100,
-        heightScale: 10,
-        waterLevel: 3 // Water at height 3
+        heightScale: 15,  // Increased for more dramatic terrain
+        waterLevel: 4     // Adjusted water level
       });
 
       this.ground = this.terrainGenerator.createTerrain();
@@ -107,7 +107,7 @@ export class WorldSetup {
       // Add water plane
       this.waterPlane = new WaterPlane({
         size: groundSize,
-        waterLevel: 3
+        waterLevel: 4    // Match terrain water level
       });
       const water = this.waterPlane.create();
       this.scene.add(water);

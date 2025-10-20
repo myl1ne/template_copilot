@@ -54,10 +54,11 @@ Comprehensive quest management:
 - WoW-style camera controls (right-click to rotate, mouse wheel to zoom)
 - Character animations (idle, walking, running, attacking, resting)
 - Populated 3D world with environment objects
-- NPC interactions and dialogue
+- NPC interactions and dialogue with 4 unique FBX characters (Baelin, Baradun, Bodger, Greg)
 - Inventory and equipment management
 - Trading system with merchants
 - Goblin enemies with respawn mechanics
+- Modular architecture with reusable components
 
 **Demos:**
 1. **Basic Character Demo** (`/` or `/index.html`) - 3D character with animations
@@ -272,6 +273,24 @@ Run the demo to see all features in action:
 ```bash
 npm run demo
 ```
+
+## Module Architecture
+
+The RPG Engine uses a modular architecture for better maintainability and scalability. See [docs/MODULE_STRUCTURE.md](docs/MODULE_STRUCTURE.md) for detailed documentation.
+
+**Core Modules:**
+- `FBXCharacterLoader.js` - Handles loading all 4 FBX characters with automatic scale normalization
+- `NPCFactory.js` - Creates NPCs with FBX models and manages NPC interactions
+- `EnvironmentFactory.js` - Creates environment objects (trees, rocks, chests, etc.)
+- `CameraController.js` - Manages WoW-style camera controls
+- `GoblinFactory.js` - Creates goblin enemies and camps with combat logic
+
+**Benefits:**
+- Fixed FBX scale issues systematically
+- All 4 characters (Baelin, Baradun, Bodger, Greg) loaded and used as NPCs
+- Cleaner, more maintainable code structure
+- Reusable components
+- Easy to extend and test
 
 ## Data Structures
 

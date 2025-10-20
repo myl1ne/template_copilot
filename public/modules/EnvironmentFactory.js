@@ -11,7 +11,7 @@ export class EnvironmentFactory {
     /**
      * Create a tree
      */
-    createTree(x, z) {
+    createTree(x, z, Item, playerInventory, addMessage) {
         const tree = new THREE.Group();
         
         // Trunk
@@ -30,6 +30,42 @@ export class EnvironmentFactory {
         leaves.castShadow = true;
         tree.add(leaves);
         
+        // Add apples (3 apples per tree) positioned on the outer surface of the leaves
+        const apples = [];
+        const leavesRadius = 1.5; // matches leavesGeo
+        const appleRadius = 0.2;
+        const surfaceOffset = -0.1; // tiny gap so apples sit outside foliage
+        for (let i = 0; i < 3; i++) {
+            // Random spherical direction biased to appear on upper hemisphere
+            const theta = Math.random() * Math.PI * 2; // azimuth
+            const phi = Math.random() * Math.PI * 0.8; // polar, limit to upper area (0..0.8PI)
+            const dir = new THREE.Vector3(
+                Math.sin(phi) * Math.cos(theta),
+                Math.cos(phi),
+                Math.sin(phi) * Math.sin(theta)
+            ).normalize();
+
+            const appleGeo = new THREE.SphereGeometry(appleRadius, 16, 16);
+            const appleMat = new THREE.MeshStandardMaterial({ 
+                color: 0xff0000,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.4,
+                roughness: 0.6,
+                metalness: 0.1
+            });
+            const apple = new THREE.Mesh(appleGeo, appleMat);
+
+            // Position apple at leaves center + direction * (leafRadius + appleRadius + offset)
+            const distanceFromCenter = leavesRadius + appleRadius + surfaceOffset;
+            apple.position.copy(leaves.position).addScaledVector(dir, distanceFromCenter);
+
+            apple.castShadow = true;
+            apple.receiveShadow = true;
+            apple.visible = true;
+            tree.add(apple);
+            apples.push(apple);
+        }
+        
         tree.position.set(x, 0, z);
         this.scene.add(tree);
         
@@ -37,7 +73,41 @@ export class EnvironmentFactory {
             type: 'tree',
             position: { x, y: 0, z },
             mesh: tree,
-            interactable: false
+            apples: apples,
+            applesAvailable: 3,
+            nextAppleRespawn: null,
+            interactable: true,
+            interact: function() {
+                if (this.applesAvailable > 0) {
+                    // Find first visible apple
+                    for (let i = 0; i < this.apples.length; i++) {
+                        if (this.apples[i].visible) {
+                            this.apples[i].visible = false;
+                            this.applesAvailable--;
+                            
+                            // Add apple to inventory
+                            if (Item && playerInventory) {
+                                const appleItem = new Item('apple', 'Apple', '🍎', 'consumable', 10, { healing: 15 });
+                                playerInventory.addItem(appleItem);
+                            }
+                            
+                            // Schedule respawn (30 seconds)
+                            const appleIndex = i;
+                            setTimeout(() => {
+                                this.apples[appleIndex].visible = true;
+                                this.applesAvailable++;
+                                if (addMessage) {
+                                    addMessage('An apple has grown back on the tree', 'info');
+                                }
+                            }, 30000);
+                            
+                            return { message: 'You harvested an apple! 🍎', type: 'success' };
+                        }
+                    }
+                } else {
+                    return { message: 'No apples available. Wait for them to grow back.', type: 'info' };
+                }
+            }
         };
     }
 
@@ -92,12 +162,12 @@ export class EnvironmentFactory {
         lock.castShadow = true;
         chest.add(lock);
         
-        chest.position.set(x, 0, z);
+        chest.position.set(x, 0.2, z);
         this.scene.add(chest);
         
         return {
             type: 'chest',
-            position: { x, y: 0, z },
+            position: { x, y: 0.2, z },
             mesh: chest,
             interactable: true,
             opened: false,
@@ -151,12 +221,12 @@ export class EnvironmentFactory {
         fireLight.position.y = 0.4;
         campfire.add(fireLight);
         
-        campfire.position.set(x, 0, z);
+        campfire.position.set(x, 0.2, z);
         this.scene.add(campfire);
         
         return {
             type: 'campfire',
-            position: { x, y: 0, z },
+            position: { x, y: 0.2, z },
             mesh: campfire,
             fire: fire,
             interactable: true,

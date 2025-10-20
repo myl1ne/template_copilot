@@ -30,12 +30,13 @@ export class FBXCharacterLoader {
      * @param {string} characterName - Name identifier for the character
      * @param {string} filePath - Path to the FBX file
      * @param {number} targetHeight - Target height in world units (default: 2.0)
+     * @param {Function} onProgress - Optional progress callback
      * @returns {Promise<boolean>} - Success status
      */
-    async loadCharacter(characterName, filePath, targetHeight = 2.0) {
+    async loadCharacter(characterName, filePath, targetHeight = 2.0, onProgress = null) {
         try {
             const model = await new Promise((resolve, reject) => {
-                this.fbxLoader.load(filePath, resolve, undefined, reject);
+                this.fbxLoader.load(filePath, resolve, onProgress, reject);
             });
             
             // Yield to event loop for UI updates
@@ -84,9 +85,10 @@ export class FBXCharacterLoader {
 
     /**
      * Load all character models
+     * @param {Function} onProgressUpdate - Callback for overall progress (0-100)
      * @returns {Promise<void>}
      */
-    async loadAllCharacters() {
+    async loadAllCharacters(onProgressUpdate = null) {
         const characters = [
             { name: 'baelin', path: '/assets/characters/Baelin.fbx' },
             { name: 'baradun', path: '/assets/characters/Baradun.fbx' },
@@ -94,8 +96,22 @@ export class FBXCharacterLoader {
             { name: 'greg', path: '/assets/characters/Greg.fbx' }
         ];
 
+        let loadedCount = 0;
+        const totalCount = characters.length;
+        
+        const updateProgress = () => {
+            loadedCount++;
+            const progress = Math.round((loadedCount / totalCount) * 100);
+            if (onProgressUpdate) {
+                onProgressUpdate(progress);
+            }
+        };
+
         await Promise.all(
-            characters.map(char => this.loadCharacter(char.name, char.path))
+            characters.map(async char => {
+                await this.loadCharacter(char.name, char.path, 2.0);
+                updateProgress();
+            })
         );
     }
 

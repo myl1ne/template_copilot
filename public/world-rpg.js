@@ -213,6 +213,13 @@ const iceShield = new Skill('Ice Shield', {
 player.addAvailableSpell(fireball);
 player.addAvailableSpell(iceShield);
 
+// Initialize hotbar with starting skills
+skillHotbar[0] = powerStrike;  // Slot 1
+skillHotbar[1] = secondWind;   // Slot 2
+
+// Update hotbar UI after initialization
+setTimeout(() => updateHotbar(), 100);
+
 // ===== ITEM CLASS =====
 class Item {
     constructor(id, name, icon, type, value, stats = {}) {
@@ -609,6 +616,318 @@ function openInventory() {
 
 function closeInventory() {
     document.getElementById('inventory-panel').classList.remove('show');
+}
+
+// ===== SKILLS PANEL =====
+function openSkillsPanel() {
+    document.getElementById('skills-panel').classList.add('show');
+    updateSkillsUI();
+}
+
+function closeSkillsPanel() {
+    document.getElementById('skills-panel').classList.remove('show');
+}
+
+function updateSkillsUI() {
+    // Update attribute points available
+    document.getElementById('attr-points-available').textContent = player.availableAttributePoints;
+    document.getElementById('spell-points-available').textContent = player.availableSkillPoints;
+    document.getElementById('learned-count').textContent = player.skills.length;
+    
+    // Populate attributes list
+    const attributesList = document.getElementById('attributes-list');
+    attributesList.innerHTML = '';
+    
+    const attributes = [
+        { key: 'str', name: 'Strength (STR)', desc: 'Physical power & armor' },
+        { key: 'dex', name: 'Dexterity (DEX)', desc: 'Agility & dodge' },
+        { key: 'con', name: 'Constitution (CON)', desc: 'Health & endurance' },
+        { key: 'int', name: 'Intelligence (INT)', desc: 'Magical power' },
+        { key: 'wiz', name: 'Wisdom (WIZ)', desc: 'Mana & magic resistance' },
+        { key: 'cha', name: 'Charisma (CHA)', desc: 'Social interactions' }
+    ];
+    
+    attributes.forEach(attr => {
+        const attrDiv = document.createElement('div');
+        attrDiv.className = 'attribute-row';
+        attrDiv.innerHTML = `
+            <span class="attribute-name">${attr.name}</span>
+            <span style="color: #94a3b8; font-size: 12px; flex: 1;">${attr.desc}</span>
+            <span class="attribute-value">${player.attributes[attr.key]}</span>
+            <button class="attr-btn" onclick="spendAttributePoint('${attr.key}')" 
+                ${player.availableAttributePoints <= 0 ? 'disabled' : ''}>+</button>
+        `;
+        attributesList.appendChild(attrDiv);
+    });
+    
+    // Populate learned skills
+    const learnedSkillsList = document.getElementById('learned-skills-list');
+    learnedSkillsList.innerHTML = '';
+    
+    if (player.skills.length === 0) {
+        learnedSkillsList.innerHTML = '<p style="color: #94a3b8; text-align: center;">No skills learned yet</p>';
+    } else {
+        player.skills.forEach((skill, index) => {
+            const skillDiv = document.createElement('div');
+            skillDiv.className = 'skill-item learned';
+            
+            let statsHTML = '';
+            if (skill.damage) statsHTML += `<span class="skill-stat">💥 Damage: ${skill.damage}</span>`;
+            if (skill.healing) statsHTML += `<span class="skill-stat">❤️ Healing: ${skill.healing}</span>`;
+            if (skill.manaCost) statsHTML += `<span class="skill-stat">💙 Mana: ${skill.manaCost}</span>`;
+            
+            const hotbarSlot = skillHotbar[index] !== undefined ? index + 1 : '';
+            
+            skillDiv.innerHTML = `
+                <div class="skill-header">
+                    <span class="skill-name">${skill.name}</span>
+                    ${hotbarSlot ? `<span style="color: #fbbf24; font-size: 12px;">Hotbar: ${hotbarSlot}</span>` : ''}
+                </div>
+                <div class="skill-desc">${skill.description}</div>
+                <div class="skill-stats">${statsHTML}</div>
+                <div style="font-size: 11px; color: #60a5fa;">Type: ${skill.type} | Target: ${skill.targetType}</div>
+            `;
+            learnedSkillsList.appendChild(skillDiv);
+        });
+    }
+    
+    // Populate available spells
+    const availableSpellsList = document.getElementById('available-spells-list');
+    availableSpellsList.innerHTML = '';
+    
+    if (player.availableSpells.length === 0) {
+        availableSpellsList.innerHTML = '<p style="color: #94a3b8; text-align: center;">No new spells available</p>';
+    } else {
+        player.availableSpells.forEach(spell => {
+            const alreadyLearned = player.skills.some(s => s.name === spell.name);
+            if (alreadyLearned) return; // Skip already learned spells
+            
+            const meetsReqs = spell.meetsRequirements(player);
+            const canAfford = player.availableSkillPoints >= 1;
+            const canLearn = meetsReqs && canAfford;
+            
+            const spellDiv = document.createElement('div');
+            spellDiv.className = `skill-item ${canLearn ? '' : 'locked'}`;
+            
+            let statsHTML = '';
+            if (spell.damage) statsHTML += `<span class="skill-stat">💥 Damage: ${spell.damage}</span>`;
+            if (spell.healing) statsHTML += `<span class="skill-stat">❤️ Healing: ${spell.healing}</span>`;
+            if (spell.manaCost) statsHTML += `<span class="skill-stat">💙 Mana: ${spell.manaCost}</span>`;
+            
+            let reqsHTML = '';
+            const reqs = [];
+            for (const [key, value] of Object.entries(spell.requirements)) {
+                if (key === 'level') {
+                    const met = player.level >= value;
+                    reqs.push(`Level ${value}${met ? ' ✓' : ' ✗'}`);
+                } else if (player.attributes[key] !== undefined) {
+                    const met = player.attributes[key] >= value;
+                    reqs.push(`${key.toUpperCase()} ${value}${met ? ' ✓' : ' ✗'}`);
+                }
+            }
+            reqsHTML = reqs.join(', ');
+            
+            spellDiv.innerHTML = `
+                <div class="skill-header">
+                    <span class="skill-name">${spell.name}</span>
+                    <span class="skill-cost">1 Skill Point</span>
+                </div>
+                <div class="skill-desc">${spell.description}</div>
+                <div class="skill-stats">${statsHTML}</div>
+                <div class="skill-requirements ${meetsReqs ? 'met' : ''}">
+                    Requirements: ${reqsHTML}
+                </div>
+                <button class="learn-btn" onclick="learnSpellFromUI('${spell.name}')" 
+                    ${canLearn ? '' : 'disabled'}>
+                    ${canLearn ? '📖 Learn Spell' : (meetsReqs ? '⚠️ No Skill Points' : '🔒 Requirements Not Met')}
+                </button>
+            `;
+            availableSpellsList.appendChild(spellDiv);
+        });
+    }
+}
+
+function spendAttributePoint(attributeName) {
+    if (player.spendAttributePoints(attributeName, 1)) {
+        addMessage(`+1 ${attributeName.toUpperCase()}!`, 'success');
+        updateSkillsUI();
+        updateUI();
+    }
+}
+
+function learnSpellFromUI(spellName) {
+    const spell = player.availableSpells.find(s => s.name === spellName);
+    if (spell && player.learnSpell(spell)) {
+        addMessage(`✨ Learned ${spell.name}!`, 'success');
+        // Add to hotbar if there's space
+        for (let i = 0; i < 5; i++) {
+            if (!skillHotbar[i]) {
+                skillHotbar[i] = player.skills[player.skills.length - 1];
+                updateHotbar();
+                break;
+            }
+        }
+        updateSkillsUI();
+        updateUI();
+    }
+}
+
+// ===== SKILL HOTBAR SYSTEM =====
+const skillHotbar = [null, null, null, null, null]; // 5 hotbar slots
+const skillCooldowns = {}; // Track cooldowns for skills
+
+function updateHotbar() {
+    const hotbarSlots = document.querySelectorAll('#hotbar .hotbar-slot');
+    hotbarSlots.forEach((slot, index) => {
+        const skill = skillHotbar[index];
+        if (skill) {
+            const existingIcon = slot.querySelector('.skill-icon');
+            if (!existingIcon) {
+                const icon = document.createElement('div');
+                icon.className = 'skill-icon';
+                icon.style.fontSize = '20px';
+                icon.textContent = skill.type === 'active' ? '🔥' : '🛡️';
+                slot.insertBefore(icon, slot.firstChild);
+            }
+            // Add cooldown overlay if on cooldown
+            const now = Date.now() / 1000;
+            const cooldownEnd = skillCooldowns[skill.name] || 0;
+            if (now < cooldownEnd) {
+                slot.style.opacity = '0.5';
+            } else {
+                slot.style.opacity = '1';
+            }
+        } else {
+            const existingIcon = slot.querySelector('.skill-icon');
+            if (existingIcon) existingIcon.remove();
+            slot.style.opacity = '1';
+        }
+    });
+}
+
+function useSkillFromHotbar(slotIndex) {
+    const skill = skillHotbar[slotIndex];
+    if (!skill) {
+        addMessage('No skill in that slot!', 'warning');
+        return;
+    }
+    
+    // Check cooldown
+    const now = Date.now() / 1000;
+    const cooldownEnd = skillCooldowns[skill.name] || 0;
+    if (now < cooldownEnd) {
+        const remaining = Math.ceil(cooldownEnd - now);
+        addMessage(`${skill.name} on cooldown (${remaining}s)`, 'warning');
+        return;
+    }
+    
+    // Check mana
+    if (!player.useMana(skill.manaCost)) {
+        addMessage(`Not enough mana for ${skill.name}!`, 'warning');
+        return;
+    }
+    
+    // Use the skill
+    if (skill.healing && skill.targetType === 'self') {
+        const healed = player.heal(skill.healing);
+        addMessage(`${skill.name}: Healed ${healed} HP!`, 'success');
+        createSkillEffect(player.position, 0x22c55e); // Green for healing
+    } else if (skill.damage) {
+        // Find nearest monster to damage
+        let nearestMonster = null;
+        let nearestDist = 5; // Skill range
+        
+        for (const obj of environmentObjects) {
+            if ((obj.type === 'goblin' || obj.type === 'skeleton' || obj.type === 'spider' || 
+                 obj.type === 'wolf' || obj.type === 'goblin boss' || obj.type === 'skeleton lord' || 
+                 obj.type === 'dire wolf') && obj.alive) {
+                const dx = obj.position.x - player.position.x;
+                const dz = obj.position.z - player.position.z;
+                const dist = Math.sqrt(dx * dx + dz * dz);
+                if (dist < nearestDist) {
+                    nearestMonster = obj;
+                    nearestDist = dist;
+                }
+            }
+        }
+        
+        if (nearestMonster) {
+            // Deal damage to monster
+            nearestMonster.hp -= skill.damage;
+            addMessage(`${skill.name}: ${skill.damage} damage to ${nearestMonster.type}!`, 'success');
+            createSkillEffect(nearestMonster.position, 0xff6600); // Orange for damage
+            showMonsterHealthBar(nearestMonster);
+            
+            if (nearestMonster.hp <= 0) {
+                nearestMonster.alive = false;
+                // Grant XP
+                let xpReward = 50;
+                if (nearestMonster.type === 'goblin boss' || nearestMonster.type === 'skeleton lord') {
+                    xpReward = 200;
+                } else if (nearestMonster.type === 'dire wolf') {
+                    xpReward = 150;
+                } else if (nearestMonster.type === 'skeleton' || nearestMonster.type === 'wolf') {
+                    xpReward = 75;
+                }
+                
+                const xpResult = player.gainExperience(xpReward);
+                addMessage(`💰 Gained ${xpReward} XP!`, 'success');
+                
+                if (xpResult.leveledUp) {
+                    addMessage(`🎉 LEVEL UP! You are now level ${xpResult.currentLevel}!`, 'success');
+                    createLevelUpEffect();
+                }
+                updateUI();
+            }
+        } else {
+            addMessage(`${skill.name}: No target in range!`, 'warning');
+        }
+    } else if (skill.type === 'buff') {
+        addMessage(`${skill.name} activated!`, 'success');
+        createSkillEffect(player.position, 0x60a5fa); // Blue for buffs
+        // TODO: Apply buff effects
+    }
+    
+    // Set cooldown
+    skillCooldowns[skill.name] = now + skill.cooldown;
+    updateHotbar();
+    updateUI();
+}
+
+function createSkillEffect(position, color) {
+    const particleCount = 15;
+    const particles = [];
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particleGeo = new THREE.SphereGeometry(0.12, 8, 8);
+        const particleMat = new THREE.MeshBasicMaterial({ 
+            color: color,
+            transparent: true,
+            opacity: 1
+        });
+        const particle = new THREE.Mesh(particleGeo, particleMat);
+        
+        particle.position.set(
+            position.x + (Math.random() - 0.5) * 1,
+            1 + Math.random() * 0.5,
+            position.z + (Math.random() - 0.5) * 1
+        );
+        
+        particle.velocity = {
+            x: (Math.random() - 0.5) * 0.15,
+            y: Math.random() * 0.2 + 0.15,
+            z: (Math.random() - 0.5) * 0.15
+        };
+        
+        particle.life = 1.5;
+        scene.add(particle);
+        particles.push(particle);
+    }
+    
+    if (!window.attackParticles) {
+        window.attackParticles = [];
+    }
+    window.attackParticles.push(...particles);
 }
 
 // Merchant inventory
@@ -1371,10 +1690,26 @@ window.addEventListener('keydown', (e) => {
         }
     }
     
+    if (e.key.toLowerCase() === 'k') {
+        const skillsPanel = document.getElementById('skills-panel');
+        if (skillsPanel.classList.contains('show')) {
+            closeSkillsPanel();
+        } else {
+            openSkillsPanel();
+        }
+    }
+    
+    // Number keys for skill hotbar
+    if (e.key >= '1' && e.key <= '5') {
+        const slotIndex = parseInt(e.key) - 1;
+        useSkillFromHotbar(slotIndex);
+    }
+    
     if (e.key === 'Escape') {
         closeInventory();
         closeTrading();
         closeDialogue();
+        closeSkillsPanel();
     }
 });
 
@@ -2040,6 +2375,9 @@ function animate() {
     
     // Update attack cooldown UI
     updateAttackCooldownUI();
+    
+    // Update skill hotbar
+    updateHotbar();
     
     // Update minimap
     updateMinimap();

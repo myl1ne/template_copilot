@@ -77,6 +77,10 @@ export class NPCFactory {
 
             // Configure meshes: enable shadows and disable frustum culling for skinned meshes
             // (skinned meshes can sometimes be incorrectly culled)
+            // Lift the cloned model slightly so it doesn't intersect the ground
+            // (some FBX origins place geometry slightly below the world origin)
+            if (charModel.position) charModel.position.y += 0.05;
+
             charModel.traverse((child) => {
                 if (child.isMesh) {
                     child.castShadow = true;
@@ -86,12 +90,6 @@ export class NPCFactory {
                     child.frustumCulled = false;
                 }
             });
-            
-            // Calculate bounding box to ensure feet are on the ground
-            // This fixes positioning issues where FBX models have different origins
-            const bbox = new THREE.Box3().setFromObject(charModel);
-            const yOffset = -bbox.min.y; // Offset to place the bottom of the model at y=0
-            charModel.position.y = yOffset;
             
             npcGroup.add(charModel);
 

@@ -1198,6 +1198,25 @@ function checkInteractions() {
         npcs.push(npc);
         const npcObj = npcFactory.createNPCMesh(npc, scene);
         environmentObjects.push(npcObj);
+
+        // For specific NPCs that were found buried, lift them slightly by half their size.
+        if (npc.id === 'elder' || npc.id === 'guard') {
+            try {
+                const meshGroup = npc.mesh;
+                // Estimate height from first child bounding box (if available)
+                let lift = 0.5; // fallback lift
+                if (meshGroup && meshGroup.children && meshGroup.children.length > 0) {
+                    const firstChild = meshGroup.children.find(c => c.isMesh || c.isGroup) || meshGroup.children[0];
+                    const bbox = new THREE.Box3().setFromObject(firstChild);
+                    const size = bbox.getSize(new THREE.Vector3());
+                    const h = size.y || 1.0;
+                    lift = h * 0.25; // raise by half of measured height
+                }
+                meshGroup.position.y += lift;
+            } catch (err) {
+                console.warn('Failed to lift NPC', npc.id, err);
+            }
+        }
     });
     
     // Create environment objects

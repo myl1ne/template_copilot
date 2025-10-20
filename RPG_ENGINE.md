@@ -24,10 +24,19 @@ Characters have comprehensive stats and attributes:
 - WIZ (Wisdom) - Mana and magical resistance
 - CHA (Charisma) - Social interactions
 
+**Progression System:**
+- Experience Points (XP) - Gain XP from combat and quests
+- Level System - Level up when gaining enough XP (formula: 100 * level²)
+- Attribute Points - Spend points to increase attributes on level up
+- Skill Points - Use points to learn new spells and abilities
+- Auto-scaling - HP and Mana automatically increase with level and attributes
+
 **Skills:**
 - Each character can learn multiple skills
 - Skills have levels, requirements, and effects
 - Support for active, passive, buff, and debuff skills
+- Learn new spells using skill points
+- Unlock spells based on level and attribute requirements
 
 ### Skill System
 Skills provide character abilities:
@@ -226,20 +235,44 @@ const warrior = new Character('Thorin the Brave', {
 });
 ```
 
-### Creating and Adding Skills
+### Gaining Experience and Leveling Up
+
+```javascript
+// Gain XP from combat or quest completion
+const result = warrior.gainExperience(250);
+
+if (result.leveledUp) {
+  console.log(`Level Up! Now level ${result.currentLevel}`);
+  console.log(`Attribute Points: ${warrior.availableAttributePoints}`);
+  console.log(`Skill Points: ${warrior.availableSkillPoints}`);
+}
+
+// Spend attribute points
+warrior.spendAttributePoints('str', 2); // +2 STR
+warrior.spendAttributePoints('int', 1); // +1 INT
+```
+
+### Creating and Learning Skills/Spells
 
 ```javascript
 const { Skill } = require('./src/models');
 
-const powerStrike = new Skill('Power Strike', {
-  description: 'A powerful melee attack',
-  manaCost: 15,
-  damage: 50,
+// Create a spell
+const fireball = new Skill('Fireball', {
+  description: 'A blazing ball of fire',
+  manaCost: 25,
+  damage: 60,
   type: 'active',
-  requirements: { str: 15 }
+  requirements: { int: 10, level: 3 }
 });
 
-warrior.addSkill(powerStrike);
+// Add to available spells
+warrior.addAvailableSpell(fireball);
+
+// Learn the spell using skill points
+if (warrior.learnSpell(fireball)) {
+  console.log('Learned Fireball!');
+}
 ```
 
 ### Creating a Quest
@@ -296,9 +329,15 @@ The RPG Engine uses a modular architecture for better maintainability and scalab
 
 ### Character
 - `name`: String - Character name
+- `level`: Number - Current level
+- `experience`: Number - Current experience points
+- `experienceToNextLevel`: Number - XP needed for next level
+- `availableAttributePoints`: Number - Unspent attribute points
+- `availableSkillPoints`: Number - Unspent skill points
 - `stats`: Object - Combat statistics
 - `attributes`: Object - Character attributes
 - `skills`: Array - Learned skills
+- `availableSpells`: Array - Spells available to learn
 
 **Methods:**
 - `addSkill(skill)` - Add a skill
@@ -309,6 +348,12 @@ The RPG Engine uses a modular architecture for better maintainability and scalab
 - `restoreMana(amount)` - Restore mana
 - `regenerate()` - Apply HP/Mana regeneration
 - `isAlive()` - Check if character is alive
+- `gainExperience(amount)` - Gain XP and potentially level up
+- `levelUp()` - Level up the character
+- `spendAttributePoints(attribute, points)` - Spend attribute points
+- `updateDerivedStats()` - Update stats based on attributes
+- `learnSpell(spell)` - Learn a new spell using skill points
+- `addAvailableSpell(spell)` - Add a spell to available spells
 - `toJSON()` - Serialize to JSON
 
 ### Skill
@@ -349,13 +394,13 @@ This is the foundation for a Three.js-based MMORPG with generative AI features. 
 - ~~3D character rendering with Three.js~~ ✅ Complete
 - ~~Inventory and equipment system~~ ✅ Complete
 - ~~NPC AI behaviors~~ ✅ Complete (basic)
+- ~~Character progression and leveling~~ ✅ Complete
 - AI-generated quests and storylines
 - Multiplayer networking
 - Advanced combat system implementation
 - World generation and exploration
 - More NPC types and behaviors
 - Crafting system
-- Character progression and leveling
 - Procedural content generation
 
 ## License

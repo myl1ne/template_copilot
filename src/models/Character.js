@@ -34,8 +34,16 @@ class Character {
       cha: options.cha || 10   // Charisma
     };
     
+    // Progression
+    this.level = options.level || 1;
+    this.experience = options.experience || 0;
+    this.experienceToNextLevel = this.calculateExperienceForLevel(this.level + 1);
+    this.availableAttributePoints = options.availableAttributePoints || 0;
+    this.availableSkillPoints = options.availableSkillPoints || 0;
+    
     // Skills - array of skill objects
     this.skills = options.skills || [];
+    this.availableSpells = options.availableSpells || []; // Spells available to learn
   }
   
   /**
@@ -132,15 +140,184 @@ class Character {
   }
   
   /**
+   * Calculate experience required for a given level
+   * @param {number} level - Target level
+   * @returns {number} - Experience required
+   */
+  calculateExperienceForLevel(level) {
+    // XP formula: 100 * level^2 (exponential growth)
+    return Math.floor(100 * Math.pow(level, 2));
+  }
+  
+  /**
+   * Gain experience points
+   * @param {number} amount - Amount of XP to gain
+   * @returns {Object} - Result with leveledUp flag and new level
+   */
+  gainExperience(amount) {
+    this.experience += amount;
+    let leveledUp = false;
+    let levelsGained = 0;
+    
+    // Check for level ups (can level up multiple times)
+    while (this.experience >= this.experienceToNextLevel) {
+      this.levelUp();
+      leveledUp = true;
+      levelsGained++;
+    }
+    
+    return {
+      leveledUp,
+      levelsGained,
+      currentLevel: this.level,
+      currentExperience: this.experience,
+      experienceToNextLevel: this.experienceToNextLevel
+    };
+  }
+  
+  /**
+   * Level up the character
+   * @returns {Object} - New level and attribute bonuses
+   */
+  levelUp() {
+    this.level++;
+    this.experienceToNextLevel = this.calculateExperienceForLevel(this.level + 1);
+    
+    // Grant attribute points and skill points
+    this.availableAttributePoints += 3;
+    this.availableSkillPoints += 1;
+    
+    // Automatic stat increases on level up
+    const hpIncrease = Math.floor(5 + (this.attributes.con * 0.5));
+    const manaIncrease = Math.floor(3 + (this.attributes.wiz * 0.5));
+    
+    this.stats.maxHp += hpIncrease;
+    this.stats.maxMana += manaIncrease;
+    
+    // Heal to full on level up
+    this.stats.hp = this.stats.maxHp;
+    this.stats.mana = this.stats.maxMana;
+    
+    return {
+      newLevel: this.level,
+      hpIncrease,
+      manaIncrease,
+      attributePoints: this.availableAttributePoints,
+      skillPoints: this.availableSkillPoints
+    };
+  }
+  
+  /**
+   * Spend attribute points to increase an attribute
+   * @param {string} attributeName - Name of attribute (str, dex, con, int, wiz, cha)
+   * @param {number} points - Number of points to spend (default 1)
+   * @returns {boolean} - True if successful, false if not enough points
+   */
+  spendAttributePoints(attributeName, points = 1) {
+    if (this.availableAttributePoints < points) {
+      return false;
+    }
+    
+    if (!this.attributes.hasOwnProperty(attributeName)) {
+      return false;
+    }
+    
+    this.attributes[attributeName] += points;
+    this.availableAttributePoints -= points;
+    
+    // Update derived stats based on attributes
+    this.updateDerivedStats();
+    
+    return true;
+  }
+  
+  /**
+   * Update derived stats based on attributes
+   */
+  updateDerivedStats() {
+    // Constitution affects max HP
+    const baseHp = 100;
+    const hpBonus = Math.floor((this.attributes.con - 10) * 5);
+    const newMaxHp = baseHp + hpBonus + ((this.level - 1) * Math.floor(5 + (this.attributes.con * 0.5)));
+    const hpPercentage = this.stats.hp / this.stats.maxHp;
+    this.stats.maxHp = newMaxHp;
+    this.stats.hp = Math.floor(this.stats.maxHp * hpPercentage);
+    
+    // Wisdom affects max Mana
+    const baseMana = 100;
+    const manaBonus = Math.floor((this.attributes.wiz - 10) * 5);
+    const newMaxMana = baseMana + manaBonus + ((this.level - 1) * Math.floor(3 + (this.attributes.wiz * 0.5)));
+    const manaPercentage = this.stats.mana / this.stats.maxMana;
+    this.stats.maxMana = newMaxMana;
+    this.stats.mana = Math.floor(this.stats.maxMana * manaPercentage);
+    
+    // Dexterity affects dodge
+    this.stats.dodge = Math.floor((this.attributes.dex - 10) * 0.5);
+    
+    // Strength affects armor (indirectly through toughness)
+    this.stats.armor = Math.floor((this.attributes.str - 10) * 0.3);
+  }
+  
+  /**
+   * Learn a new spell/skill using skill points
+   * @param {Object} spell - Spell/skill object to learn
+   * @returns {boolean} - True if learned, false if not enough points or already known
+   */
+  learnSpell(spell) {
+    // Check if already known
+    if (this.skills.some(s => s.name === spell.name)) {
+      return false;
+    }
+    
+    // Check if available
+    const isAvailable = this.availableSpells.some(s => s.name === spell.name);
+    if (!isAvailable) {
+      return false;
+    }
+    
+    // Check skill points
+    if (this.availableSkillPoints < 1) {
+      return false;
+    }
+    
+    // Check requirements
+    if (!spell.meetsRequirements(this)) {
+      return false;
+    }
+    
+    // Learn the spell
+    this.skills.push(spell);
+    this.availableSkillPoints--;
+    
+    return true;
+  }
+  
+  /**
+   * Add a spell to the available spells list
+   * @param {Object} spell - Spell to make available
+   */
+  addAvailableSpell(spell) {
+    if (!this.availableSpells.some(s => s.name === spell.name)) {
+      this.availableSpells.push(spell);
+    }
+  }
+  
+  /**
    * Get character info as a plain object
    * @returns {Object} - Character data
    */
   toJSON() {
     return {
       name: this.name,
+      level: this.level,
+      experience: this.experience,
+      experienceToNextLevel: this.experienceToNextLevel,
+      availableAttributePoints: this.availableAttributePoints,
+      availableSkillPoints: this.availableSkillPoints,
       stats: { ...this.stats },
       attributes: { ...this.attributes },
-      skills: [...this.skills]
+      skills: [...this.skills],
+      availableSpells: [...this.availableSpells]
     };
   }
 }

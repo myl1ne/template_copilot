@@ -41,7 +41,14 @@ class Skill {
    */
   meetsRequirements(character) {
     for (const [key, value] of Object.entries(this.requirements)) {
-      if (character.attributes[key] !== undefined) {
+      // Check level requirement
+      if (key === 'level') {
+        if (character.level < value) {
+          return false;
+        }
+      }
+      // Check attribute requirements
+      else if (character.attributes[key] !== undefined) {
         if (character.attributes[key] < value) {
           return false;
         }

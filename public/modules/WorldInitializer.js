@@ -4,6 +4,7 @@
  */
 import { GameConfig } from './GameConfig.js';
 import { Item } from './InventorySystem.js';
+import * as THREE from 'three';
 
 export class WorldInitializer {
   constructor(
@@ -71,7 +72,6 @@ export class WorldInitializer {
           let lift = 0.5; // fallback lift
           if (meshGroup && meshGroup.children && meshGroup.children.length > 0) {
             const firstChild = meshGroup.children.find(c => c.isMesh || c.isGroup) || meshGroup.children[0];
-            const THREE = await import('three');
             const bbox = new THREE.Box3().setFromObject(firstChild);
             const size = bbox.getSize(new THREE.Vector3());
             const h = size.y || 1.0;

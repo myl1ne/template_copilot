@@ -4,6 +4,8 @@ import { NPCFactory } from './modules/NPCFactory.js';
 import { EnvironmentFactory } from './modules/EnvironmentFactory.js';
 import { CameraController } from './modules/CameraController.js';
 import { GoblinFactory } from './modules/GoblinFactory.js';
+import { MonsterFactory } from './modules/MonsterFactory.js';
+import { QuestFactory } from './modules/QuestFactory.js';
 
 // ===== SCENE SETUP =====
 const scene = new THREE.Scene();
@@ -218,37 +220,10 @@ playerInventory.addItem(new Item('health_pot', 'Health Potion', '🧪', 'consuma
 playerInventory.addItem(new Item('bread', 'Bread', '🍞', 'consumable', 5, { healing: 10 }));
 
 // ===== QUEST SYSTEM =====
-const quests = {
-    'village_rescue': {
-        id: 'village_rescue',
-        name: 'The Village Rescue',
-        description: 'A goblin camp has been raiding the village. Defeat their leader and return peace to the land.',
-        objectives: [
-            { id: 'kill_goblins', description: 'Defeat 3 goblin warriors', current: 0, target: 3, completed: false },
-            { id: 'kill_boss', description: 'Defeat the Goblin Chief', current: 0, target: 1, completed: false },
-            { id: 'return_to_elder', description: 'Return to the Village Elder', current: 0, target: 1, completed: false }
-        ],
-        rewards: { xp: 500, gold: 100 },
-        active: true,
-        completed: false
-    },
-    'merchant_delivery': {
-        id: 'merchant_delivery',
-        name: 'The Merchant\'s Request',
-        description: 'The Traveling Merchant needs someone to deliver a special package to a hermit living deep in the forest.',
-        objectives: [
-            { id: 'get_package', description: 'Receive the package from the Merchant', current: 0, target: 1, completed: false },
-            { id: 'find_hermit', description: 'Find the Hermit in the forest', current: 0, target: 1, completed: false },
-            { id: 'deliver_package', description: 'Deliver the package', current: 0, target: 1, completed: false }
-        ],
-        rewards: { xp: 300, gold: 150 },
-        active: false,
-        completed: false,
-        available: false
-    }
-};
+const questFactory = new QuestFactory();
+const quests = questFactory.createStandardQuests();
 
-let activeQuest = quests['village_rescue'];
+let activeQuest = null;
 
 function updateQuestProgress(objectiveId, amount = 1) {
     if (!activeQuest || !activeQuest.active || activeQuest.completed) return;
@@ -297,10 +272,12 @@ const npcFactory = new NPCFactory(characterLoader);
 const environmentFactory = new EnvironmentFactory(scene);
 const cameraController = new CameraController(camera, renderer, characterGroup);
 const goblinFactory = new GoblinFactory(scene, characterLoader.loadedModels);
+const monsterFactory = new MonsterFactory(scene);
 
 const npcs = [];
 const environmentObjects = [];
 const goblins = [];
+const monsters = [];
 
 // ===== UI FUNCTIONS =====
 function updateUI() {
@@ -334,7 +311,7 @@ function updateQuestUI() {
     const questPanel = document.getElementById('quest-panel');
     if (!questPanel) return;
     
-    if (activeQuest.active) {
+    if (activeQuest && activeQuest.active) {
         questPanel.innerHTML = `
             <div class="quest-header ${activeQuest.completed ? 'completed' : ''}">
                 <div class="quest-title">📜 ${activeQuest.name}</div>
@@ -353,6 +330,13 @@ function updateQuestUI() {
                     🎁 Rewards: ${activeQuest.rewards.xp} XP, ${activeQuest.rewards.gold} Gold
                 </div>
             ` : ''}
+        `;
+    } else {
+        questPanel.innerHTML = `
+            <div class="quest-header">
+                <div class="quest-title">📜 No Active Quest</div>
+                <div class="quest-desc">Visit NPCs to find quests!</div>
+            </div>
         `;
     }
 }
@@ -531,15 +515,43 @@ function showDialogue(npc) {
     if (npc.type === 'quest_giver') {
         if (npc.id === 'elder') {
             const villageQuest = quests['village_rescue'];
+            const skeletonQuest = quests['skeleton_threat'];
             
-            if (villageQuest.active && !villageQuest.completed &&
+            // Offer village rescue quest if not yet accepted
+            if (!villageQuest.active && !villageQuest.completed) {
+                const offerQuestBtn = document.createElement('button');
+                offerQuestBtn.className = 'dialogue-btn';
+                offerQuestBtn.textContent = 'What troubles the village?';
+                offerQuestBtn.onclick = () => {
+                    document.getElementById('dialogue-text').textContent = 
+                        "Brave adventurer! Goblins have been raiding our village. Their camp is to the south. Will you help us defeat them?";
+                    
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'dialogue-btn';
+                    acceptBtn.textContent = 'I will help!';
+                    acceptBtn.onclick = () => {
+                        activateQuest('village_rescue');
+                        document.getElementById('dialogue-text').textContent = 
+                            "Thank you, hero! The goblin camp is to the south, around coordinates (-20, -20). Defeat them and return to me!";
+                    };
+                    options.innerHTML = '';
+                    options.appendChild(acceptBtn);
+                    
+                    const declineBtn = document.createElement('button');
+                    declineBtn.className = 'dialogue-btn secondary';
+                    declineBtn.textContent = 'Not right now';
+                    declineBtn.onclick = closeDialogue;
+                    options.appendChild(declineBtn);
+                };
+                options.appendChild(offerQuestBtn);
+            } else if (villageQuest.active && !villageQuest.completed &&
                 villageQuest.objectives[0].completed && villageQuest.objectives[1].completed && 
                 !villageQuest.objectives[2].completed) {
                 const completeBtn = document.createElement('button');
                 completeBtn.className = 'dialogue-btn';
                 completeBtn.textContent = '✓ I defeated the goblins!';
                 completeBtn.onclick = () => {
-                    updateQuestProgress('return_to_elder', 1);
+                    updateQuestProgress('return_to_village_elder', 1);
                     document.getElementById('dialogue-text').textContent = 
                         "Excellent work, brave warrior! The village is safe once again. Please accept this reward for your heroic deeds!";
                     setTimeout(() => closeDialogue(), 2000);
@@ -557,10 +569,56 @@ function showDialogue(npc) {
             } else if (villageQuest.completed) {
                 document.getElementById('dialogue-text').textContent = 
                     "Thank you again, brave warrior! The village is forever in your debt.";
+                
+                // Offer skeleton quest after village rescue is complete
+                if (!skeletonQuest.active && !skeletonQuest.completed) {
+                    const skeletonBtn = document.createElement('button');
+                    skeletonBtn.className = 'dialogue-btn';
+                    skeletonBtn.textContent = 'Any other threats?';
+                    skeletonBtn.onclick = () => {
+                        document.getElementById('dialogue-text').textContent = 
+                            "Now that you mention it... undead skeletons have been spotted near the old graveyard to the east. Will you help us again?";
+                        
+                        const acceptBtn = document.createElement('button');
+                        acceptBtn.className = 'dialogue-btn';
+                        acceptBtn.textContent = 'I\'ll deal with the undead!';
+                        acceptBtn.onclick = () => {
+                            activateQuest('skeleton_threat');
+                            document.getElementById('dialogue-text').textContent = 
+                                "May the light guide you, hero! The graveyard is to the east, around coordinates (30, 10).";
+                        };
+                        options.innerHTML = '';
+                        options.appendChild(acceptBtn);
+                        
+                        const declineBtn = document.createElement('button');
+                        declineBtn.className = 'dialogue-btn secondary';
+                        declineBtn.textContent = 'Not right now';
+                        declineBtn.onclick = closeDialogue;
+                        options.appendChild(declineBtn);
+                    };
+                    options.appendChild(skeletonBtn);
+                }
+            }
+            
+            // Allow completing skeleton quest
+            if (skeletonQuest.active && !skeletonQuest.completed &&
+                skeletonQuest.objectives.every(obj => obj.id.startsWith('kill_') ? obj.completed : true)) {
+                const completeSkeletonBtn = document.createElement('button');
+                completeSkeletonBtn.className = 'dialogue-btn';
+                completeSkeletonBtn.textContent = '✓ The undead are vanquished!';
+                completeSkeletonBtn.onclick = () => {
+                    updateQuestProgress('return_to_village_elder', 1);
+                    document.getElementById('dialogue-text').textContent = 
+                        "Outstanding! You have proven yourself a true hero. The village owes you everything!";
+                    setTimeout(() => closeDialogue(), 2000);
+                };
+                options.appendChild(completeSkeletonBtn);
             }
         }
         
         if (npc.id === 'hermit') {
+            const herbQuest = quests['herb_collection'];
+            
             if (activeQuest.id === 'merchant_delivery' && !activeQuest.objectives[1].completed) {
                 const foundBtn = document.createElement('button');
                 foundBtn.className = 'dialogue-btn';
@@ -584,32 +642,157 @@ function showDialogue(npc) {
                 };
                 options.appendChild(deliverBtn);
             }
+            
+            // Offer herb collection quest
+            if (quests['merchant_delivery'].completed && !herbQuest.active && !herbQuest.completed) {
+                const herbBtn = document.createElement('button');
+                herbBtn.className = 'dialogue-btn';
+                herbBtn.textContent = 'Can I help you with anything?';
+                herbBtn.onclick = () => {
+                    document.getElementById('dialogue-text').textContent = 
+                        "Actually, yes! I need certain rare herbs for my potions. Would you gather them for me?";
+                    
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'dialogue-btn';
+                    acceptBtn.textContent = 'I\'ll gather the herbs!';
+                    acceptBtn.onclick = () => {
+                        activateQuest('herb_collection');
+                        document.getElementById('dialogue-text').textContent = 
+                            "Wonderful! I need 3 Moonpetals and 2 Shadow Roots. They grow throughout the forest.";
+                    };
+                    options.innerHTML = '';
+                    options.appendChild(acceptBtn);
+                    
+                    const declineBtn = document.createElement('button');
+                    declineBtn.className = 'dialogue-btn secondary';
+                    declineBtn.textContent = 'Maybe later';
+                    declineBtn.onclick = closeDialogue;
+                    options.appendChild(declineBtn);
+                };
+                options.appendChild(herbBtn);
+            }
+        }
+        
+        if (npc.id === 'guard') {
+            const spiderQuest = quests['spider_cave'];
+            
+            // Offer spider quest
+            if (quests['village_rescue'].completed && !spiderQuest.active && !spiderQuest.completed) {
+                const spiderBtn = document.createElement('button');
+                spiderBtn.className = 'dialogue-btn';
+                spiderBtn.textContent = 'Any threats I should know about?';
+                spiderBtn.onclick = () => {
+                    document.getElementById('dialogue-text').textContent = 
+                        "Giant spiders have infested a cave to the northeast. Travelers are afraid to use that route. Can you clear them out?";
+                    
+                    const acceptBtn = document.createElement('button');
+                    acceptBtn.className = 'dialogue-btn';
+                    acceptBtn.textContent = 'I\'ll clear the spider den!';
+                    acceptBtn.onclick = () => {
+                        activateQuest('spider_cave');
+                        document.getElementById('dialogue-text').textContent = 
+                            "Thank you! The spider den is northeast, around coordinates (25, -25). Be careful!";
+                    };
+                    options.innerHTML = '';
+                    options.appendChild(acceptBtn);
+                    
+                    const declineBtn = document.createElement('button');
+                    declineBtn.className = 'dialogue-btn secondary';
+                    declineBtn.textContent = 'Not interested';
+                    declineBtn.onclick = closeDialogue;
+                    options.appendChild(declineBtn);
+                };
+                options.appendChild(spiderBtn);
+            }
+            
+            // Allow completing spider quest
+            if (spiderQuest.active && !spiderQuest.completed &&
+                spiderQuest.objectives.every(obj => obj.id.startsWith('kill_') ? obj.completed : true)) {
+                const completeSpiderBtn = document.createElement('button');
+                completeSpiderBtn.className = 'dialogue-btn';
+                completeSpiderBtn.textContent = '✓ The spiders are gone!';
+                completeSpiderBtn.onclick = () => {
+                    updateQuestProgress('return_to_town_guard', 1);
+                    document.getElementById('dialogue-text').textContent = 
+                        "Excellent work! The route is safe again. Here is your reward.";
+                    setTimeout(() => closeDialogue(), 2000);
+                };
+                options.appendChild(completeSpiderBtn);
+            }
         }
     }
     
-    if (npc.type === 'merchant' && quests['merchant_delivery'].available && !quests['merchant_delivery'].active && !quests['merchant_delivery'].completed) {
-        const questBtn2 = document.createElement('button');
-        questBtn2.className = 'dialogue-btn';
-        questBtn2.textContent = 'Do you need any help?';
-        questBtn2.onclick = () => {
-            document.getElementById('dialogue-text').textContent = 
-                "Actually, yes! I need someone to deliver a package to the Forest Hermit who lives deep in the woods to the southwest. Will you help?";
-            
-            const acceptBtn = document.createElement('button');
-            acceptBtn.className = 'dialogue-btn';
-            acceptBtn.textContent = 'I\'ll deliver your package!';
-            acceptBtn.onclick = () => {
-                activateQuest('merchant_delivery');
-                updateQuestProgress('get_package', 1);
-                playerInventory.addItem(new Item('package', 'Sealed Package', '📦', 'quest', 0, {}));
+    if (npc.type === 'merchant') {
+        const wolfQuest = quests['wolf_pack'];
+        
+        if (quests['merchant_delivery'].available && !quests['merchant_delivery'].active && !quests['merchant_delivery'].completed) {
+            const questBtn2 = document.createElement('button');
+            questBtn2.className = 'dialogue-btn';
+            questBtn2.textContent = 'Do you need any help?';
+            questBtn2.onclick = () => {
                 document.getElementById('dialogue-text').textContent = 
-                    "Wonderful! The hermit lives far to the southwest, near coordinates (-25, -25). Be careful out there!";
+                    "Actually, yes! I need someone to deliver a package to the Forest Hermit who lives deep in the woods to the southwest. Will you help?";
+                
+                const acceptBtn = document.createElement('button');
+                acceptBtn.className = 'dialogue-btn';
+                acceptBtn.textContent = 'I\'ll deliver your package!';
+                acceptBtn.onclick = () => {
+                    activateQuest('merchant_delivery');
+                    updateQuestProgress('get_package', 1);
+                    playerInventory.addItem(new Item('package', 'Sealed Package', '📦', 'quest', 0, {}));
+                    document.getElementById('dialogue-text').textContent = 
+                        "Wonderful! The hermit lives far to the southwest, near coordinates (-25, -25). Be careful out there!";
+                };
+                options.innerHTML = '';
+                options.appendChild(acceptBtn);
+                options.appendChild(closeBtn);
             };
-            options.innerHTML = '';
-            options.appendChild(acceptBtn);
-            options.appendChild(closeBtn);
-        };
-        options.appendChild(questBtn2);
+            options.appendChild(questBtn2);
+        }
+        
+        // Offer wolf pack quest
+        if (quests['skeleton_threat'].completed && !wolfQuest.active && !wolfQuest.completed) {
+            const wolfBtn = document.createElement('button');
+            wolfBtn.className = 'dialogue-btn';
+            wolfBtn.textContent = 'Having trouble on the roads?';
+            wolfBtn.onclick = () => {
+                document.getElementById('dialogue-text').textContent = 
+                    "Yes! A pack of dire wolves has been terrorizing merchants. Their alpha is incredibly dangerous. Can you hunt them down?";
+                
+                const acceptWolfBtn = document.createElement('button');
+                acceptWolfBtn.className = 'dialogue-btn';
+                acceptWolfBtn.textContent = 'I\'ll hunt the wolf pack!';
+                acceptWolfBtn.onclick = () => {
+                    activateQuest('wolf_pack');
+                    document.getElementById('dialogue-text').textContent = 
+                        "You're brave! The wolves roam northwest, around coordinates (-30, 30). May fortune favor you!";
+                };
+                options.innerHTML = '';
+                options.appendChild(acceptWolfBtn);
+                
+                const declineWolfBtn = document.createElement('button');
+                declineWolfBtn.className = 'dialogue-btn secondary';
+                declineWolfBtn.textContent = 'Too dangerous for me';
+                declineWolfBtn.onclick = closeDialogue;
+                options.appendChild(declineWolfBtn);
+            };
+            options.appendChild(wolfBtn);
+        }
+        
+        // Allow completing wolf quest
+        if (wolfQuest.active && !wolfQuest.completed &&
+            wolfQuest.objectives.every(obj => obj.id.startsWith('kill_') ? obj.completed : true)) {
+            const completeWolfBtn = document.createElement('button');
+            completeWolfBtn.className = 'dialogue-btn';
+            completeWolfBtn.textContent = '✓ The wolves are dealt with!';
+            completeWolfBtn.onclick = () => {
+                updateQuestProgress('return_to_traveling_merchant', 1);
+                document.getElementById('dialogue-text').textContent = 
+                    "Incredible! The roads are safe again thanks to you. Here is your well-earned reward!";
+                setTimeout(() => closeDialogue(), 2000);
+            };
+            options.appendChild(completeWolfBtn);
+        }
     }
     
     const closeBtn = document.createElement('button');
@@ -849,6 +1032,50 @@ function checkInteractions() {
     // Add camp sign
     environmentObjects.push(environmentFactory.createSign(goblinCampCenter.x + 8, goblinCampCenter.z, 'Beware: Goblin Territory!'));
     
+    // Create skeleton graveyard (east)
+    const graveyardCenter = { x: 30, z: 10 };
+    for (let i = 0; i < 4; i++) {
+        const angle = (i / 4) * Math.PI * 2;
+        const x = graveyardCenter.x + Math.cos(angle) * 3;
+        const z = graveyardCenter.z + Math.sin(angle) * 3;
+        const skeleton = monsterFactory.createSkeleton(x, z, updateQuestProgress);
+        monsters.push(skeleton);
+        environmentObjects.push(skeleton);
+    }
+    // Add skeleton boss
+    const skeletonBoss = monsterFactory.createBoss('skeleton', graveyardCenter.x, graveyardCenter.z + 4, updateQuestProgress);
+    monsters.push(skeletonBoss);
+    environmentObjects.push(skeletonBoss);
+    environmentObjects.push(environmentFactory.createSign(graveyardCenter.x + 6, graveyardCenter.z, 'Ancient Graveyard'));
+    
+    // Create spider cave area (northeast)
+    const spiderCaveCenter = { x: 25, z: -25 };
+    for (let i = 0; i < 5; i++) {
+        const angle = (i / 5) * Math.PI * 2;
+        const x = spiderCaveCenter.x + Math.cos(angle) * 4;
+        const z = spiderCaveCenter.z + Math.sin(angle) * 4;
+        const spider = monsterFactory.createSpider(x, z, updateQuestProgress);
+        monsters.push(spider);
+        environmentObjects.push(spider);
+    }
+    environmentObjects.push(environmentFactory.createSign(spiderCaveCenter.x + 7, spiderCaveCenter.z, 'Spider Den - Danger!'));
+    
+    // Create wolf pack area (northwest)
+    const wolfPackCenter = { x: -30, z: 30 };
+    for (let i = 0; i < 3; i++) {
+        const angle = (i / 3) * Math.PI * 2;
+        const x = wolfPackCenter.x + Math.cos(angle) * 3.5;
+        const z = wolfPackCenter.z + Math.sin(angle) * 3.5;
+        const wolf = monsterFactory.createWolf(x, z, updateQuestProgress);
+        monsters.push(wolf);
+        environmentObjects.push(wolf);
+    }
+    // Add dire wolf boss
+    const direWolf = monsterFactory.createBoss('wolf', wolfPackCenter.x, wolfPackCenter.z, updateQuestProgress);
+    monsters.push(direWolf);
+    environmentObjects.push(direWolf);
+    environmentObjects.push(environmentFactory.createSign(wolfPackCenter.x + 6, wolfPackCenter.z, 'Wolf Territory'));
+    
     // Initialize UI
     updateInventoryUI();
     updateQuestUI();
@@ -966,6 +1193,32 @@ function animate() {
             if (goblin.mesh.visible) {
                 goblin.mesh.rotation.y += delta * 0.5;
                 goblin.mesh.children[0].position.y = 0.9 + Math.sin(Date.now() * 0.002) * 0.05;
+            }
+        }
+    }
+    
+    // Monster respawn logic (for skeletons, spiders, wolves)
+    for (const monster of monsters) {
+        if (!monster.alive) {
+            monster.timeSinceDeath += delta;
+            
+            if (monster.timeSinceDeath >= monster.respawnTime) {
+                monster.hp = monster.maxHp;
+                monster.alive = true;
+                monster.timeSinceDeath = 0;
+                monster.mesh.visible = true;
+                monster.position.x = monster.spawnPosition.x;
+                monster.position.z = monster.spawnPosition.z;
+                monster.mesh.position.set(monster.spawnPosition.x, 0, monster.spawnPosition.z);
+                addMessage(`A ${monster.type} has respawned!`, 'warning');
+            }
+        } else {
+            if (monster.mesh.visible) {
+                // Add idle animation (slow rotation and bobbing)
+                monster.mesh.rotation.y += delta * 0.3;
+                if (monster.mesh.children.length > 0) {
+                    monster.mesh.children[0].position.y += Math.sin(Date.now() * 0.002) * 0.002;
+                }
             }
         }
     }

@@ -8,6 +8,7 @@ import { MonsterFactory } from './modules/MonsterFactory.js';
 import { QuestFactory } from './modules/QuestFactory.js';
 import { Character } from './modules/Character.js';
 import { Skill } from './modules/Skill.js';
+import { LootSystem } from '../src/loot/LootSystem.js';
 
 // ===== SCENE SETUP =====
 const scene = new THREE.Scene();
@@ -140,6 +141,13 @@ swordGroup.rotation.z = -Math.PI / 4;
 characterGroup.add(swordGroup);
 
 scene.add(characterGroup);
+
+// Store references to equipment visuals for easy updates
+const characterEquipmentVisuals = {
+    helmet: helmet,
+    sword: swordGroup,
+    shield: shield
+};
 
 // ===== PLAYER STATE =====
 const player = new Character('Thorin the Brave', {
@@ -554,11 +562,14 @@ function updateInventoryUI() {
     playerInventory.items.forEach((item, index) => {
         const slot = document.createElement('div');
         slot.className = 'inv-slot';
+        const rarityColor = item.rarityColor || '#ffffff';
+        const rarityIcon = item.rarityIcon || '';
         slot.innerHTML = `
             <div class="icon">${item.icon}</div>
-            <div class="name">${item.name}</div>
+            <div class="name" style="color: ${rarityColor};">${rarityIcon} ${item.name}</div>
         `;
         slot.onclick = () => useItem(item);
+        slot.title = item.description || '';
         invGrid.appendChild(slot);
     });
     
@@ -577,15 +588,81 @@ function updateInventoryUI() {
         slot.className = 'inv-slot';
         const item = playerInventory.equipment[slotName];
         if (item) {
+            const rarityColor = item.rarityColor || '#ffffff';
+            const rarityIcon = item.rarityIcon || '';
             slot.innerHTML = `
                 <div class="icon">${item.icon}</div>
-                <div class="name">${item.name}</div>
+                <div class="name" style="color: ${rarityColor};">${rarityIcon} ${item.name}</div>
             `;
+            slot.title = item.description || '';
+            slot.onclick = () => {
+                // Unequip item
+                playerInventory.addItem(item);
+                playerInventory.equipment[slotName] = null;
+                updateCharacterAppearance();
+                updateInventoryUI();
+                addMessage(`Unequipped ${item.name}`, 'info');
+            };
         } else {
             slot.innerHTML = `<div class="name">${slotName}</div>`;
         }
         eqGrid.appendChild(slot);
     });
+}
+
+function updateCharacterAppearance() {
+    // Update helmet appearance based on equipped head gear
+    if (playerInventory.equipment.head) {
+        const headItem = playerInventory.equipment.head;
+        const rarityColor = headItem.rarityColor || '#757575';
+        characterEquipmentVisuals.helmet.material.color.setStyle(rarityColor);
+        characterEquipmentVisuals.helmet.material.emissive.setStyle(rarityColor);
+        characterEquipmentVisuals.helmet.material.emissiveIntensity = 0.2;
+        characterEquipmentVisuals.helmet.visible = true;
+    } else {
+        characterEquipmentVisuals.helmet.visible = true;
+        characterEquipmentVisuals.helmet.material.color.set(0x757575);
+        characterEquipmentVisuals.helmet.material.emissive.set(0x000000);
+        characterEquipmentVisuals.helmet.material.emissiveIntensity = 0;
+    }
+    
+    // Update sword appearance based on equipped weapon
+    if (playerInventory.equipment.weapon) {
+        const weaponItem = playerInventory.equipment.weapon;
+        const rarityColor = weaponItem.rarityColor || '#c0c0c0';
+        const bladeMesh = characterEquipmentVisuals.sword.children.find(child => child.geometry.type === 'BoxGeometry');
+        if (bladeMesh) {
+            bladeMesh.material.color.setStyle(rarityColor);
+            bladeMesh.material.emissive.set(0x60a5fa);
+            bladeMesh.material.emissiveIntensity = weaponItem.rarity === 'legendary' ? 0.5 : 
+                                                      weaponItem.rarity === 'epic' ? 0.4 : 0.3;
+        }
+        characterEquipmentVisuals.sword.visible = true;
+    } else {
+        characterEquipmentVisuals.sword.visible = true;
+        const bladeMesh = characterEquipmentVisuals.sword.children.find(child => child.geometry.type === 'BoxGeometry');
+        if (bladeMesh) {
+            bladeMesh.material.color.set(0xc0c0c0);
+            bladeMesh.material.emissive.set(0x60a5fa);
+            bladeMesh.material.emissiveIntensity = 0.3;
+        }
+    }
+    
+    // Update shield appearance based on equipped shield
+    if (playerInventory.equipment.shield) {
+        const shieldItem = playerInventory.equipment.shield;
+        const rarityColor = shieldItem.rarityColor || '#4ade80';
+        characterEquipmentVisuals.shield.material.color.setStyle(rarityColor);
+        characterEquipmentVisuals.shield.material.emissive.setStyle(rarityColor);
+        characterEquipmentVisuals.shield.material.emissiveIntensity = shieldItem.rarity === 'legendary' ? 0.4 : 
+                                                                         shieldItem.rarity === 'epic' ? 0.3 : 0.2;
+        characterEquipmentVisuals.shield.visible = true;
+    } else {
+        characterEquipmentVisuals.shield.visible = true;
+        characterEquipmentVisuals.shield.material.color.set(0x4ade80);
+        characterEquipmentVisuals.shield.material.emissive.set(0x22c55e);
+        characterEquipmentVisuals.shield.material.emissiveIntensity = 0.2;
+    }
 }
 
 function useItem(item) {
@@ -597,7 +674,7 @@ function useItem(item) {
         }
         playerInventory.removeItem(item.id);
         updateInventoryUI();
-    } else if (item.type === 'weapon' || item.type === 'armor') {
+    } else if (item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory') {
         if (item.slot) {
             const existingItem = playerInventory.equipment[item.slot];
             if (existingItem) {
@@ -605,7 +682,8 @@ function useItem(item) {
             }
             playerInventory.equipment[item.slot] = item;
             playerInventory.removeItem(item.id);
-            addMessage(`Equipped ${item.icon} ${item.name}`, 'success');
+            addMessage(`Equipped ${item.rarityIcon || ''} ${item.name}`, 'success');
+            updateCharacterAppearance();
             updateInventoryUI();
         }
     }
@@ -869,9 +947,10 @@ function useSkillFromHotbar(slotIndex) {
             
             if (nearestMonster.hp <= 0) {
                 nearestMonster.alive = false;
+                hideMonsterHealthBar();
                 // Grant XP
                 let xpReward = 50;
-                if (nearestMonster.type === 'goblin boss' || nearestMonster.type === 'skeleton lord') {
+                if (nearestMonster.type === 'goblin boss' || nearestMonster.type === 'skeleton lord' || nearestMonster.type === 'goblin chief') {
                     xpReward = 200;
                 } else if (nearestMonster.type === 'dire wolf') {
                     xpReward = 150;
@@ -881,6 +960,19 @@ function useSkillFromHotbar(slotIndex) {
                 
                 const xpResult = player.gainExperience(xpReward);
                 addMessage(`💰 Gained ${xpReward} XP!`, 'success');
+                
+                // Generate and drop loot
+                const loot = LootSystem.generateLoot(nearestMonster.type);
+                if (loot.gold > 0) {
+                    playerInventory.addGold(loot.gold);
+                }
+                if (loot.items && loot.items.length > 0) {
+                    for (const item of loot.items) {
+                        if (playerInventory.addItem(item)) {
+                            addMessage(`${item.rarityIcon} Looted: ${item.name}!`, 'success');
+                        }
+                    }
+                }
                 
                 if (xpResult.leveledUp) {
                     addMessage(`🎉 LEVEL UP! You are now level ${xpResult.currentLevel}!`, 'success');
@@ -939,14 +1031,16 @@ function createSkillEffect(position, color) {
     window.attackParticles.push(...particles);
 }
 
-// Merchant inventory
-const merchantInventory = [
+// Merchant inventory - Generate with some rare items from loot system
+let merchantInventory = [
     new Item('health_pot', 'Health Potion', '🧪', 'consumable', 50, { healing: 50 }),
     new Item('mana_pot', 'Mana Potion', '🔮', 'consumable', 40, { manaRestore: 30 }),
-    new Item('iron_sword', 'Iron Sword', '🗡️', 'weapon', 100, { slot: 'weapon', damage: 15 }),
-    new Item('steel_helm', 'Steel Helmet', '⛑️', 'armor', 80, { slot: 'head', armor: 5 }),
     new Item('bread', 'Bread', '🍞', 'consumable', 5, { healing: 10 }),
 ];
+
+// Add rare items from loot system
+const rareMerchantItems = LootSystem.generateMerchantInventory(7);
+merchantInventory = [...merchantInventory, ...rareMerchantItems];
 
 function openTrading(npc) {
     const panel = document.getElementById('trading-panel');
@@ -959,16 +1053,19 @@ function openTrading(npc) {
     merchantInventory.forEach(item => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'trade-item';
+        const rarityColor = item.rarityColor || '#ffffff';
+        const rarityIcon = item.rarityIcon || '';
         itemDiv.innerHTML = `
             <div class="item-info">
                 <div class="icon">${item.icon}</div>
                 <div class="details">
-                    <div class="name">${item.name}</div>
+                    <div class="name" style="color: ${rarityColor};">${rarityIcon} ${item.name}</div>
                     <div class="price">💰 ${Math.ceil(item.value * 1.5)} gold</div>
                 </div>
             </div>
         `;
         itemDiv.onclick = () => buyItem(item);
+        itemDiv.title = item.description || '';
         merchantItems.appendChild(itemDiv);
     });
     
@@ -978,16 +1075,19 @@ function openTrading(npc) {
     playerInventory.items.forEach(item => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'trade-item';
+        const rarityColor = item.rarityColor || '#ffffff';
+        const rarityIcon = item.rarityIcon || '';
         itemDiv.innerHTML = `
             <div class="item-info">
                 <div class="icon">${item.icon}</div>
                 <div class="details">
-                    <div class="name">${item.name}</div>
+                    <div class="name" style="color: ${rarityColor};">${rarityIcon} ${item.name}</div>
                     <div class="price">💰 ${Math.floor(item.value * 0.5)} gold</div>
                 </div>
             </div>
         `;
         itemDiv.onclick = () => sellItem(item);
+        itemDiv.title = item.description || '';
         playerItems.appendChild(itemDiv);
     });
     
@@ -1001,10 +1101,11 @@ function closeTrading() {
 function buyItem(item) {
     const price = Math.ceil(item.value * 1.5);
     if (playerInventory.removeGold(price)) {
-        const newItem = new Item(item.id, item.name, item.icon, item.type, item.value, item.stats);
+        // Clone the item to avoid modifying the merchant's inventory
+        const newItem = item.id ? { ...item } : new Item(item.id, item.name, item.icon, item.type, item.value, item.stats);
         if (playerInventory.addItem(newItem)) {
             document.getElementById('trade-gold-amount').textContent = playerInventory.gold;
-            addMessage(`Bought ${item.icon} ${item.name} for ${price} gold`, 'success');
+            addMessage(`Bought ${item.rarityIcon || ''} ${item.name} for ${price} gold`, 'success');
         } else {
             playerInventory.addGold(price);
         }
@@ -1658,7 +1759,7 @@ window.addEventListener('keydown', (e) => {
                     hideMonsterHealthBar();
                     // Grant XP based on monster type
                     let xpReward = 50; // Default XP
-                    if (nearestMonster.type === 'goblin boss' || nearestMonster.type === 'skeleton lord') {
+                    if (nearestMonster.type === 'goblin boss' || nearestMonster.type === 'skeleton lord' || nearestMonster.type === 'goblin chief') {
                         xpReward = 200;
                     } else if (nearestMonster.type === 'dire wolf') {
                         xpReward = 150;
@@ -1670,6 +1771,19 @@ window.addEventListener('keydown', (e) => {
                     
                     const xpResult = player.gainExperience(xpReward);
                     addMessage(`💰 Gained ${xpReward} XP!`, 'success');
+                    
+                    // Generate and drop loot
+                    const loot = LootSystem.generateLoot(nearestMonster.type);
+                    if (loot.gold > 0) {
+                        playerInventory.addGold(loot.gold);
+                    }
+                    if (loot.items && loot.items.length > 0) {
+                        for (const item of loot.items) {
+                            if (playerInventory.addItem(item)) {
+                                addMessage(`${item.rarityIcon} Looted: ${item.name}!`, 'success');
+                            }
+                        }
+                    }
                     
                     if (xpResult.leveledUp) {
                         addMessage(`🎉 LEVEL UP! You are now level ${xpResult.currentLevel}!`, 'success');

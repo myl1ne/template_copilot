@@ -533,6 +533,7 @@ function showDialogue(npc) {
                         activateQuest('village_rescue');
                         document.getElementById('dialogue-text').textContent = 
                             "Thank you, hero! The goblin camp is to the south, around coordinates (-20, -20). Defeat them and return to me!";
+                        setTimeout(() => closeDialogue(), 1500);
                     };
                     options.innerHTML = '';
                     options.appendChild(acceptBtn);
@@ -586,6 +587,7 @@ function showDialogue(npc) {
                             activateQuest('skeleton_threat');
                             document.getElementById('dialogue-text').textContent = 
                                 "May the light guide you, hero! The graveyard is to the east, around coordinates (30, 10).";
+                            setTimeout(() => closeDialogue(), 1500);
                         };
                         options.innerHTML = '';
                         options.appendChild(acceptBtn);
@@ -659,6 +661,7 @@ function showDialogue(npc) {
                         activateQuest('herb_collection');
                         document.getElementById('dialogue-text').textContent = 
                             "Wonderful! I need 3 Moonpetals and 2 Shadow Roots. They grow throughout the forest.";
+                        setTimeout(() => closeDialogue(), 1500);
                     };
                     options.innerHTML = '';
                     options.appendChild(acceptBtn);
@@ -692,6 +695,7 @@ function showDialogue(npc) {
                         activateQuest('spider_cave');
                         document.getElementById('dialogue-text').textContent = 
                             "Thank you! The spider den is northeast, around coordinates (25, -25). Be careful!";
+                        setTimeout(() => closeDialogue(), 1500);
                     };
                     options.innerHTML = '';
                     options.appendChild(acceptBtn);
@@ -742,6 +746,7 @@ function showDialogue(npc) {
                     playerInventory.addItem(new Item('package', 'Sealed Package', '📦', 'quest', 0, {}));
                     document.getElementById('dialogue-text').textContent = 
                         "Wonderful! The hermit lives far to the southwest, near coordinates (-25, -25). Be careful out there!";
+                    setTimeout(() => closeDialogue(), 1500);
                 };
                 options.innerHTML = '';
                 options.appendChild(acceptBtn);
@@ -766,6 +771,7 @@ function showDialogue(npc) {
                     activateQuest('wolf_pack');
                     document.getElementById('dialogue-text').textContent = 
                         "You're brave! The wolves roam northwest, around coordinates (-30, 30). May fortune favor you!";
+                    setTimeout(() => closeDialogue(), 1500);
                 };
                 options.innerHTML = '';
                 options.appendChild(acceptWolfBtn);
@@ -914,6 +920,15 @@ window.addEventListener('keydown', (e) => {
                 player.hp = Math.min(player.maxHp, player.hp + result.healing);
                 updateUI();
             }
+            // Show monster health bar when hit
+            if (result.monsterHit) {
+                showMonsterHealthBar(result.monsterHit);
+                createAttackEffect(result.monsterHit.position);
+            }
+            // Hide health bar when defeated
+            if (result.defeated) {
+                hideMonsterHealthBar();
+            }
         }
     }
     
@@ -944,6 +959,194 @@ window.addEventListener('keydown', (e) => {
 
 // ===== INTERACTION CHECKING =====
 let nearestInteractable = null;
+let currentMonsterTarget = null;
+
+function showMonsterHealthBar(monster) {
+    currentMonsterTarget = monster;
+    const healthBar = document.getElementById('monster-health-bar');
+    const nameElement = document.getElementById('monster-name');
+    const hpBar = document.getElementById('monster-hp-bar');
+    const hpText = document.getElementById('monster-hp-text');
+    
+    healthBar.classList.add('show');
+    nameElement.textContent = monster.type.toUpperCase() + (monster.isBoss ? ' (BOSS)' : '');
+    
+    const hpPercent = (monster.hp / monster.maxHp) * 100;
+    hpBar.style.width = hpPercent + '%';
+    hpText.textContent = `${Math.round(monster.hp)} / ${monster.maxHp}`;
+}
+
+function hideMonsterHealthBar() {
+    const healthBar = document.getElementById('monster-health-bar');
+    healthBar.classList.remove('show');
+    currentMonsterTarget = null;
+}
+
+function updateMonsterHealthBar() {
+    if (currentMonsterTarget && currentMonsterTarget.alive) {
+        const hpBar = document.getElementById('monster-hp-bar');
+        const hpText = document.getElementById('monster-hp-text');
+        const hpPercent = (currentMonsterTarget.hp / currentMonsterTarget.maxHp) * 100;
+        hpBar.style.width = hpPercent + '%';
+        hpText.textContent = `${Math.round(currentMonsterTarget.hp)} / ${currentMonsterTarget.maxHp}`;
+    } else if (currentMonsterTarget && !currentMonsterTarget.alive) {
+        hideMonsterHealthBar();
+    }
+}
+
+// Create attack visual effect
+function createAttackEffect(position) {
+    const particleCount = 10;
+    const particles = [];
+    
+    for (let i = 0; i < particleCount; i++) {
+        const particleGeo = new THREE.SphereGeometry(0.1, 8, 8);
+        const particleMat = new THREE.MeshBasicMaterial({ 
+            color: 0xff6600,
+            transparent: true,
+            opacity: 1
+        });
+        const particle = new THREE.Mesh(particleGeo, particleMat);
+        
+        particle.position.set(
+            position.x + (Math.random() - 0.5) * 0.5,
+            0.5 + Math.random(),
+            position.z + (Math.random() - 0.5) * 0.5
+        );
+        
+        particle.velocity = {
+            x: (Math.random() - 0.5) * 0.1,
+            y: Math.random() * 0.15 + 0.1,
+            z: (Math.random() - 0.5) * 0.1
+        };
+        
+        particle.life = 1.0;
+        scene.add(particle);
+        particles.push(particle);
+    }
+    
+    // Store particles for animation
+    if (!window.attackParticles) {
+        window.attackParticles = [];
+    }
+    window.attackParticles.push(...particles);
+}
+
+// Update attack particles
+function updateAttackParticles(delta) {
+    if (!window.attackParticles) return;
+    
+    for (let i = window.attackParticles.length - 1; i >= 0; i--) {
+        const particle = window.attackParticles[i];
+        
+        particle.life -= delta * 2;
+        particle.material.opacity = particle.life;
+        
+        particle.position.x += particle.velocity.x;
+        particle.position.y += particle.velocity.y;
+        particle.position.z += particle.velocity.z;
+        
+        particle.velocity.y -= delta * 0.5; // Gravity
+        
+        if (particle.life <= 0) {
+            scene.remove(particle);
+            particle.geometry.dispose();
+            particle.material.dispose();
+            window.attackParticles.splice(i, 1);
+        }
+    }
+}
+
+// Monster AI: Update monster behavior based on stance
+function updateMonsterAI(monster, delta, playerPos) {
+    if (!monster.alive) return;
+    
+    const dx = playerPos.x - monster.position.x;
+    const dz = playerPos.z - monster.position.z;
+    const distanceToPlayer = Math.sqrt(dx * dx + dz * dz);
+    
+    // Reset attack flag after some time
+    if (monster.wasAttacked) {
+        if (!monster.attackedTime) {
+            monster.attackedTime = Date.now();
+        }
+        if (Date.now() - monster.attackedTime > 5000) { // Reset after 5 seconds
+            monster.wasAttacked = false;
+            monster.isRetreating = false;
+            monster.attackedTime = null;
+        }
+    }
+    
+    // Handle different stances
+    if (monster.stance === 'flee') {
+        // Flee when attacked
+        if (monster.wasAttacked && distanceToPlayer < monster.fleeDistance) {
+            monster.isRetreating = true;
+            const fleeX = monster.position.x - dx * 0.02;
+            const fleeZ = monster.position.z - dz * 0.02;
+            monster.position.x = fleeX;
+            monster.position.z = fleeZ;
+            monster.mesh.position.set(fleeX, 0, fleeZ);
+        }
+    } else if (monster.stance === 'defensive') {
+        // Fight back when attacked
+        if (monster.wasAttacked && distanceToPlayer < 3) {
+            monsterAttackPlayer(monster);
+        }
+    } else if (monster.stance === 'aggressive') {
+        // Attack when player is too close
+        if (distanceToPlayer < monster.aggroRange) {
+            // Move towards player
+            const moveSpeed = 0.8 * delta;
+            const moveX = monster.position.x + (dx / distanceToPlayer) * moveSpeed;
+            const moveZ = monster.position.z + (dz / distanceToPlayer) * moveSpeed;
+            monster.position.x = moveX;
+            monster.position.z = moveZ;
+            monster.mesh.position.set(moveX, 0, moveZ);
+            
+            // Face the player
+            const angle = Math.atan2(dx, dz);
+            monster.mesh.rotation.y = angle;
+            
+            // Attack if close enough
+            if (distanceToPlayer < 2) {
+                monsterAttackPlayer(monster);
+            }
+        }
+    }
+}
+
+// Monster attacks player
+function monsterAttackPlayer(monster) {
+    const currentTime = Date.now() / 1000;
+    if (currentTime - monster.lastAttackTime < monster.attackCooldown) {
+        return;
+    }
+    
+    monster.lastAttackTime = currentTime;
+    const monsterDamage = Math.floor(monster.damage * 0.5 + Math.random() * monster.damage * 0.5);
+    player.hp = Math.max(0, player.hp - monsterDamage);
+    
+    addMessage(`💥 ${monster.type.toUpperCase()} attacks you for ${monsterDamage} damage!`, 'warning');
+    updateUI();
+    
+    // Create attack effect on player
+    createAttackEffect(player.position);
+    
+    // Check if player died
+    if (player.hp <= 0) {
+        addMessage('💀 You have been defeated!', 'warning');
+        // Respawn player
+        setTimeout(() => {
+            player.hp = player.maxHp;
+            player.position.x = 0;
+            player.position.z = 0;
+            characterGroup.position.set(0, 0, 0);
+            addMessage('You have respawned at the starting location.', 'info');
+            updateUI();
+        }, 3000);
+    }
+}
 
 function checkInteractions() {
     let nearestObject = null;
@@ -1187,12 +1390,20 @@ function animate() {
                 goblin.position.x = goblin.spawnPosition.x;
                 goblin.position.z = goblin.spawnPosition.z;
                 goblin.mesh.position.set(goblin.spawnPosition.x, 0, goblin.spawnPosition.z);
+                goblin.wasAttacked = false;
+                goblin.isRetreating = false;
                 addMessage('A goblin has respawned!', 'warning');
             }
         } else {
             if (goblin.mesh.visible) {
-                goblin.mesh.rotation.y += delta * 0.5;
+                // Add idle animation when not attacking/retreating
+                if (!goblin.wasAttacked && !goblin.isRetreating) {
+                    goblin.mesh.rotation.y += delta * 0.5;
+                }
                 goblin.mesh.children[0].position.y = 0.9 + Math.sin(Date.now() * 0.002) * 0.05;
+                
+                // Update goblin AI
+                updateMonsterAI(goblin, delta, player.position);
             }
         }
     }
@@ -1210,18 +1421,31 @@ function animate() {
                 monster.position.x = monster.spawnPosition.x;
                 monster.position.z = monster.spawnPosition.z;
                 monster.mesh.position.set(monster.spawnPosition.x, 0, monster.spawnPosition.z);
+                monster.wasAttacked = false;
+                monster.isRetreating = false;
                 addMessage(`A ${monster.type} has respawned!`, 'warning');
             }
         } else {
             if (monster.mesh.visible) {
                 // Add idle animation (slow rotation and bobbing)
-                monster.mesh.rotation.y += delta * 0.3;
+                if (!monster.wasAttacked && !monster.isRetreating) {
+                    monster.mesh.rotation.y += delta * 0.3;
+                }
                 if (monster.mesh.children.length > 0) {
                     monster.mesh.children[0].position.y += Math.sin(Date.now() * 0.002) * 0.002;
                 }
+                
+                // Update monster AI
+                updateMonsterAI(monster, delta, player.position);
             }
         }
     }
+    
+    // Update attack particles
+    updateAttackParticles(delta);
+    
+    // Update monster health bar
+    updateMonsterHealthBar();
     
     cameraController.update();
     renderer.render(scene, camera);

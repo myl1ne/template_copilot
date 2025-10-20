@@ -30,12 +30,22 @@ export class EnvironmentFactory {
         leaves.castShadow = true;
         tree.add(leaves);
         
-        // Add apples (3 apples per tree, randomly positioned on leaves)
+        // Add apples (3 apples per tree) positioned on the outer surface of the leaves
         const apples = [];
+        const leavesRadius = 1.5; // matches leavesGeo
+        const appleRadius = 0.2;
+        const surfaceOffset = -0.1; // tiny gap so apples sit outside foliage
         for (let i = 0; i < 3; i++) {
-            const angle = (i / 3) * Math.PI * 2 + Math.random() * 0.5;
-            const radius = 1.0 + Math.random() * 0.3;
-            const appleGeo = new THREE.SphereGeometry(0.2, 16, 16);
+            // Random spherical direction biased to appear on upper hemisphere
+            const theta = Math.random() * Math.PI * 2; // azimuth
+            const phi = Math.random() * Math.PI * 0.8; // polar, limit to upper area (0..0.8PI)
+            const dir = new THREE.Vector3(
+                Math.sin(phi) * Math.cos(theta),
+                Math.cos(phi),
+                Math.sin(phi) * Math.sin(theta)
+            ).normalize();
+
+            const appleGeo = new THREE.SphereGeometry(appleRadius, 16, 16);
             const appleMat = new THREE.MeshStandardMaterial({ 
                 color: 0xff0000,
                 emissive: 0xff0000,
@@ -44,11 +54,11 @@ export class EnvironmentFactory {
                 metalness: 0.1
             });
             const apple = new THREE.Mesh(appleGeo, appleMat);
-            apple.position.set(
-                Math.cos(angle) * radius,
-                3.3 + Math.random() * 0.5,
-                Math.sin(angle) * radius
-            );
+
+            // Position apple at leaves center + direction * (leafRadius + appleRadius + offset)
+            const distanceFromCenter = leavesRadius + appleRadius + surfaceOffset;
+            apple.position.copy(leaves.position).addScaledVector(dir, distanceFromCenter);
+
             apple.castShadow = true;
             apple.receiveShadow = true;
             apple.visible = true;

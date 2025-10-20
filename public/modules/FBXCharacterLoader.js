@@ -72,7 +72,7 @@ export class FBXCharacterLoader {
                 }
             }
 
-            console.log(`✓ ${characterName} loaded (height: ${height.toFixed(2)} → ${targetHeight} units, scale: ${scale.toFixed(3)})`);
+            console.log(`✓ ${characterName} loaded (measured height: ${height.toFixed(2)}, target: ${targetHeight} units, applied scale: ${finalScale.toFixed(6)})`);
             return true;
         } catch (error) {
             console.error(`Error loading ${characterName}:`, error);

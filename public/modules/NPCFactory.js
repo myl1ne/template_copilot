@@ -68,6 +68,7 @@ export class NPCFactory {
         
         // Try to use FBX model if available
         if (npc.modelName && this.characterLoader.hasCharacter(npc.modelName)) {
+            // Clone the loaded model — the loader already applies the proper scale
             const charModel = SkeletonUtils.clone(this.characterLoader.getModel(npc.modelName));
             // No additional scaling needed - model is already sized correctly by FBXCharacterLoader
             charModel.rotation.y = Math.PI; // Face forward
@@ -76,8 +77,17 @@ export class NPCFactory {
                 if (child.isMesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
+                    // Some FBX/skinned meshes have bounding/skeleton offsets that make
+                    // frustum culling remove them unexpectedly. Disable culling to be safe.
+                    child.frustumCulled = false;
                 }
             });
+            
+            // Calculate bounding box to ensure feet are on the ground
+            // This fixes positioning issues where FBX models have different origins
+            const bbox = new THREE.Box3().setFromObject(charModel);
+            const yOffset = -bbox.min.y; // Offset to place the bottom of the model at y=0
+            charModel.position.y = yOffset;
             
             npcGroup.add(charModel);
 

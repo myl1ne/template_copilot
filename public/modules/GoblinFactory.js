@@ -95,7 +95,7 @@ export class GoblinFactory {
                     if (this.isBoss) {
                         updateQuestProgress('kill_boss', 1);
                     } else {
-                        updateQuestProgress('kill_goblins', 1);
+                        updateQuestProgress('kill_goblin', 1);
                     }
                     
                     return { 

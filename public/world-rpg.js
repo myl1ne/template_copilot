@@ -214,6 +214,8 @@ player.addAvailableSpell(fireball);
 player.addAvailableSpell(iceShield);
 
 // Initialize hotbar with starting skills
+const skillHotbar = [null, null, null, null, null]; // 5 hotbar slots
+const skillCooldowns = {}; // Track cooldowns for skills
 skillHotbar[0] = powerStrike;  // Slot 1
 skillHotbar[1] = secondWind;   // Slot 2
 
@@ -772,9 +774,16 @@ function learnSpellFromUI(spellName) {
     }
 }
 
+// Expose some UI functions to the global scope for inline HTML handlers
+// (module scripts are not added to window by default)
+if (typeof window !== 'undefined') {
+    window.openSkillsPanel = openSkillsPanel;
+    window.closeSkillsPanel = closeSkillsPanel;
+    window.spendAttributePoint = spendAttributePoint;
+    window.learnSpellFromUI = learnSpellFromUI;
+}
+
 // ===== SKILL HOTBAR SYSTEM =====
-const skillHotbar = [null, null, null, null, null]; // 5 hotbar slots
-const skillCooldowns = {}; // Track cooldowns for skills
 
 function updateHotbar() {
     const hotbarSlots = document.querySelectorAll('#hotbar .hotbar-slot');
@@ -1675,6 +1684,15 @@ window.addEventListener('keydown', (e) => {
                 addMessage('No monster in range!', 'warning');
             }
         }
+    }
+
+    // Cheat: press 'L' to level up instantly (developer/testing only)
+    if (e.key.toLowerCase() === 'l') {
+        const result = player.levelUp();
+        addMessage(`Cheat: Leveled up to ${player.level}! (+${result.attributePoints} AP, +${result.skillPoints} SP)`, 'success');
+        updateUI();
+        updateSkillsUI();
+        createLevelUpEffect();
     }
     
     if (e.key.toLowerCase() === 'r' && player.animationState === 'idle') {

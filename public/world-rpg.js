@@ -859,6 +859,9 @@ if (typeof window !== 'undefined') {
     window.closeSkillsPanel = closeSkillsPanel;
     window.spendAttributePoint = spendAttributePoint;
     window.learnSpellFromUI = learnSpellFromUI;
+    window.openInventory = openInventory;
+    window.closeInventory = closeInventory;
+    window.closeTrading = closeTrading;
 }
 
 // ===== SKILL HOTBAR SYSTEM =====
@@ -1098,6 +1101,30 @@ function closeTrading() {
     document.getElementById('trading-panel').classList.remove('show');
 }
 
+function updatePlayerItemsInTradeUI() {
+    const playerItems = document.getElementById('player-items');
+    playerItems.innerHTML = '';
+    
+    playerInventory.items.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'trade-item';
+        const rarityColor = item.rarityColor || '#ffffff';
+        const rarityIcon = item.rarityIcon || '';
+        itemDiv.innerHTML = `
+            <div class="item-info">
+                <div class="icon">${item.icon}</div>
+                <div class="details">
+                    <div class="name" style="color: ${rarityColor};">${rarityIcon} ${item.name}</div>
+                    <div class="price">💰 ${Math.floor(item.value * 0.5)} gold</div>
+                </div>
+            </div>
+        `;
+        itemDiv.onclick = () => sellItem(item);
+        itemDiv.title = item.description || '';
+        playerItems.appendChild(itemDiv);
+    });
+}
+
 function buyItem(item) {
     const price = Math.ceil(item.value * 1.5);
     if (playerInventory.removeGold(price)) {
@@ -1106,6 +1133,9 @@ function buyItem(item) {
         if (playerInventory.addItem(newItem)) {
             document.getElementById('trade-gold-amount').textContent = playerInventory.gold;
             addMessage(`Bought ${item.rarityIcon || ''} ${item.name} for ${price} gold`, 'success');
+            // Refresh player items list to show newly purchased item
+            const npc = npcs.find(n => n.type === 'merchant');
+            if (npc) updatePlayerItemsInTradeUI();
         } else {
             playerInventory.addGold(price);
         }
@@ -2224,10 +2254,22 @@ function checkInteractions() {
 
 // ===== LOAD ASSETS AND INITIALIZE WORLD =====
 (async function initWorld() {
+    const loadingScreen = document.getElementById('loading-screen');
+    const loadingBar = document.getElementById('loading-bar');
+    const loadingText = document.getElementById('loading-text');
+    
     addMessage('Loading character assets...', 'info');
     
-    // Load all characters
-    await characterLoader.loadAllCharacters();
+    // Load all characters with progress tracking
+    await characterLoader.loadAllCharacters((progress) => {
+        loadingBar.style.width = progress + '%';
+        loadingText.textContent = `Loading assets... ${progress}%`;
+    });
+    
+    // Hide loading screen
+    loadingText.textContent = 'Loading complete! Starting game...';
+    await new Promise(r => setTimeout(r, 500));
+    loadingScreen.classList.add('hidden');
     
     addMessage('✓ Assets loaded!', 'success');
     
@@ -2264,7 +2306,7 @@ function checkInteractions() {
         const radius = 15 + Math.random() * 10;
         const x = Math.cos(angle) * radius;
         const z = Math.sin(angle) * radius;
-        environmentObjects.push(environmentFactory.createTree(x, z));
+        environmentObjects.push(environmentFactory.createTree(x, z, Item, playerInventory, addMessage));
     }
     
     for (let i = 0; i < 15; i++) {

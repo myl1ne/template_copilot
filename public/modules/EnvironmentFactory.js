@@ -11,7 +11,7 @@ export class EnvironmentFactory {
     /**
      * Create a tree
      */
-    createTree(x, z) {
+    createTree(x, z, Item, playerInventory, addMessage) {
         const tree = new THREE.Group();
         
         // Trunk
@@ -30,6 +30,29 @@ export class EnvironmentFactory {
         leaves.castShadow = true;
         tree.add(leaves);
         
+        // Add apples (3 apples per tree, randomly positioned on leaves)
+        const apples = [];
+        for (let i = 0; i < 3; i++) {
+            const angle = (i / 3) * Math.PI * 2 + Math.random() * 0.5;
+            const radius = 0.8 + Math.random() * 0.4;
+            const appleGeo = new THREE.SphereGeometry(0.12, 8, 8);
+            const appleMat = new THREE.MeshStandardMaterial({ 
+                color: 0xff0000,
+                emissive: 0x330000,
+                emissiveIntensity: 0.2
+            });
+            const apple = new THREE.Mesh(appleGeo, appleMat);
+            apple.position.set(
+                Math.cos(angle) * radius,
+                3.2 + Math.random() * 0.6,
+                Math.sin(angle) * radius
+            );
+            apple.castShadow = true;
+            apple.visible = true;
+            tree.add(apple);
+            apples.push(apple);
+        }
+        
         tree.position.set(x, 0, z);
         this.scene.add(tree);
         
@@ -37,7 +60,41 @@ export class EnvironmentFactory {
             type: 'tree',
             position: { x, y: 0, z },
             mesh: tree,
-            interactable: false
+            apples: apples,
+            applesAvailable: 3,
+            nextAppleRespawn: null,
+            interactable: true,
+            interact: function() {
+                if (this.applesAvailable > 0) {
+                    // Find first visible apple
+                    for (let i = 0; i < this.apples.length; i++) {
+                        if (this.apples[i].visible) {
+                            this.apples[i].visible = false;
+                            this.applesAvailable--;
+                            
+                            // Add apple to inventory
+                            if (Item && playerInventory) {
+                                const appleItem = new Item('apple', 'Apple', '🍎', 'consumable', 10, { healing: 15 });
+                                playerInventory.addItem(appleItem);
+                            }
+                            
+                            // Schedule respawn (30 seconds)
+                            const appleIndex = i;
+                            setTimeout(() => {
+                                this.apples[appleIndex].visible = true;
+                                this.applesAvailable++;
+                                if (addMessage) {
+                                    addMessage('An apple has grown back on the tree', 'info');
+                                }
+                            }, 30000);
+                            
+                            return { message: 'You harvested an apple! 🍎', type: 'success' };
+                        }
+                    }
+                } else {
+                    return { message: 'No apples available. Wait for them to grow back.', type: 'info' };
+                }
+            }
         };
     }
 
@@ -92,12 +149,12 @@ export class EnvironmentFactory {
         lock.castShadow = true;
         chest.add(lock);
         
-        chest.position.set(x, 0, z);
+        chest.position.set(x, 0.2, z);
         this.scene.add(chest);
         
         return {
             type: 'chest',
-            position: { x, y: 0, z },
+            position: { x, y: 0.2, z },
             mesh: chest,
             interactable: true,
             opened: false,
@@ -151,12 +208,12 @@ export class EnvironmentFactory {
         fireLight.position.y = 0.4;
         campfire.add(fireLight);
         
-        campfire.position.set(x, 0, z);
+        campfire.position.set(x, 0.2, z);
         this.scene.add(campfire);
         
         return {
             type: 'campfire',
-            position: { x, y: 0, z },
+            position: { x, y: 0.2, z },
             mesh: campfire,
             fire: fire,
             interactable: true,

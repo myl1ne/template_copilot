@@ -573,6 +573,10 @@
             font-size: 12px;
             color: #fbbf24;
         }
+        
+        #monster-health-bar.show {
+            display: block !important;
+        }
     </style>
 </head>
 <body>
@@ -707,8 +711,72 @@
         backdrop-filter: blur(10px);
         border: 2px solid rgba(234, 179, 8, 0.5);
         max-width: 350px;
+        max-height: 400px;
+        overflow-y: auto;
     ">
         <!-- Quest content will be added by JS -->
+    </div>
+    
+    <!-- Minimap -->
+    <div class="hud" id="minimap" style="
+        bottom: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.85);
+        border-radius: 10px;
+        padding: 10px;
+        color: white;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(74, 222, 128, 0.5);
+    ">
+        <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px; color: #4ade80;">🗺️ Map</div>
+        <canvas id="minimap-canvas" width="150" height="150" style="border-radius: 5px; display: block;"></canvas>
+    </div>
+    
+    <!-- Monster Health Bar -->
+    <div class="hud" id="monster-health-bar" style="
+        top: 120px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.9);
+        border-radius: 10px;
+        padding: 12px 20px;
+        color: white;
+        min-width: 300px;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(239, 68, 68, 0.6);
+        display: none;
+    ">
+        <div id="monster-name" style="
+            font-size: 14px;
+            font-weight: bold;
+            color: #ef4444;
+            margin-bottom: 8px;
+            text-align: center;
+        ">Monster</div>
+        <div style="
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-bottom: 4px;
+            color: #94a3b8;
+        ">
+            <span>HP</span>
+            <span id="monster-hp-text">100 / 100</span>
+        </div>
+        <div style="
+            width: 100%;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        ">
+            <div id="monster-hp-bar" style="
+                height: 100%;
+                width: 100%;
+                background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+                transition: width 0.3s ease;
+            "></div>
+        </div>
     </div>
 
     <!-- Hotbar -->
@@ -718,6 +786,36 @@
         <div class="hotbar-slot"><span class="key">3</span></div>
         <div class="hotbar-slot"><span class="key">4</span></div>
         <div class="hotbar-slot"><span class="key">5</span></div>
+    </div>
+    
+    <!-- Attack Cooldown Icon -->
+    <div id="attack-cooldown" style="
+        position: absolute;
+        bottom: 90px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 60px;
+        background: rgba(0, 0, 0, 0.8);
+        border: 3px solid #4ade80;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        pointer-events: none;
+    ">
+        ⚔️
+        <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: rotate(-90deg);">
+            <circle id="cooldown-circle" cx="30" cy="30" r="26" 
+                fill="none" 
+                stroke="#ef4444" 
+                stroke-width="4" 
+                stroke-dasharray="163.36" 
+                stroke-dashoffset="163.36"
+                style="transition: stroke-dashoffset 0.1s linear;" />
+        </svg>
     </div>
     
     <script type="module" src="/world-rpg.js"></script>

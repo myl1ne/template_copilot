@@ -70,6 +70,13 @@ export class GoblinFactory {
             interactable: true,
             lastAttackTime: 0,
             attackCooldown: 2,
+            stance: 'defensive', // Goblins fight back when attacked
+            damage: 15,
+            xp: 50,
+            aggroRange: 5,
+            fleeDistance: 8,
+            isRetreating: false,
+            targetPlayer: null,
             interact: function() {
                 if (!this.alive) {
                     return { message: 'The goblin is already defeated!', type: 'info' };
@@ -84,6 +91,9 @@ export class GoblinFactory {
                 this.lastAttackTime = currentTime;
                 const damage = Math.floor(15 + Math.random() * 10);
                 this.hp -= damage;
+                
+                // Store reference to this goblin for counter-attack
+                this.wasAttacked = true;
                 
                 if (this.hp <= 0) {
                     this.alive = false;
@@ -100,13 +110,15 @@ export class GoblinFactory {
                     
                     return { 
                         message: `Goblin defeated! Dealt ${damage} damage. +50 XP`, 
-                        type: 'success' 
+                        type: 'success',
+                        defeated: true
                     };
                 }
                 
                 return { 
                     message: `Hit goblin for ${damage} damage! (${this.hp}/${this.maxHp} HP remaining)`, 
-                    type: 'warning' 
+                    type: 'warning',
+                    monsterHit: this
                 };
             }
         };
@@ -190,6 +202,13 @@ export class GoblinFactory {
             interactable: true,
             lastAttackTime: 0,
             attackCooldown: 1.5,
+            stance: 'aggressive', // Boss is always aggressive
+            damage: 25,
+            xp: 200,
+            aggroRange: 5,
+            fleeDistance: 8,
+            isRetreating: false,
+            targetPlayer: null,
             interact: function() {
                 if (!this.alive) {
                     return { message: 'The Goblin Chief has been defeated!', type: 'info' };
@@ -204,6 +223,9 @@ export class GoblinFactory {
                 const damage = Math.floor(15 + Math.random() * 10);
                 this.hp -= damage;
                 
+                // Store reference to this goblin for counter-attack
+                this.wasAttacked = true;
+                
                 if (this.hp <= 0) {
                     this.alive = false;
                     this.hp = 0;
@@ -214,13 +236,15 @@ export class GoblinFactory {
                     
                     return { 
                         message: `💀 GOBLIN CHIEF DEFEATED! Dealt ${damage} damage. +200 XP`, 
-                        type: 'success' 
+                        type: 'success',
+                        defeated: true
                     };
                 }
                 
                 return { 
                     message: `⚔️ Hit Goblin Chief for ${damage} damage! (${this.hp}/${this.maxHp} HP remaining)`, 
-                    type: 'warning' 
+                    type: 'warning',
+                    monsterHit: this
                 };
             }
         };

@@ -25,7 +25,8 @@ export class MonsterFactory {
             attackCooldown = 2,
             createMeshFn,
             isBoss = false,
-            updateQuestProgress
+            updateQuestProgress,
+            stance = 'defensive' // 'flee', 'defensive', 'aggressive'
         } = config;
 
         const monsterGroup = new THREE.Group();
@@ -54,6 +55,11 @@ export class MonsterFactory {
             attackCooldown: attackCooldown,
             damage: damage,
             xp: xp,
+            stance: stance, // 'flee', 'defensive', 'aggressive'
+            aggroRange: 5, // Distance at which aggressive monsters attack
+            fleeDistance: 8, // Distance to flee when scared
+            isRetreating: false,
+            targetPlayer: null,
             interact: function() {
                 if (!this.alive) {
                     return { message: `The ${type} is already defeated!`, type: 'info' };
@@ -68,6 +74,9 @@ export class MonsterFactory {
                 this.lastAttackTime = currentTime;
                 const playerDamage = Math.floor(damage + Math.random() * 10);
                 this.hp -= playerDamage;
+                
+                // Store reference to this monster for counter-attack
+                this.wasAttacked = true;
                 
                 if (this.hp <= 0) {
                     this.alive = false;
@@ -86,13 +95,15 @@ export class MonsterFactory {
                     
                     return { 
                         message: `${isBoss ? '💀 BOSS' : ''} ${type.toUpperCase()} DEFEATED! Dealt ${playerDamage} damage. +${xp} XP`, 
-                        type: 'success' 
+                        type: 'success',
+                        defeated: true
                     };
                 }
                 
                 return { 
                     message: `⚔️ Hit ${type} for ${playerDamage} damage! (${this.hp}/${this.maxHp} HP remaining)`, 
-                    type: 'warning' 
+                    type: 'warning',
+                    monsterHit: this
                 };
             }
         };
@@ -109,6 +120,7 @@ export class MonsterFactory {
             xp: 50,
             respawnTime: 30,
             attackCooldown: 2,
+            stance: 'defensive', // Goblins fight back when attacked
             updateQuestProgress,
             createMeshFn: (group) => {
                 // Body (greenish)
@@ -162,6 +174,7 @@ export class MonsterFactory {
             xp: 65,
             respawnTime: 35,
             attackCooldown: 1.8,
+            stance: 'aggressive', // Skeletons attack when player is too close
             updateQuestProgress,
             createMeshFn: (group) => {
                 // Bones color
@@ -230,6 +243,7 @@ export class MonsterFactory {
             xp: 45,
             respawnTime: 25,
             attackCooldown: 1.5,
+            stance: 'flee', // Spiders flee when attacked
             updateQuestProgress,
             createMeshFn: (group) => {
                 // Body (dark gray/black)
@@ -295,6 +309,7 @@ export class MonsterFactory {
             xp: 75,
             respawnTime: 40,
             attackCooldown: 1.6,
+            stance: 'aggressive', // Wolves are aggressive
             updateQuestProgress,
             createMeshFn: (group) => {
                 // Body (gray fur)
@@ -388,6 +403,7 @@ export class MonsterFactory {
                     respawnTime: 60,
                     attackCooldown: 1.5,
                     isBoss: true,
+                    stance: 'aggressive', // Bosses are always aggressive
                     updateQuestProgress,
                     createMeshFn: (group) => {
                         // Larger body for boss
@@ -455,6 +471,7 @@ export class MonsterFactory {
                     respawnTime: 60,
                     attackCooldown: 1.4,
                     isBoss: true,
+                    stance: 'aggressive',
                     updateQuestProgress,
                     createMeshFn: (group) => {
                         // Larger bones
@@ -533,6 +550,7 @@ export class MonsterFactory {
                     respawnTime: 60,
                     attackCooldown: 1.3,
                     isBoss: true,
+                    stance: 'aggressive',
                     updateQuestProgress,
                     createMeshFn: (group) => {
                         // Larger body

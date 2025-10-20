@@ -197,17 +197,30 @@ export class WorldInitializer {
     // Position goblins on terrain
     campGoblins.forEach(goblin => this.positionMonsterOnTerrain(goblin));
     
+    // Position environment objects (campfires) on terrain
+    campObjects.forEach(obj => {
+      if (obj.mesh && this.terrainGenerator) {
+        const height = this.terrainGenerator.getHeightAt(obj.position.x, obj.position.z);
+        obj.mesh.position.y = height + 0.2; // Slight offset above ground
+        obj.position.y = height + 0.2;
+      }
+    });
+    
     this.goblins.push(...campGoblins);
     this.environmentObjects.push(...campObjects);
     
     // Add camp sign
-    this.environmentObjects.push(
-      this.environmentFactory.createSign(
-        goblinCampCenter.x + 8,
-        goblinCampCenter.z,
-        'Beware: Goblin Territory!'
-      )
+    const sign = this.environmentFactory.createSign(
+      goblinCampCenter.x + 8,
+      goblinCampCenter.z,
+      'Beware: Goblin Territory!'
     );
+    if (this.terrainGenerator && sign.mesh) {
+      const signHeight = this.terrainGenerator.getHeightAt(sign.position.x, sign.position.z);
+      sign.mesh.position.y = signHeight;
+      sign.position.y = signHeight;
+    }
+    this.environmentObjects.push(sign);
   }
 
   /**
@@ -247,13 +260,18 @@ export class WorldInitializer {
     this.positionMonsterOnTerrain(skeletonBoss);
     this.monsters.push(skeletonBoss);
     this.environmentObjects.push(skeletonBoss);
-    this.environmentObjects.push(
-      this.environmentFactory.createSign(
-        graveyardCenter.x + 6,
-        graveyardCenter.z,
-        'Ancient Graveyard'
-      )
+    
+    const graveyardSign = this.environmentFactory.createSign(
+      graveyardCenter.x + 6,
+      graveyardCenter.z,
+      'Ancient Graveyard'
     );
+    if (this.terrainGenerator && graveyardSign.mesh) {
+      const signHeight = this.terrainGenerator.getHeightAt(graveyardSign.position.x, graveyardSign.position.z);
+      graveyardSign.mesh.position.y = signHeight;
+      graveyardSign.position.y = signHeight;
+    }
+    this.environmentObjects.push(graveyardSign);
   }
 
   /**
@@ -271,13 +289,18 @@ export class WorldInitializer {
       this.monsters.push(spider);
       this.environmentObjects.push(spider);
     }
-    this.environmentObjects.push(
-      this.environmentFactory.createSign(
-        spiderCaveCenter.x + 7,
-        spiderCaveCenter.z,
-        'Spider Den - Danger!'
-      )
+    
+    const spiderSign = this.environmentFactory.createSign(
+      spiderCaveCenter.x + 7,
+      spiderCaveCenter.z,
+      'Spider Den - Danger!'
     );
+    if (this.terrainGenerator && spiderSign.mesh) {
+      const signHeight = this.terrainGenerator.getHeightAt(spiderSign.position.x, spiderSign.position.z);
+      spiderSign.mesh.position.y = signHeight;
+      spiderSign.position.y = signHeight;
+    }
+    this.environmentObjects.push(spiderSign);
   }
 
   /**
@@ -305,13 +328,18 @@ export class WorldInitializer {
     this.positionMonsterOnTerrain(direWolf);
     this.monsters.push(direWolf);
     this.environmentObjects.push(direWolf);
-    this.environmentObjects.push(
-      this.environmentFactory.createSign(
-        wolfPackCenter.x + 6,
-        wolfPackCenter.z,
-        'Wolf Territory'
-      )
+    
+    const wolfSign = this.environmentFactory.createSign(
+      wolfPackCenter.x + 6,
+      wolfPackCenter.z,
+      'Wolf Territory'
     );
+    if (this.terrainGenerator && wolfSign.mesh) {
+      const signHeight = this.terrainGenerator.getHeightAt(wolfSign.position.x, wolfSign.position.z);
+      wolfSign.mesh.position.y = signHeight;
+      wolfSign.position.y = signHeight;
+    }
+    this.environmentObjects.push(wolfSign);
   }
 
   /**

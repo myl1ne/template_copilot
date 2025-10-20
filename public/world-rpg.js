@@ -223,31 +223,34 @@ playerInventory.addItem(new Item('bread', 'Bread', '🍞', 'consumable', 5, { he
 const questFactory = new QuestFactory();
 const quests = questFactory.createStandardQuests();
 
-let activeQuest = null;
+let activeQuests = []; // Changed to array to track multiple quests
 
 function updateQuestProgress(objectiveId, amount = 1) {
-    if (!activeQuest || !activeQuest.active || activeQuest.completed) return;
-    
-    const objective = activeQuest.objectives.find(obj => obj.id === objectiveId);
-    if (objective && !objective.completed) {
-        objective.current = Math.min(objective.current + amount, objective.target);
-        if (objective.current >= objective.target) {
-            objective.completed = true;
-            addMessage(`✅ Quest Updated: ${objective.description}`, 'success');
-        } else {
-            addMessage(`Quest Progress: ${objective.description} (${objective.current}/${objective.target})`, 'info');
-        }
-        updateQuestUI();
+    // Update progress for all active quests
+    for (const quest of activeQuests) {
+        if (!quest.active || quest.completed) continue;
         
-        if (activeQuest.objectives.every(obj => obj.completed)) {
-            activeQuest.completed = true;
-            playerInventory.addGold(activeQuest.rewards.gold);
-            addMessage(`🎉 QUEST COMPLETE! Rewards: ${activeQuest.rewards.xp} XP, ${activeQuest.rewards.gold} Gold`, 'success');
+        const objective = quest.objectives.find(obj => obj.id === objectiveId);
+        if (objective && !objective.completed) {
+            objective.current = Math.min(objective.current + amount, objective.target);
+            if (objective.current >= objective.target) {
+                objective.completed = true;
+                addMessage(`✅ Quest Updated: ${objective.description}`, 'success');
+            } else {
+                addMessage(`Quest Progress: ${objective.description} (${objective.current}/${objective.target})`, 'info');
+            }
             updateQuestUI();
             
-            if (activeQuest.id === 'village_rescue') {
-                quests['merchant_delivery'].available = true;
-                addMessage(`📜 New quest available from the Traveling Merchant!`, 'info');
+            if (quest.objectives.every(obj => obj.completed)) {
+                quest.completed = true;
+                playerInventory.addGold(quest.rewards.gold);
+                addMessage(`🎉 QUEST COMPLETE! Rewards: ${quest.rewards.xp} XP, ${quest.rewards.gold} Gold`, 'success');
+                updateQuestUI();
+                
+                if (quest.id === 'village_rescue') {
+                    quests['merchant_delivery'].available = true;
+                    addMessage(`📜 New quest available from the Traveling Merchant!`, 'info');
+                }
             }
         }
     }
@@ -256,13 +259,11 @@ function updateQuestProgress(objectiveId, amount = 1) {
 function activateQuest(questId) {
     const quest = quests[questId];
     if (quest && !quest.active && !quest.completed) {
-        if (activeQuest) {
-            activeQuest.active = false;
-        }
         quest.active = true;
-        activeQuest = quest;
+        activeQuests.push(quest);
         addMessage(`📜 New Quest: ${quest.name}`, 'success');
         updateQuestUI();
+        updateMinimap(); // Update minimap when quest is added
     }
 }
 
@@ -311,34 +312,145 @@ function updateQuestUI() {
     const questPanel = document.getElementById('quest-panel');
     if (!questPanel) return;
     
-    if (activeQuest && activeQuest.active) {
-        questPanel.innerHTML = `
-            <div class="quest-header ${activeQuest.completed ? 'completed' : ''}">
-                <div class="quest-title">📜 ${activeQuest.name}</div>
-                <div class="quest-desc">${activeQuest.description}</div>
+    if (activeQuests.length > 0) {
+        questPanel.innerHTML = activeQuests.map(quest => `
+            <div class="quest-header ${quest.completed ? 'completed' : ''}" style="margin-bottom: 15px;">
+                <div class="quest-title">📜 ${quest.name}</div>
+                <div class="quest-desc">${quest.description}</div>
             </div>
             <div class="objectives">
-                ${activeQuest.objectives.map(obj => `
+                ${quest.objectives.map(obj => `
                     <div class="objective ${obj.completed ? 'completed' : ''}">
                         ${obj.completed ? '✅' : '⭕'} ${obj.description}
                         <span class="progress">(${obj.current}/${obj.target})</span>
                     </div>
                 `).join('')}
             </div>
-            ${activeQuest.completed ? `
+            ${quest.completed ? `
                 <div class="quest-rewards">
-                    🎁 Rewards: ${activeQuest.rewards.xp} XP, ${activeQuest.rewards.gold} Gold
+                    🎁 Rewards: ${quest.rewards.xp} XP, ${quest.rewards.gold} Gold
                 </div>
             ` : ''}
-        `;
+            <hr style="border: 1px solid rgba(255,255,255,0.1); margin: 10px 0;">
+        `).join('');
     } else {
         questPanel.innerHTML = `
             <div class="quest-header">
-                <div class="quest-title">📜 No Active Quest</div>
+                <div class="quest-title">📜 No Active Quests</div>
                 <div class="quest-desc">Visit NPCs to find quests!</div>
             </div>
         `;
     }
+}
+
+// Update minimap
+function updateMinimap() {
+    const canvas = document.getElementById('minimap-canvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    const scale = 3; // World units per pixel
+    const worldSize = width * scale / 2; // Half size since centered
+    
+    // Clear canvas
+    ctx.fillStyle = 'rgba(20, 30, 20, 0.9)';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Draw grid
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= width; i += 15) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, height);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(width, i);
+        ctx.stroke();
+    }
+    
+    // Function to convert world coords to minimap coords
+    const worldToMap = (x, z) => {
+        return {
+            x: (x / scale) + width / 2,
+            y: (z / scale) + height / 2
+        };
+    };
+    
+    // Draw quest objectives
+    for (const quest of activeQuests) {
+        if (quest.completed) continue;
+        
+        // Draw quest markers based on quest type
+        if (quest.id === 'village_rescue' || quest.id === 'skeleton_threat' || 
+            quest.id === 'spider_cave' || quest.id === 'wolf_pack' || quest.id === 'bandit_camp') {
+            // Draw monster locations
+            const locations = {
+                'village_rescue': [{ x: -20, z: -20 }],
+                'skeleton_threat': [{ x: 30, z: 10 }],
+                'spider_cave': [{ x: 25, z: -25 }],
+                'wolf_pack': [{ x: -30, z: 30 }],
+                'bandit_camp': [{ x: 10, z: -30 }] // Example location
+            };
+            
+            const locs = locations[quest.id];
+            if (locs) {
+                locs.forEach(loc => {
+                    const pos = worldToMap(loc.x, loc.z);
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                });
+            }
+        }
+        
+        // Draw NPC locations for delivery/return quests
+        if (quest.returnTo) {
+            const npcLocations = {
+                'Village Elder': { x: 10, z: 10 },
+                'Town Guard': { x: 15, z: 15 },
+                'Forest Hermit': { x: -25, z: -25 },
+                'Traveling Merchant': { x: -10, z: 10 }
+            };
+            
+            const npcLoc = npcLocations[quest.returnTo];
+            if (npcLoc) {
+                const pos = worldToMap(npcLoc.x, npcLoc.z);
+                ctx.fillStyle = '#eab308';
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+    }
+    
+    // Draw player position
+    const playerPos = worldToMap(player.position.x, player.position.z);
+    ctx.fillStyle = '#4ade80';
+    ctx.beginPath();
+    ctx.arc(playerPos.x, playerPos.y, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // Draw player direction indicator
+    ctx.strokeStyle = '#4ade80';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(playerPos.x, playerPos.y);
+    ctx.lineTo(
+        playerPos.x + Math.sin(player.rotation) * 8,
+        playerPos.y + Math.cos(player.rotation) * 8
+    );
+    ctx.stroke();
 }
 
 function updateInventoryUI() {
@@ -623,7 +735,9 @@ function showDialogue(npc) {
             const ruinsQuest = quests['ancient_ruins'];
             const slimeQuest = quests['slime_parts'];
             
-            if (activeQuest && activeQuest.id === 'merchant_delivery' && !activeQuest.objectives[1].completed) {
+            const merchantDeliveryQuest = activeQuests.find(q => q.id === 'merchant_delivery');
+            
+            if (merchantDeliveryQuest && !merchantDeliveryQuest.objectives[1].completed) {
                 const foundBtn = document.createElement('button');
                 foundBtn.className = 'dialogue-btn';
                 foundBtn.textContent = 'I found you! (Complete objective)';
@@ -635,7 +749,7 @@ function showDialogue(npc) {
                 options.appendChild(foundBtn);
             }
             
-            if (activeQuest && activeQuest.id === 'merchant_delivery' && activeQuest.objectives[0].completed && !activeQuest.objectives[2].completed) {
+            if (merchantDeliveryQuest && merchantDeliveryQuest.objectives[0].completed && !merchantDeliveryQuest.objectives[2].completed) {
                 const deliverBtn = document.createElement('button');
                 deliverBtn.className = 'dialogue-btn';
                 deliverBtn.textContent = 'Deliver the package';
@@ -1331,6 +1445,13 @@ function updateMonsterAI(monster, delta, playerPos) {
     const dz = playerPos.z - monster.position.z;
     const distanceToPlayer = Math.sqrt(dx * dx + dz * dz);
     
+    // Initialize wandering state if not exists
+    if (!monster.wanderTarget) {
+        monster.wanderTarget = { x: monster.spawnPosition.x, z: monster.spawnPosition.z };
+        monster.wanderTimer = 0;
+        monster.wanderDelay = 2 + Math.random() * 3; // Random delay between 2-5 seconds
+    }
+    
     // Reset attack flag after some time
     if (monster.wasAttacked) {
         if (!monster.attackedTime) {
@@ -1343,6 +1464,8 @@ function updateMonsterAI(monster, delta, playerPos) {
         }
     }
     
+    let isEngaged = false;
+    
     // Handle different stances
     if (monster.stance === 'flee') {
         // Flee when attacked
@@ -1353,11 +1476,13 @@ function updateMonsterAI(monster, delta, playerPos) {
             monster.position.x = fleeX;
             monster.position.z = fleeZ;
             monster.mesh.position.set(fleeX, 0, fleeZ);
+            isEngaged = true;
         }
     } else if (monster.stance === 'defensive') {
         // Fight back when attacked
         if (monster.wasAttacked && distanceToPlayer < 3) {
             monsterAttackPlayer(monster);
+            isEngaged = true;
         }
     } else if (monster.stance === 'aggressive') {
         // Attack when player is too close
@@ -1378,6 +1503,43 @@ function updateMonsterAI(monster, delta, playerPos) {
             if (distanceToPlayer < 2) {
                 monsterAttackPlayer(monster);
             }
+            isEngaged = true;
+        }
+    }
+    
+    // Idle wandering behavior when not engaged
+    if (!isEngaged && !monster.wasAttacked && !monster.isRetreating) {
+        monster.wanderTimer += delta;
+        
+        if (monster.wanderTimer >= monster.wanderDelay) {
+            // Choose new random point near spawn
+            const wanderRadius = 2; // Wander within 2 units of spawn
+            const angle = Math.random() * Math.PI * 2;
+            const distance = Math.random() * wanderRadius;
+            monster.wanderTarget = {
+                x: monster.spawnPosition.x + Math.cos(angle) * distance,
+                z: monster.spawnPosition.z + Math.sin(angle) * distance
+            };
+            monster.wanderTimer = 0;
+            monster.wanderDelay = 2 + Math.random() * 3;
+        }
+        
+        // Move towards wander target
+        const wanderDx = monster.wanderTarget.x - monster.position.x;
+        const wanderDz = monster.wanderTarget.z - monster.position.z;
+        const wanderDist = Math.sqrt(wanderDx * wanderDx + wanderDz * wanderDz);
+        
+        if (wanderDist > 0.1) {
+            const wanderSpeed = 0.3 * delta; // Slower than combat movement
+            const moveX = monster.position.x + (wanderDx / wanderDist) * wanderSpeed;
+            const moveZ = monster.position.z + (wanderDz / wanderDist) * wanderSpeed;
+            monster.position.x = moveX;
+            monster.position.z = moveZ;
+            monster.mesh.position.set(moveX, 0, moveZ);
+            
+            // Face the direction of movement
+            const wanderAngle = Math.atan2(wanderDx, wanderDz);
+            monster.mesh.rotation.y = wanderAngle;
         }
     }
     
@@ -1737,6 +1899,9 @@ function animate() {
     
     // Update attack cooldown UI
     updateAttackCooldownUI();
+    
+    // Update minimap
+    updateMinimap();
     
     cameraController.update();
     renderer.render(scene, camera);

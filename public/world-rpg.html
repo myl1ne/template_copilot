@@ -711,8 +711,25 @@
         backdrop-filter: blur(10px);
         border: 2px solid rgba(234, 179, 8, 0.5);
         max-width: 350px;
+        max-height: 400px;
+        overflow-y: auto;
     ">
         <!-- Quest content will be added by JS -->
+    </div>
+    
+    <!-- Minimap -->
+    <div class="hud" id="minimap" style="
+        bottom: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.85);
+        border-radius: 10px;
+        padding: 10px;
+        color: white;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(74, 222, 128, 0.5);
+    ">
+        <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px; color: #4ade80;">🗺️ Map</div>
+        <canvas id="minimap-canvas" width="150" height="150" style="border-radius: 5px; display: block;"></canvas>
     </div>
     
     <!-- Monster Health Bar -->

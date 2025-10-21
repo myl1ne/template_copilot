@@ -33,9 +33,15 @@ const { scene, camera, renderer, terrainGenerator } = worldSetup.init(document.g
 const uiManager = new UIManager();
 const addMessage = (text, type) => uiManager.addMessage(text, type);
 
-// ===== INITIALIZE PLAYER =====
-const playerState = new PlayerState(scene);
-const { player, characterGroup, equipmentVisuals } = playerState.createPlayer();
+// ===== INITIALIZE FACTORIES =====
+// Create character loader first so it can be used for player
+const characterLoader = new FBXCharacterLoader();
+
+// ===== INITIALIZE PLAYER STATE =====
+// Pass characterLoader to PlayerState so it can use the Baelin model
+// Player will be created after characters are loaded in initWorld()
+const playerState = new PlayerState(scene, characterLoader);
+let player, characterGroup, equipmentVisuals;
 
 // ===== INITIALIZE INVENTORY SYSTEM =====
 const playerInventory = new InventorySystem(addMessage);
@@ -45,38 +51,15 @@ playerInventory.initStarterItems();
 const questFactory = new QuestFactory();
 const quests = questFactory.createStandardQuests();
 
-const questManager = new QuestManager(
-  quests,
-  addMessage,
-  (activeQuests) => uiManager.updateQuestUI(activeQuests),
-  () => uiManager.updateMinimap(player, questManager.getActiveQuests())
-);
-
-// ===== INITIALIZE SKILL SYSTEM =====
-const skillSystem = new SkillSystem(
-  player,
-  addMessage,
-  (position, color) => combatSystem.createSkillEffect(position, color),
-  (monster) => uiManager.showMonsterHealthBar(monster),
-  () => uiManager.updatePlayerStats(player)
-);
-skillSystem.initStarterSkills();
-skillSystem.initAvailableSpells();
-
-// Update hotbar UI after initialization
-setTimeout(() => skillSystem.updateHotbar(), 100);
-
-// ===== INITIALIZE COMBAT SYSTEM =====
-const combatSystem = new CombatSystem(scene, addMessage);
+// Systems that will be initialized after player is created
+let questManager, skillSystem, combatSystem, cameraController, animationController, dialogueSystem;
 
 // ===== INITIALIZE BESTIARY SYSTEM =====
 const bestiarySystem = new BestiarySystem(addMessage);
 
 // ===== INITIALIZE FACTORIES =====
-const characterLoader = new FBXCharacterLoader();
 const npcFactory = new NPCFactory(characterLoader);
 const environmentFactory = new EnvironmentFactory(scene);
-const cameraController = new CameraController(camera, renderer, characterGroup);
 const goblinFactory = new GoblinFactory(scene, characterLoader.loadedModels);
 const monsterFactory = new MonsterFactory(scene);
 
@@ -90,23 +73,6 @@ const worldInitializer = new WorldInitializer(
   characterLoader,
   addMessage,
   terrainGenerator
-);
-
-// ===== INITIALIZE DIALOGUE SYSTEM =====
-const dialogueSystem = new DialogueSystem(
-  quests,
-  questManager,
-  addMessage,
-  closeDialogue,
-  closeTrading,
-  updatePlayerItemsInTradeUI
-);
-
-// ===== INITIALIZE ANIMATION CONTROLLER =====
-const animationController = new AnimationController(
-  player,
-  equipmentVisuals,
-  (state) => uiManager.showAnimationLabel(state)
 );
 
 // ===== UI FUNCTIONS =====
@@ -440,9 +406,6 @@ function closeTrading() {
 function closeDialogue() {
   document.getElementById('dialogue-panel').classList.remove('show');
 }
-
-// Initialize merchant inventory after loot system is available
-dialogueSystem.initMerchantInventory(LootSystem);
 
 // Expose functions to global scope for inline HTML handlers
 if (typeof window !== 'undefined') {
@@ -807,6 +770,68 @@ function monsterAttackPlayer(monster) {
 
 // ===== LOAD ASSETS AND INITIALIZE WORLD =====
 (async function initWorld() {
+  // Load all character models first (required for player and NPCs)
+  addMessage('Loading character models...', 'info');
+  await characterLoader.loadAllCharacters((progress) => {
+    console.log(`Loading characters: ${progress}%`);
+  });
+  addMessage('Character models loaded!', 'success');
+  
+  // Now create the player with the loaded Baelin model
+  const playerResult = playerState.createPlayer();
+  player = playerResult.player;
+  characterGroup = playerResult.characterGroup;
+  equipmentVisuals = playerResult.equipmentVisuals;
+  
+  // ===== INITIALIZE SYSTEMS THAT DEPEND ON PLAYER =====
+  questManager = new QuestManager(
+    quests,
+    addMessage,
+    (activeQuests) => uiManager.updateQuestUI(activeQuests),
+    () => uiManager.updateMinimap(player, questManager.getActiveQuests())
+  );
+
+  combatSystem = new CombatSystem(scene, addMessage);
+
+  skillSystem = new SkillSystem(
+    player,
+    addMessage,
+    (position, color) => combatSystem.createSkillEffect(position, color),
+    (monster) => uiManager.showMonsterHealthBar(monster),
+    () => uiManager.updatePlayerStats(player)
+  );
+  skillSystem.initStarterSkills();
+  skillSystem.initAvailableSpells();
+
+  // Update hotbar UI after initialization
+  setTimeout(() => skillSystem.updateHotbar(), 100);
+
+  cameraController = new CameraController(camera, renderer, characterGroup);
+
+  dialogueSystem = new DialogueSystem(
+    quests,
+    questManager,
+    addMessage,
+    closeDialogue,
+    closeTrading,
+    updatePlayerItemsInTradeUI
+  );
+
+  // Get mixer and animations from playerState if using FBX
+  const mixer = playerState.getMixer();
+  const animations = playerState.getAnimations();
+  
+  animationController = new AnimationController(
+    player,
+    equipmentVisuals,
+    (state) => uiManager.showAnimationLabel(state),
+    mixer,
+    animations
+  );
+
+  // Initialize merchant inventory after loot system is available
+  dialogueSystem.initMerchantInventory(LootSystem);
+  
   await worldInitializer.initWorld(
     playerInventory,
     (objectiveId, amount) => {
@@ -840,6 +865,12 @@ const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
+  
+  // Don't process game logic until everything is initialized
+  if (!player || !animationController || !cameraController) {
+    renderer.render(scene, camera);
+    return;
+  }
   
   // Movement
   if (animationController.getState() !== 'attacking' && animationController.getState() !== 'resting') {

@@ -199,28 +199,65 @@ saveLevelBtn.addEventListener('click', () => {
 });
 
 // Load level
-loadLevelInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            try {
-                const json = event.target.result;
-                const success = levelEditor.loadLevel(json);
-                if (success) {
-                    showStatus(`Level loaded: ${file.name}`);
-                    updateLevelInfo();
-                } else {
-                    showStatus('Failed to load level!', true);
-                }
-            } catch (error) {
-                console.error('Load error:', error);
-                showStatus('Failed to load level!', true);
+loadLevelInput.addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    
+    try {
+        let jsonData = null;
+        let heightmapImage = null;
+        let colormapImage = null;
+        
+        // Process each file
+        for (const file of files) {
+            if (file.name.endsWith('.json')) {
+                // Load JSON
+                const text = await file.text();
+                jsonData = JSON.parse(text);
+            } else if (file.name.includes('heightmap') && file.name.endsWith('.png')) {
+                // Load heightmap image
+                heightmapImage = await loadImage(file);
+            } else if (file.name.includes('colormap') && file.name.endsWith('.png')) {
+                // Load colormap image
+                colormapImage = await loadImage(file);
             }
-        };
-        reader.readAsText(file);
+        }
+        
+        // Apply loaded data
+        const success = levelEditor.loadLevel({
+            json: jsonData,
+            heightmap: heightmapImage,
+            colormap: colormapImage
+        });
+        
+        if (success) {
+            showStatus(`Level loaded successfully`);
+            updateLevelInfo();
+        } else {
+            showStatus('Failed to load level!', true);
+        }
+    } catch (error) {
+        console.error('Load error:', error);
+        showStatus('Failed to load level!', true);
     }
 });
+
+// Helper function to load image from file
+function loadImage(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
+// Clear level
 
 // Clear level
 clearLevelBtn.addEventListener('click', () => {

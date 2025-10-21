@@ -90,27 +90,31 @@ Add hostile creatures to challenge players.
 
 ### Saving a Level
 1. Enter a level name in the "Level Name" field (default: `custom_level`)
-2. Click "💾 Save Level" button
-3. A JSON file will be downloaded to your computer
-4. The file contains all terrain modifications, NPC positions, and monster placements
+2. Click "💾 Save Level (3 files)" button
+3. Three files will be downloaded to your computer:
+   - **`levelname.json`** - Contains NPCs, monsters, and quests data
+   - **`levelname_heightmap.png`** - Grayscale image of terrain heights
+   - **`levelname_colormap.png`** - Color image of terrain painting
+
+This format is efficient and allows terrain data to be stored as images rather than large JSON arrays.
 
 ### Loading a Level
-1. Click "📂 Load Level" button
-2. Select a previously saved JSON level file
-3. The level will be loaded with all saved data
+1. Click "📂 Load Level Files" button
+2. Select all 3 files from your saved level:
+   - The `.json` file
+   - The `_heightmap.png` file
+   - The `_colormap.png` file
+3. The level will be loaded with terrain heights, colors, and all placed objects
 4. You can continue editing from where you left off
 
+**Note:** You can select all 3 files at once in the file picker dialog (use Ctrl/Cmd+Click or Shift+Click).
+
 ### Level Data Format
-Levels are saved as JSON with the following structure:
+
+**JSON file** (contains only object data):
 ```json
 {
   "name": "custom_level",
-  "terrain": {
-    "seed": 123.456,
-    "modifications": [
-      { "index": 0, "x": 5.2, "z": 3.1, "delta": 0.05 }
-    ]
-  },
   "npcs": [
     {
       "id": "npc_12345",
@@ -128,6 +132,20 @@ Levels are saved as JSON with the following structure:
       "damage": 8,
       "xp": 25,
       "stance": "defensive"
+    }
+  ],
+  "quests": []
+}
+```
+
+**Heightmap PNG** - Grayscale image where:
+- Darker pixels = lower terrain
+- Lighter pixels = higher terrain
+- Each pixel represents a terrain vertex
+
+**Colormap PNG** - RGB color image where:
+- Each pixel color = terrain color at that vertex
+- Allows custom terrain painting and biome colors
     }
   ],
   "quests": []

@@ -456,47 +456,284 @@ export class LevelEditor {
     }
     
     /**
-     * Save current level to JSON
+     * Save current level: JSON for objects, PNGs for terrain
      */
     saveLevel(name = null) {
         if (name) {
             this.levelData.name = name;
         }
         
-        const json = JSON.stringify(this.levelData, null, 2);
+        const levelName = this.levelData.name;
         
-        // Create download link
+        // Get terrain mesh
+        const terrain = this.scene.children.find(child => 
+            child.geometry && child.geometry.type === 'PlaneGeometry'
+        );
+        
+        if (terrain) {
+            // Generate heightmap PNG (grayscale)
+            this.saveHeightmapPNG(terrain, levelName);
+            
+            // Generate colormap PNG
+            this.saveColormapPNG(terrain, levelName);
+        }
+        
+        // Save JSON with only objects data (NPCs, monsters, quests)
+        const objectsData = {
+            name: this.levelData.name,
+            npcs: this.levelData.npcs,
+            monsters: this.levelData.monsters,
+            quests: this.levelData.quests
+        };
+        
+        const json = JSON.stringify(objectsData, null, 2);
         const blob = new Blob([json], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${this.levelData.name}.json`;
+        a.download = `${levelName}.json`;
         a.click();
         URL.revokeObjectURL(url);
         
-        console.log('Level saved:', this.levelData.name);
+        console.log('Level saved:', levelName);
         return json;
     }
     
     /**
-     * Load level from JSON
+     * Save heightmap as grayscale PNG
      */
-    loadLevel(jsonData) {
-        try {
-            const data = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
-            this.levelData = data;
+    saveHeightmapPNG(terrain, levelName) {
+        const positions = terrain.geometry.attributes.position;
+        const segments = Math.sqrt(positions.count);
+        
+        // Create canvas for heightmap
+        const canvas = document.createElement('canvas');
+        canvas.width = segments;
+        canvas.height = segments;
+        const ctx = canvas.getContext('2d');
+        const imageData = ctx.createImageData(segments, segments);
+        
+        // Find min/max height for normalization
+        let minHeight = Infinity;
+        let maxHeight = -Infinity;
+        for (let i = 0; i < positions.count; i++) {
+            const y = positions.getY(i);
+            minHeight = Math.min(minHeight, y);
+            maxHeight = Math.max(maxHeight, y);
+        }
+        
+        const heightRange = maxHeight - minHeight;
+        
+        // Convert heights to grayscale pixels
+        for (let i = 0; i < positions.count; i++) {
+            const y = positions.getY(i);
+            const normalized = heightRange > 0 ? (y - minHeight) / heightRange : 0.5;
+            const gray = Math.floor(normalized * 255);
             
-            // Apply terrain modifications
-            if (data.terrain && data.terrain.seed !== undefined) {
-                this.terrainGenerator.seed = data.terrain.seed;
+            const pixelIndex = i * 4;
+            imageData.data[pixelIndex] = gray;     // R
+            imageData.data[pixelIndex + 1] = gray; // G
+            imageData.data[pixelIndex + 2] = gray; // B
+            imageData.data[pixelIndex + 3] = 255;  // A
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+        
+        // Download heightmap PNG
+        canvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${levelName}_heightmap.png`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+        
+        console.log('Heightmap saved:', `${levelName}_heightmap.png`);
+    }
+    
+    /**
+     * Save colormap as color PNG
+     */
+    saveColormapPNG(terrain, levelName) {
+        const positions = terrain.geometry.attributes.position;
+        const colors = terrain.geometry.attributes.color;
+        const segments = Math.sqrt(positions.count);
+        
+        // Create canvas for colormap
+        const canvas = document.createElement('canvas');
+        canvas.width = segments;
+        canvas.height = segments;
+        const ctx = canvas.getContext('2d');
+        const imageData = ctx.createImageData(segments, segments);
+        
+        // Convert vertex colors to pixels
+        for (let i = 0; i < positions.count; i++) {
+            const pixelIndex = i * 4;
+            
+            if (colors) {
+                imageData.data[pixelIndex] = Math.floor(colors.getX(i) * 255);     // R
+                imageData.data[pixelIndex + 1] = Math.floor(colors.getY(i) * 255); // G
+                imageData.data[pixelIndex + 2] = Math.floor(colors.getZ(i) * 255); // B
+            } else {
+                // Default green if no colors
+                imageData.data[pixelIndex] = 58;      // R
+                imageData.data[pixelIndex + 1] = 125; // G
+                imageData.data[pixelIndex + 2] = 68;  // B
+            }
+            imageData.data[pixelIndex + 3] = 255; // A
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+        
+        // Download colormap PNG
+        canvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${levelName}_colormap.png`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+        
+        console.log('Colormap saved:', `${levelName}_colormap.png`);
+    }
+    
+    /**
+     * Load level from JSON and PNG files
+     */
+    loadLevel(files) {
+        try {
+            let jsonData = null;
+            let heightmapImage = null;
+            let colormapImage = null;
+            
+            // Process files
+            if (typeof files === 'string') {
+                // Legacy support: loading just JSON
+                jsonData = JSON.parse(files);
+            } else if (files.json) {
+                // Object with json, heightmap, colormap properties
+                jsonData = files.json;
+                heightmapImage = files.heightmap;
+                colormapImage = files.colormap;
             }
             
-            console.log('Level loaded:', data.name);
+            if (jsonData) {
+                // Update level data with objects only
+                this.levelData.name = jsonData.name || 'custom_level';
+                this.levelData.npcs = jsonData.npcs || [];
+                this.levelData.monsters = jsonData.monsters || [];
+                this.levelData.quests = jsonData.quests || [];
+                
+                console.log('Level objects loaded:', jsonData.name);
+            }
+            
+            // Apply heightmap if provided
+            if (heightmapImage) {
+                this.applyHeightmapFromImage(heightmapImage);
+            }
+            
+            // Apply colormap if provided
+            if (colormapImage) {
+                this.applyColormapFromImage(colormapImage);
+            }
+            
             return true;
         } catch (error) {
             console.error('Failed to load level:', error);
             return false;
         }
+    }
+    
+    /**
+     * Apply heightmap from image
+     */
+    applyHeightmapFromImage(image) {
+        const terrain = this.scene.children.find(child => 
+            child.geometry && child.geometry.type === 'PlaneGeometry'
+        );
+        
+        if (!terrain) {
+            console.warn('No terrain found to apply heightmap');
+            return;
+        }
+        
+        const positions = terrain.geometry.attributes.position;
+        const segments = Math.sqrt(positions.count);
+        
+        // Create canvas to read image data
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(image, 0, 0);
+        const imageData = ctx.getImageData(0, 0, image.width, image.height);
+        
+        // Apply heights from grayscale values
+        const heightScale = this.terrainGenerator.heightScale || 10;
+        for (let i = 0; i < positions.count && i < imageData.data.length / 4; i++) {
+            const pixelIndex = i * 4;
+            const gray = imageData.data[pixelIndex]; // R channel (grayscale)
+            const height = (gray / 255) * heightScale;
+            positions.setY(i, height);
+        }
+        
+        positions.needsUpdate = true;
+        terrain.geometry.computeVertexNormals();
+        console.log('Heightmap applied from image');
+    }
+    
+    /**
+     * Apply colormap from image
+     */
+    applyColormapFromImage(image) {
+        const terrain = this.scene.children.find(child => 
+            child.geometry && child.geometry.type === 'PlaneGeometry'
+        );
+        
+        if (!terrain) {
+            console.warn('No terrain found to apply colormap');
+            return;
+        }
+        
+        const positions = terrain.geometry.attributes.position;
+        let colors = terrain.geometry.attributes.color;
+        
+        // Create color attribute if it doesn't exist
+        if (!colors) {
+            const colorArray = [];
+            for (let i = 0; i < positions.count; i++) {
+                colorArray.push(0, 0, 0);
+            }
+            colors = new THREE.Float32BufferAttribute(colorArray, 3);
+            terrain.geometry.setAttribute('color', colors);
+            
+            if (terrain.material && !terrain.material.vertexColors) {
+                terrain.material.vertexColors = true;
+                terrain.material.needsUpdate = true;
+            }
+        }
+        
+        // Create canvas to read image data
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(image, 0, 0);
+        const imageData = ctx.getImageData(0, 0, image.width, image.height);
+        
+        // Apply colors from image
+        for (let i = 0; i < positions.count && i < imageData.data.length / 4; i++) {
+            const pixelIndex = i * 4;
+            const r = imageData.data[pixelIndex] / 255;
+            const g = imageData.data[pixelIndex + 1] / 255;
+            const b = imageData.data[pixelIndex + 2] / 255;
+            colors.setXYZ(i, r, g, b);
+        }
+        
+        colors.needsUpdate = true;
+        console.log('Colormap applied from image');
     }
     
     /**

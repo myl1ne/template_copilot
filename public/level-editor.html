@@ -377,11 +377,13 @@
                 <label class="control-label">Level Name</label>
                 <input type="text" class="control-input" id="level-name" placeholder="my_custom_level" value="custom_level">
             </div>
-            <button class="action-btn" id="save-level">💾 Save Level</button>
+            <button class="action-btn" id="save-level">💾 Save Level (3 files)</button>
+            <p class="info-text" style="font-size: 11px; margin: 5px 0;">Saves: .json (objects), _heightmap.png, _colormap.png</p>
             <div class="file-input-wrapper">
-                <input type="file" id="load-level-input" accept=".json">
-                <label for="load-level-input" class="file-input-label">📂 Load Level</label>
+                <input type="file" id="load-level-input" accept=".json,.png" multiple>
+                <label for="load-level-input" class="file-input-label">📂 Load Level Files</label>
             </div>
+            <p class="info-text" style="font-size: 11px; margin: 5px 0;">Select all 3 files: .json, _heightmap.png, _colormap.png</p>
             <button class="action-btn danger" id="clear-level">🗑️ Clear Level</button>
         </div>
         

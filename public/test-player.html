@@ -119,6 +119,9 @@
             // Position character
             characterGroup.position.set(0, 0, 0);
             
+            const mixer = playerState.getMixer();
+            const animations = playerState.getAnimations();
+            
             statusDiv.innerHTML = `
                 <strong style="color: #4ade80;">✓ Player loaded with Baelin model</strong><br>
                 Equipment:<br>
@@ -128,23 +131,32 @@
                 <br>
                 Model details:<br>
                 - Children: ${characterGroup.children.length}<br>
-                - Position: (${characterGroup.position.x}, ${characterGroup.position.y}, ${characterGroup.position.z})
+                - Position: (${characterGroup.position.x}, ${characterGroup.position.y}, ${characterGroup.position.z})<br>
+                <br>
+                Animations:<br>
+                - Mixer: ${mixer ? '✓' : '✗'}<br>
+                - Idle: ${animations.idle ? '✓' : '✗'}<br>
+                - Walking: ${animations.walking ? '✓' : '✗'}<br>
+                - Running: ${animations.running ? '✓' : '✗'}<br>
+                <br>
+                <button onclick="switchAnim('idle')" style="margin: 2px;">Idle</button>
+                <button onclick="switchAnim('walking')" style="margin: 2px;">Walk</button>
+                <button onclick="switchAnim('running')" style="margin: 2px;">Run</button>
             `;
             
-            // Setup animation if available
-            let mixer = null;
-            characterGroup.traverse((child) => {
-                if (child.isSkinnedMesh && child.skeleton) {
-                    console.log('Found skinned mesh with skeleton');
-                    // Try to find and play idle animation
-                    if (characterLoader.getAnimation('baelin_idle')) {
-                        mixer = new THREE.AnimationMixer(child.parent);
-                        const action = mixer.clipAction(characterLoader.getAnimation('baelin_idle'));
-                        action.play();
-                        console.log('Playing idle animation');
+            // Expose animation switching
+            window.switchAnim = (state) => {
+                const fadeDuration = 0.3;
+                Object.values(animations).forEach(action => {
+                    if (action && action.isRunning()) {
+                        action.fadeOut(fadeDuration);
                     }
+                });
+                
+                if (animations[state]) {
+                    animations[state].reset().fadeIn(fadeDuration).play();
                 }
-            });
+            };
             
             // Animation loop
             const clock = new THREE.Clock();

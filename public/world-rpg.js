@@ -775,10 +775,16 @@ function monsterAttackPlayer(monster) {
     updatePlayerItemsInTradeUI
   );
 
+  // Get mixer and animations from playerState if using FBX
+  const mixer = playerState.getMixer();
+  const animations = playerState.getAnimations();
+  
   animationController = new AnimationController(
     player,
     equipmentVisuals,
-    (state) => uiManager.showAnimationLabel(state)
+    (state) => uiManager.showAnimationLabel(state),
+    mixer,
+    animations
   );
 
   // Initialize merchant inventory after loot system is available

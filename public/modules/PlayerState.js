@@ -19,6 +19,8 @@ export class PlayerState {
     this.characterLoader = characterLoader;
     this.characterModel = null;
     this.bones = {};
+    this.mixer = null;
+    this.animations = {};
   }
 
   /**
@@ -99,6 +101,26 @@ export class PlayerState {
     this.bones.rightHand = this.findBone(baelinModel, 'RightHand');
     this.bones.leftHand = this.findBone(baelinModel, 'LeftHand');
     this.bones.head = this.findBone(baelinModel, 'Head');
+    
+    // Setup animation mixer
+    this.mixer = new THREE.AnimationMixer(baelinModel);
+    
+    // Get animations from character loader
+    const idleAnim = this.characterLoader.getAnimation('baelin_idle');
+    const walkAnim = this.characterLoader.getAnimation('baelin_walk');
+    const runAnim = this.characterLoader.getAnimation('baelin_run');
+    
+    // Create animation actions
+    if (idleAnim) {
+      this.animations.idle = this.mixer.clipAction(idleAnim);
+      this.animations.idle.play();
+    }
+    if (walkAnim) {
+      this.animations.walking = this.mixer.clipAction(walkAnim);
+    }
+    if (runAnim) {
+      this.animations.running = this.mixer.clipAction(runAnim);
+    }
     
     // Create and attach equipment
     this.createEquipment();
@@ -297,5 +319,19 @@ export class PlayerState {
    */
   getEquipmentVisuals() {
     return this.equipmentVisuals;
+  }
+
+  /**
+   * Get animation mixer
+   */
+  getMixer() {
+    return this.mixer;
+  }
+
+  /**
+   * Get animations
+   */
+  getAnimations() {
+    return this.animations;
   }
 }

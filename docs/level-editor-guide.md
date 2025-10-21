@@ -128,6 +128,7 @@ Levels are saved as JSON with the following structure:
 ## Keyboard Shortcuts
 
 ### Standalone Editor
+- **WASD / Arrow Keys**: Move camera around the scene
 - **E**: Toggle editor on/off
 - **Left Click**: Place/Edit (depending on mode)
 - **Shift + Left Click**: Lower terrain (Terrain mode only)

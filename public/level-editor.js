@@ -247,6 +247,15 @@ function updateLevelInfo() {
     document.getElementById('quest-count').textContent = levelData.quests.length;
 }
 
+// ===== KEYBOARD CONTROLS FOR CAMERA MOVEMENT =====
+const keys = {};
+window.addEventListener('keydown', (e) => {
+    keys[e.key.toLowerCase()] = true;
+});
+window.addEventListener('keyup', (e) => {
+    keys[e.key.toLowerCase()] = false;
+});
+
 // ===== ANIMATION LOOP =====
 let lastTime = 0;
 function animate(time) {
@@ -254,6 +263,47 @@ function animate(time) {
     
     const deltaTime = (time - lastTime) / 1000;
     lastTime = time;
+    
+    // Camera movement with WASD keys
+    const moveSpeed = 10; // Units per second
+    const forward = keys['w'] || keys['arrowup'];
+    const backward = keys['s'] || keys['arrowdown'];
+    const left = keys['a'] || keys['arrowleft'];
+    const right = keys['d'] || keys['arrowright'];
+    
+    if (forward || backward || left || right) {
+        const cameraAngle = cameraController.getHorizontalAngle();
+        let moveX = 0;
+        let moveZ = 0;
+        
+        if (forward) {
+            moveX -= Math.sin(cameraAngle);
+            moveZ -= Math.cos(cameraAngle);
+        }
+        if (backward) {
+            moveX += Math.sin(cameraAngle);
+            moveZ += Math.cos(cameraAngle);
+        }
+        if (left) {
+            moveX -= Math.cos(cameraAngle);
+            moveZ += Math.sin(cameraAngle);
+        }
+        if (right) {
+            moveX += Math.cos(cameraAngle);
+            moveZ -= Math.sin(cameraAngle);
+        }
+        
+        // Normalize movement vector
+        const length = Math.sqrt(moveX * moveX + moveZ * moveZ);
+        if (length > 0) {
+            moveX /= length;
+            moveZ /= length;
+        }
+        
+        // Move the dummy character group (camera follows it)
+        dummyCharacterGroup.position.x += moveX * moveSpeed * deltaTime;
+        dummyCharacterGroup.position.z += moveZ * moveSpeed * deltaTime;
+    }
     
     // Update camera controller
     cameraController.update();

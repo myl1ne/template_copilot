@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baelin Model Inspector</title>
+    <style>
+        body { margin: 0; font-family: monospace; }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #0f0;
+            padding: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.5;
+            z-index: 100;
+            max-width: 500px;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">Loading Baelin model...</div>
+    <div id="canvas-container"></div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
+        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+        // Setup scene
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1a2e);
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 2, 5);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.target.set(0, 1, 0);
+        controls.update();
+        
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 5);
+        scene.add(dirLight);
+        
+        // Grid
+        const gridHelper = new THREE.GridHelper(20, 20);
+        scene.add(gridHelper);
+        
+        // Load Baelin
+        const fbxLoader = new FBXLoader();
+        const infoDiv = document.getElementById('info');
+        
+        fbxLoader.load('/assets/characters/Baelin.fbx', (model) => {
+            let info = '<h3>Baelin Model Inspection</h3>';
+            
+            // Calculate and apply scale
+            const bbox = new THREE.Box3().setFromObject(model);
+            const size = bbox.getSize(new THREE.Vector3());
+            const targetHeight = 2.0;
+            const scale = targetHeight / size.y;
+            model.scale.set(scale, scale, scale);
+            
+            info += `<strong>Dimensions:</strong><br>`;
+            info += `Original Height: ${size.y.toFixed(2)}<br>`;
+            info += `Target Height: ${targetHeight}<br>`;
+            info += `Scale Applied: ${scale.toFixed(6)}<br><br>`;
+            
+            // Animations
+            info += `<strong>Animations (${model.animations?.length || 0}):</strong><br>`;
+            if (model.animations && model.animations.length > 0) {
+                model.animations.forEach((anim, i) => {
+                    info += `${i + 1}. ${anim.name} (${anim.duration.toFixed(2)}s)<br>`;
+                });
+            }
+            info += '<br>';
+            
+            // Find bones
+            const bones = [];
+            let skinnedMeshCount = 0;
+            
+            model.traverse((child) => {
+                if (child.isBone) {
+                    bones.push({
+                        name: child.name,
+                        position: child.position.clone(),
+                        worldPosition: new THREE.Vector3(),
+                        parent: child.parent?.name || 'root'
+                    });
+                    child.getWorldPosition(bones[bones.length - 1].worldPosition);
+                }
+                if (child.isSkinnedMesh) {
+                    skinnedMeshCount++;
+                    child.frustumCulled = false;
+                }
+            });
+            
+            info += `<strong>Skeleton Info:</strong><br>`;
+            info += `Total Bones: ${bones.length}<br>`;
+            info += `SkinnedMeshes: ${skinnedMeshCount}<br><br>`;
+            
+            // Key bones for equipment
+            info += `<strong>Key Bones for Equipment:</strong><br>`;
+            const keyPatterns = [
+                { pattern: /hand|palm/i, label: '🗡️ HANDS' },
+                { pattern: /head/i, label: '🪖 HEAD' },
+                { pattern: /spine|chest/i, label: '🛡️ TORSO' }
+            ];
+            
+            keyPatterns.forEach(({ pattern, label }) => {
+                info += `<br><strong>${label}</strong><br>`;
+                const matching = bones.filter(b => pattern.test(b.name));
+                if (matching.length > 0) {
+                    matching.forEach(bone => {
+                        const pos = bone.worldPosition;
+                        info += `• ${bone.name}<br>`;
+                        info += `  Parent: ${bone.parent}<br>`;
+                        info += `  World Pos: (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}, ${pos.z.toFixed(2)})<br>`;
+                        
+                        // Add visual marker
+                        const marker = new THREE.Mesh(
+                            new THREE.SphereGeometry(0.05, 8, 8),
+                            new THREE.MeshBasicMaterial({ color: 0xff0000 })
+                        );
+                        marker.position.copy(bone.worldPosition);
+                        scene.add(marker);
+                    });
+                } else {
+                    info += `  No bones found<br>`;
+                }
+            });
+            
+            info += '<br><strong>All Bones:</strong><br>';
+            info += '<div style="max-height: 200px; overflow-y: auto; font-size: 10px;">';
+            bones.forEach((bone, i) => {
+                info += `${i}: ${bone.name}<br>`;
+            });
+            info += '</div>';
+            
+            infoDiv.innerHTML = info;
+            
+            model.position.y = 0;
+            scene.add(model);
+            
+            // Setup animation if available
+            if (model.animations && model.animations.length > 0) {
+                const mixer = new THREE.AnimationMixer(model);
+                const action = mixer.clipAction(model.animations[0]);
+                action.play();
+                
+                function animate() {
+                    requestAnimationFrame(animate);
+                    const delta = 0.01;
+                    mixer.update(delta);
+                    controls.update();
+                    renderer.render(scene, camera);
+                }
+                animate();
+            } else {
+                function animate() {
+                    requestAnimationFrame(animate);
+                    controls.update();
+                    renderer.render(scene, camera);
+                }
+                animate();
+            }
+        }, undefined, (error) => {
+            infoDiv.innerHTML = '<h3>Error loading model:</h3>' + error;
+            console.error(error);
+        });
+        
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>

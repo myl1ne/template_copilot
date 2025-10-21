@@ -20,7 +20,11 @@ const npcFactory = new NPCFactory(characterLoader);
 const monsterFactory = new MonsterFactory(scene);
 
 // ===== INITIALIZE CAMERA CONTROLLER =====
-const cameraController = new CameraController(camera, renderer.domElement);
+// Create a dummy character group for camera controller (it's not used in editor mode)
+const dummyCharacterGroup = new THREE.Group();
+dummyCharacterGroup.position.set(0, 0, 0);
+scene.add(dummyCharacterGroup);
+const cameraController = new CameraController(camera, renderer, dummyCharacterGroup);
 
 // ===== INITIALIZE LEVEL EDITOR =====
 const levelEditor = new LevelEditor(

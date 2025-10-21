@@ -32,6 +32,15 @@ Edit the height of terrain using brush-based tools.
 - Use larger brush sizes for creating mountains and valleys
 - Use smaller brush sizes for fine details
 - Adjust strength for gradual or dramatic changes
+- Enable Paint Mode to paint terrain colors instead of modifying height
+- Use the color picker to select custom terrain colors
+
+**Paint Mode:**
+When Paint Mode is enabled, clicking and dragging will paint the terrain with the selected color instead of changing its height. This allows you to:
+- Create colored paths or regions
+- Paint biome transitions
+- Add visual variety to your terrain
+- Mark special areas with different colors
 
 ### 👤 NPC Placement
 Place non-player characters in your level.
@@ -129,9 +138,11 @@ Levels are saved as JSON with the following structure:
 
 ### Standalone Editor
 - **WASD / Arrow Keys**: Move camera around the scene
+- **Space**: Move camera up
+- **Shift** (when not clicking): Move camera down
 - **E**: Toggle editor on/off
 - **Left Click**: Place/Edit (depending on mode)
-- **Shift + Left Click**: Lower terrain (Terrain mode only)
+- **Shift + Left Click**: Lower terrain (Terrain mode only) or paint color (Paint mode)
 - **Right Click**: Rotate camera
 - **Mouse Wheel**: Zoom in/out
 

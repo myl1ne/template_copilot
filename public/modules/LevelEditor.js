@@ -19,6 +19,8 @@ export class LevelEditor {
         this.brushStrength = 0.5;
         this.selectedNPCType = null;
         this.selectedMonsterType = null;
+        this.paintMode = false;
+        this.paintColor = new THREE.Color(0x3a7d44); // Default green
         
         // Track placed objects for saving/loading
         this.placedNPCs = [];
@@ -198,47 +200,112 @@ export class LevelEditor {
         
         if (intersects.length > 0) {
             const point = intersects[0].point;
-            const positions = terrain.geometry.attributes.position;
             
-            // Modify vertices within brush radius
-            for (let i = 0; i < positions.count; i++) {
-                const x = positions.getX(i);
-                const z = positions.getZ(i);
-                const distance = Math.sqrt((x - point.x) ** 2 + (z - point.z) ** 2);
+            if (this.paintMode) {
+                // Paint mode - change vertex colors
+                this.paintTerrainColor(terrain, point);
+            } else {
+                // Height mode - modify terrain height
+                const positions = terrain.geometry.attributes.position;
                 
-                if (distance < this.brushSize) {
-                    const falloff = 1 - (distance / this.brushSize);
-                    const delta = this.brushStrength * falloff * (lower ? -0.1 : 0.1);
-                    const currentY = positions.getY(i);
-                    positions.setY(i, currentY + delta);
+                // Modify vertices within brush radius
+                for (let i = 0; i < positions.count; i++) {
+                    const x = positions.getX(i);
+                    const z = positions.getZ(i);
+                    const distance = Math.sqrt((x - point.x) ** 2 + (z - point.z) ** 2);
                     
-                    // Track modification for saving
-                    this.levelData.terrain.modifications.push({
-                        index: i,
-                        x: x,
-                        z: z,
-                        delta: delta
-                    });
+                    if (distance < this.brushSize) {
+                        const falloff = 1 - (distance / this.brushSize);
+                        const delta = this.brushStrength * falloff * (lower ? -0.1 : 0.1);
+                        const currentY = positions.getY(i);
+                        positions.setY(i, currentY + delta);
+                        
+                        // Track modification for saving
+                        this.levelData.terrain.modifications.push({
+                            index: i,
+                            x: x,
+                            z: z,
+                            delta: delta
+                        });
+                    }
                 }
+                
+                positions.needsUpdate = true;
+                terrain.geometry.computeVertexNormals();
             }
-            
-            positions.needsUpdate = true;
-            terrain.geometry.computeVertexNormals();
         }
+    }
+    
+    /**
+     * Paint terrain color at brush position
+     */
+    paintTerrainColor(terrain, point) {
+        const positions = terrain.geometry.attributes.position;
+        let colors = terrain.geometry.attributes.color;
+        
+        // If no color attribute exists, create one
+        if (!colors) {
+            const colorArray = [];
+            for (let i = 0; i < positions.count; i++) {
+                // Default to existing vertex color or green
+                colorArray.push(0.23, 0.49, 0.27); // Default green color
+            }
+            colors = new THREE.Float32BufferAttribute(colorArray, 3);
+            terrain.geometry.setAttribute('color', colors);
+            
+            // Make sure material uses vertex colors
+            if (terrain.material && !terrain.material.vertexColors) {
+                terrain.material.vertexColors = true;
+                terrain.material.needsUpdate = true;
+            }
+        }
+        
+        // Paint vertices within brush radius
+        for (let i = 0; i < positions.count; i++) {
+            const x = positions.getX(i);
+            const z = positions.getZ(i);
+            const distance = Math.sqrt((x - point.x) ** 2 + (z - point.z) ** 2);
+            
+            if (distance < this.brushSize) {
+                const falloff = 1 - (distance / this.brushSize);
+                
+                // Blend current color with paint color based on falloff and strength
+                const currentR = colors.getX(i);
+                const currentG = colors.getY(i);
+                const currentB = colors.getZ(i);
+                
+                const blendFactor = this.brushStrength * falloff * 0.1;
+                
+                colors.setXYZ(
+                    i,
+                    currentR + (this.paintColor.r - currentR) * blendFactor,
+                    currentG + (this.paintColor.g - currentG) * blendFactor,
+                    currentB + (this.paintColor.b - currentB) * blendFactor
+                );
+            }
+        }
+        
+        colors.needsUpdate = true;
     }
     
     /**
      * Place an NPC at brush position
      */
     placeNPC() {
-        if (!this.selectedNPCType) return;
+        if (!this.selectedNPCType) {
+            console.warn('No NPC type selected');
+            return;
+        }
         
         this.raycaster.setFromCamera(this.mouse, this.camera);
         const terrain = this.scene.children.find(child => 
             child.geometry && child.geometry.type === 'PlaneGeometry'
         );
         
-        if (!terrain) return;
+        if (!terrain) {
+            console.warn('No terrain found');
+            return;
+        }
         
         const intersects = this.raycaster.intersectObject(terrain);
         
@@ -256,6 +323,9 @@ export class LevelEditor {
             
             this.levelData.npcs.push(npcData);
             console.log('NPC placed:', npcData);
+            
+            // Add visual marker for the NPC
+            this.addNPCMarker(point, npcData.name);
         }
     }
     
@@ -263,14 +333,20 @@ export class LevelEditor {
      * Place a monster at brush position
      */
     placeMonster() {
-        if (!this.selectedMonsterType) return;
+        if (!this.selectedMonsterType) {
+            console.warn('No monster type selected');
+            return;
+        }
         
         this.raycaster.setFromCamera(this.mouse, this.camera);
         const terrain = this.scene.children.find(child => 
             child.geometry && child.geometry.type === 'PlaneGeometry'
         );
         
-        if (!terrain) return;
+        if (!terrain) {
+            console.warn('No terrain found');
+            return;
+        }
         
         const intersects = this.raycaster.intersectObject(terrain);
         
@@ -289,7 +365,34 @@ export class LevelEditor {
             
             this.levelData.monsters.push(monsterData);
             console.log('Monster placed:', monsterData);
+            
+            // Add visual marker for the monster
+            this.addMonsterMarker(point, monsterData.type);
         }
+    }
+    
+    /**
+     * Add visual marker for placed monster
+     */
+    addMonsterMarker(position, type) {
+        const geometry = new THREE.ConeGeometry(0.5, 1.5, 8);
+        const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const marker = new THREE.Mesh(geometry, material);
+        marker.position.set(position.x, position.y + 1, position.z);
+        marker.userData.isMonsterMarker = true;
+        this.scene.add(marker);
+    }
+    
+    /**
+     * Add visual marker for placed NPC
+     */
+    addNPCMarker(position, name) {
+        const geometry = new THREE.ConeGeometry(0.5, 1.5, 8);
+        const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+        const marker = new THREE.Mesh(geometry, material);
+        marker.position.set(position.x, position.y + 1, position.z);
+        marker.userData.isNPCMarker = true;
+        this.scene.add(marker);
     }
     
     /**
@@ -320,6 +423,22 @@ export class LevelEditor {
      */
     setBrushStrength(strength) {
         this.brushStrength = strength;
+    }
+    
+    /**
+     * Set paint mode
+     */
+    setPaintMode(enabled) {
+        this.paintMode = enabled;
+        console.log('Paint mode:', enabled);
+    }
+    
+    /**
+     * Set paint color
+     */
+    setPaintColor(colorHex) {
+        this.paintColor.setStyle(colorHex);
+        console.log('Paint color:', colorHex);
     }
     
     /**

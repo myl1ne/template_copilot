@@ -294,7 +294,17 @@
                 <input type="range" class="control-input" id="brush-strength" min="0.1" max="2" value="0.5" step="0.1">
                 <span id="brush-strength-value" style="color: #4ade80;">0.5</span>
             </div>
-            <p class="info-text">💡 Click and drag to raise terrain. Hold Shift to lower.</p>
+            <div class="control-group">
+                <label class="control-label">Paint Color</label>
+                <input type="color" class="control-input" id="terrain-color" value="#3a7d44" style="height: 40px; cursor: pointer;">
+            </div>
+            <div class="control-group">
+                <label class="control-label">
+                    <input type="checkbox" id="paint-mode" style="margin-right: 8px;">
+                    Paint Mode (Color instead of Height)
+                </label>
+            </div>
+            <p class="info-text">💡 Click and drag to raise terrain. Hold Shift to lower. Enable Paint Mode to paint colors.</p>
         </div>
         
         <!-- NPC Controls -->
@@ -393,6 +403,7 @@
     <div id="help-panel">
         <h4>⌨️ Editor Controls</h4>
         <p><strong>WASD / Arrow Keys</strong> - Move Camera</p>
+        <p><strong>Space / Shift</strong> - Move Camera Up/Down</p>
         <p><strong>Left Click</strong> - Place/Edit</p>
         <p><strong>Shift + Click</strong> - Lower Terrain</p>
         <p><strong>Right Click</strong> - Rotate Camera</p>

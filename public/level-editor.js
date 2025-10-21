@@ -124,6 +124,19 @@ brushStrengthInput.addEventListener('input', (e) => {
     brushStrengthValue.textContent = strength.toFixed(1);
 });
 
+// Paint mode checkbox
+const paintModeCheckbox = document.getElementById('paint-mode');
+paintModeCheckbox.addEventListener('change', (e) => {
+    levelEditor.setPaintMode(e.target.checked);
+    showStatus(e.target.checked ? 'Paint Mode Enabled' : 'Height Mode Enabled');
+});
+
+// Terrain color picker
+const terrainColorInput = document.getElementById('terrain-color');
+terrainColorInput.addEventListener('input', (e) => {
+    levelEditor.setPaintColor(e.target.value);
+});
+
 // NPC type selection
 npcTypeSelect.addEventListener('change', (e) => {
     const type = e.target.value;
@@ -270,11 +283,17 @@ function animate(time) {
     const backward = keys['s'] || keys['arrowdown'];
     const left = keys['a'] || keys['arrowleft'];
     const right = keys['d'] || keys['arrowright'];
+    const up = keys[' ']; // Space key - Move camera up
+    const down = keys['shift']; // Shift key - Move camera down (when not clicking)
     
-    if (forward || backward || left || right) {
+    // Only allow vertical movement if mouse is not down (to avoid conflict with terrain lowering)
+    const allowVertical = !levelEditor || !levelEditor.enabled || !document.querySelector('canvas:hover');
+    
+    if (forward || backward || left || right || (up && allowVertical) || (down && allowVertical && !keys['click'])) {
         const cameraAngle = cameraController.getHorizontalAngle();
         let moveX = 0;
         let moveZ = 0;
+        let moveY = 0;
         
         if (forward) {
             moveX -= Math.sin(cameraAngle);
@@ -292,17 +311,24 @@ function animate(time) {
             moveX += Math.cos(cameraAngle);
             moveZ -= Math.sin(cameraAngle);
         }
+        if (up && allowVertical) {
+            moveY += 1;
+        }
+        if (down && allowVertical) {
+            moveY -= 1;
+        }
         
-        // Normalize movement vector
-        const length = Math.sqrt(moveX * moveX + moveZ * moveZ);
-        if (length > 0) {
-            moveX /= length;
-            moveZ /= length;
+        // Normalize horizontal movement vector
+        const lengthXZ = Math.sqrt(moveX * moveX + moveZ * moveZ);
+        if (lengthXZ > 0) {
+            moveX /= lengthXZ;
+            moveZ /= lengthXZ;
         }
         
         // Move the dummy character group (camera follows it)
         dummyCharacterGroup.position.x += moveX * moveSpeed * deltaTime;
         dummyCharacterGroup.position.z += moveZ * moveSpeed * deltaTime;
+        dummyCharacterGroup.position.y += moveY * moveSpeed * deltaTime;
     }
     
     // Update camera controller

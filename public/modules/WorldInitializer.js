@@ -343,6 +343,66 @@ export class WorldInitializer {
   }
 
   /**
+   * Create troll swamp area
+   */
+  createTrollSwamp(updateQuestProgressFn) {
+    const trollSwampCenter = { x: 35, z: -30 };
+    
+    // Add 2 trolls
+    for (let i = 0; i < 2; i++) {
+      const angle = (i / 2) * Math.PI * 2;
+      const x = trollSwampCenter.x + Math.cos(angle) * 5;
+      const z = trollSwampCenter.z + Math.sin(angle) * 5;
+      const troll = this.monsterFactory.createTroll(x, z, updateQuestProgressFn);
+      this.positionMonsterOnTerrain(troll);
+      this.monsters.push(troll);
+      this.environmentObjects.push(troll);
+    }
+    
+    const trollSign = this.environmentFactory.createSign(
+      trollSwampCenter.x + 7,
+      trollSwampCenter.z,
+      'Troll Swamp - Danger!'
+    );
+    if (this.terrainGenerator && trollSign.mesh) {
+      const signHeight = this.terrainGenerator.getHeightAt(trollSign.position.x, trollSign.position.z);
+      trollSign.mesh.position.y = signHeight;
+      trollSign.position.y = signHeight;
+    }
+    this.environmentObjects.push(trollSign);
+  }
+
+  /**
+   * Create bat cave area
+   */
+  createBatCave(updateQuestProgressFn) {
+    const batCaveCenter = { x: -35, z: 35 };
+    
+    // Add 4 bats in a cluster
+    for (let i = 0; i < 4; i++) {
+      const angle = (i / 4) * Math.PI * 2;
+      const x = batCaveCenter.x + Math.cos(angle) * 4;
+      const z = batCaveCenter.z + Math.sin(angle) * 4;
+      const bat = this.monsterFactory.createBat(x, z, updateQuestProgressFn);
+      this.positionMonsterOnTerrain(bat);
+      this.monsters.push(bat);
+      this.environmentObjects.push(bat);
+    }
+    
+    const batSign = this.environmentFactory.createSign(
+      batCaveCenter.x + 6,
+      batCaveCenter.z,
+      'Bat Cave'
+    );
+    if (this.terrainGenerator && batSign.mesh) {
+      const signHeight = this.terrainGenerator.getHeightAt(batSign.position.x, batSign.position.z);
+      batSign.mesh.position.y = signHeight;
+      batSign.position.y = signHeight;
+    }
+    this.environmentObjects.push(batSign);
+  }
+
+  /**
    * Initialize the complete world
    * @param {Object} inventory - Inventory system
    * @param {Function} updateQuestProgressFn - Function to update quest progress
@@ -355,6 +415,8 @@ export class WorldInitializer {
     this.createSkeletonGraveyard(updateQuestProgressFn);
     this.createSpiderCave(updateQuestProgressFn);
     this.createWolfPack(updateQuestProgressFn);
+    this.createTrollSwamp(updateQuestProgressFn);
+    this.createBatCave(updateQuestProgressFn);
   }
 
   /**

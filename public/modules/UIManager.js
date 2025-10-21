@@ -361,4 +361,168 @@ export class UIManager {
       }
     }
   }
+
+  /**
+   * Update bestiary UI
+   * @param {Object} bestiarySystem - BestiarySystem instance
+   */
+  updateBestiaryUI(bestiarySystem) {
+    const bestiaryPanel = document.getElementById('bestiary-panel');
+    if (!bestiaryPanel) return;
+
+    const stats = bestiarySystem.getStats();
+    const allMonsters = bestiarySystem.getAllMonsters();
+
+    // Update stats header
+    document.getElementById('bestiary-completion').textContent = `${stats.discovered} / ${stats.totalMonsters}`;
+    document.getElementById('bestiary-percentage').textContent = `${stats.completion}%`;
+    document.getElementById('bestiary-kills').textContent = stats.totalKills;
+
+    // Update monster list
+    const monsterList = document.getElementById('bestiary-monster-list');
+    monsterList.innerHTML = '';
+
+    allMonsters.forEach(monster => {
+      const monsterCard = document.createElement('div');
+      monsterCard.className = `bestiary-monster-card ${monster.discovered ? 'discovered' : 'undiscovered'}`;
+      
+      if (monster.discovered) {
+        monsterCard.innerHTML = `
+          <div class="monster-icon">${monster.icon}</div>
+          <div class="monster-info">
+            <div class="monster-name" style="color: ${monster.difficultyColor}">
+              ${monster.name} ${monster.isBoss ? '👑' : ''}
+            </div>
+            <div class="monster-stats">
+              <span class="stat">❤️ ${monster.hp} HP</span>
+              <span class="stat">⚔️ ${monster.damage} DMG</span>
+              <span class="stat">✨ ${monster.xp} XP</span>
+            </div>
+            <div class="monster-stance">Stance: ${monster.stance}</div>
+            <div class="monster-difficulty" style="color: ${monster.difficultyColor}">
+              Difficulty: ${monster.difficulty}
+            </div>
+          </div>
+          <div class="monster-actions">
+            <button class="view-details-btn" onclick="showMonsterDetails('${monster.type}')">
+              📖 Details
+            </button>
+            <div class="monster-count">
+              <div>Encounters: ${monster.encounters}</div>
+              <div>Kills: ${monster.kills}</div>
+            </div>
+          </div>
+        `;
+      } else {
+        monsterCard.innerHTML = `
+          <div class="monster-icon">❓</div>
+          <div class="monster-info">
+            <div class="monster-name" style="color: #64748b">
+              Unknown Monster
+            </div>
+            <div class="monster-stats" style="color: #64748b">
+              <span>Not yet discovered</span>
+            </div>
+          </div>
+        `;
+      }
+
+      monsterList.appendChild(monsterCard);
+    });
+  }
+
+  /**
+   * Show monster details modal
+   * @param {Object} monsterData - Monster data
+   */
+  showMonsterDetails(monsterData) {
+    const detailsPanel = document.getElementById('monster-details-panel');
+    if (!detailsPanel || !monsterData) return;
+
+    detailsPanel.innerHTML = `
+      <div class="details-header">
+        <div class="details-icon">${monsterData.icon}</div>
+        <div class="details-title">
+          <h2 style="color: ${monsterData.difficultyColor}">
+            ${monsterData.name} ${monsterData.isBoss ? '👑' : ''}
+          </h2>
+          <div style="color: ${monsterData.difficultyColor}; font-size: 14px;">
+            ${monsterData.difficulty}
+          </div>
+        </div>
+      </div>
+      
+      <div class="details-section">
+        <h3>📊 Statistics</h3>
+        <div class="stat-grid">
+          <div class="stat-item">
+            <span class="stat-label">Health</span>
+            <span class="stat-value">❤️ ${monsterData.hp} HP</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Damage</span>
+            <span class="stat-value">⚔️ ${monsterData.damage}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Experience</span>
+            <span class="stat-value">✨ ${monsterData.xp} XP</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Stance</span>
+            <span class="stat-value">${monsterData.stance}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="details-section">
+        <h3>📖 Lore</h3>
+        <p class="lore-text">${monsterData.lore}</p>
+      </div>
+
+      <div class="details-section">
+        <h3>🗺️ Habitat</h3>
+        <p class="habitat-text">${monsterData.habitat}</p>
+      </div>
+
+      <div class="details-section">
+        <h3>⚡ Weakness</h3>
+        <p class="weakness-text">${monsterData.weakness}</p>
+      </div>
+
+      <div class="details-section">
+        <h3>💎 Drops</h3>
+        <div class="drops-grid">
+          ${monsterData.drops.map(drop => `
+            <div class="drop-item">
+              <div class="drop-icon">${drop.icon}</div>
+              <div class="drop-info">
+                <div class="drop-name">${drop.item}</div>
+                <div class="drop-chance">${drop.chance}% chance</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="details-section">
+        <h3>📈 Your Record</h3>
+        <div class="record-stats">
+          <div class="record-item">
+            <span>Encounters:</span>
+            <span class="record-value">${monsterData.encounters || 0}</span>
+          </div>
+          <div class="record-item">
+            <span>Kills:</span>
+            <span class="record-value">${monsterData.kills || 0}</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="close-details-btn" onclick="closeMonsterDetails()">
+        Close
+      </button>
+    `;
+
+    detailsPanel.classList.add('show');
+  }
 }

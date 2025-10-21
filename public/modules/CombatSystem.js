@@ -156,7 +156,7 @@ export class CombatSystem {
    * @param {Object} LootSystem - Loot system
    * @returns {Object|null} - Attack result or null if no target
    */
-  performAttack(player, environmentObjects, showMonsterHealthBarFn, hideMonsterHealthBarFn, updateUIFn, inventory, LootSystem) {
+  performAttack(player, environmentObjects, showMonsterHealthBarFn, hideMonsterHealthBarFn, updateUIFn, inventory, LootSystem, bestiarySystem = null) {
     const currentTime = Date.now() / 1000;
     if (currentTime - this.lastAttackTime < this.attackCooldown) {
       const remaining = Math.ceil(this.attackCooldown - (currentTime - this.lastAttackTime));
@@ -170,8 +170,9 @@ export class CombatSystem {
     
     for (const obj of environmentObjects) {
       if ((obj.type === 'goblin' || obj.type === 'skeleton' || obj.type === 'spider' || 
-           obj.type === 'wolf' || obj.type === 'goblin boss' || obj.type === 'skeleton lord' || 
-           obj.type === 'dire wolf') && obj.alive) {
+           obj.type === 'wolf' || obj.type === 'troll' || obj.type === 'bat' ||
+           obj.type === 'goblin boss' || obj.type === 'skeleton lord' || 
+           obj.type === 'dire wolf' || obj.type === 'goblin chief') && obj.alive) {
         const dx = obj.position.x - player.position.x;
         const dz = obj.position.z - player.position.z;
         const dist = Math.sqrt(dx * dx + dz * dz);
@@ -184,6 +185,12 @@ export class CombatSystem {
     
     if (nearestMonster) {
       this.lastAttackTime = currentTime;
+      
+      // Track monster encounter in bestiary
+      if (bestiarySystem) {
+        bestiarySystem.discoverMonster(nearestMonster.type);
+      }
+      
       const result = nearestMonster.interact();
       this.addMessage(result.message, result.type || 'info');
       
@@ -196,6 +203,11 @@ export class CombatSystem {
       // Handle defeat and loot
       if (result.defeated) {
         hideMonsterHealthBarFn();
+        
+        // Track monster kill in bestiary
+        if (bestiarySystem) {
+          bestiarySystem.recordKill(nearestMonster.type);
+        }
         
         // Grant XP based on monster type
         const xpReward = GameConfig.xpRewards[nearestMonster.type] || 50;

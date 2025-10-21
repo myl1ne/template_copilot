@@ -861,6 +861,252 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Bestiary Styles */
+        #bestiary-panel.show {
+            display: block !important;
+        }
+
+        .bestiary-monster-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .bestiary-monster-card:hover {
+            background: rgba(234, 179, 8, 0.1);
+            border-color: #eab308;
+            transform: translateX(5px);
+        }
+
+        .bestiary-monster-card.undiscovered {
+            opacity: 0.4;
+        }
+
+        .bestiary-monster-card.undiscovered:hover {
+            background: rgba(100, 116, 139, 0.1);
+            border-color: #64748b;
+        }
+
+        .monster-icon {
+            font-size: 48px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .monster-info {
+            flex: 1;
+        }
+
+        .monster-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .monster-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+            color: #cbd5e1;
+            margin-bottom: 5px;
+        }
+
+        .monster-stats .stat {
+            display: inline-block;
+        }
+
+        .monster-stance {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 3px;
+        }
+
+        .monster-difficulty {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .monster-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .view-details-btn {
+            background: #eab308;
+            color: black;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .view-details-btn:hover {
+            background: #ca8a04;
+            transform: scale(1.05);
+        }
+
+        .monster-count {
+            font-size: 11px;
+            color: #94a3b8;
+            text-align: right;
+        }
+
+        .monster-count div {
+            margin: 2px 0;
+        }
+
+        /* Monster Details Panel */
+        #monster-details-panel.show {
+            display: block !important;
+        }
+
+        .details-header {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(147, 51, 234, 0.5);
+        }
+
+        .details-icon {
+            font-size: 72px;
+        }
+
+        .details-title h2 {
+            margin: 0 0 5px 0;
+            font-size: 32px;
+        }
+
+        .details-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+        }
+
+        .details-section h3 {
+            color: #a78bfa;
+            margin: 0 0 12px 0;
+            font-size: 16px;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+        }
+
+        .stat-label {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        .stat-value {
+            color: #cbd5e1;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .lore-text, .habitat-text, .weakness-text {
+            color: #cbd5e1;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .drops-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .drop-item {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+        }
+
+        .drop-icon {
+            font-size: 28px;
+        }
+
+        .drop-info {
+            flex: 1;
+        }
+
+        .drop-name {
+            color: #cbd5e1;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .drop-chance {
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        .record-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            color: #cbd5e1;
+            font-size: 13px;
+        }
+
+        .record-value {
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        .close-details-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 20px;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .close-details-btn:hover {
+            background: #dc2626;
+            transform: scale(1.02);
+        }
     </style>
 </head>
 <body>
@@ -961,6 +1207,7 @@
         <p><strong>E</strong> - Interact</p>
         <p><strong>I</strong> - Inventory</p>
         <p><strong>K</strong> - Skills</p>
+        <p><strong>B</strong> - Bestiary</p>
         <p><strong>Right Mouse</strong> - Rotate Camera</p>
         <p><strong>Mouse Wheel</strong> - Zoom</p>
     </div>
@@ -1144,6 +1391,84 @@
         </svg>
     </div>
     
+    <!-- Bestiary Panel -->
+    <div id="bestiary-panel" style="
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.95);
+        border-radius: 15px;
+        padding: 25px;
+        width: 800px;
+        max-height: 85vh;
+        overflow-y: auto;
+        backdrop-filter: blur(15px);
+        border: 3px solid rgba(234, 179, 8, 0.5);
+        pointer-events: auto;
+        z-index: 1000;
+    ">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; color: #eab308; font-size: 28px;">📖 Monster Bestiary</h2>
+            <button class="close-btn" onclick="closeBestiary()" style="margin: 0;">✕</button>
+        </div>
+        
+        <div style="
+            background: rgba(234, 179, 8, 0.1);
+            border: 2px solid #eab308;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        ">
+            <div style="text-align: center;">
+                <div style="font-size: 12px; color: #94a3b8;">Discovered</div>
+                <div style="font-size: 24px; font-weight: bold; color: #eab308;" id="bestiary-completion">0 / 0</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 12px; color: #94a3b8;">Completion</div>
+                <div style="font-size: 24px; font-weight: bold; color: #4ade80;" id="bestiary-percentage">0%</div>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 12px; color: #94a3b8;">Total Kills</div>
+                <div style="font-size: 24px; font-weight: bold; color: #ef4444;" id="bestiary-kills">0</div>
+            </div>
+        </div>
+
+        <div id="bestiary-monster-list" style="
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        ">
+            <!-- Monster cards will be added here by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Monster Details Panel -->
+    <div id="monster-details-panel" style="
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.98);
+        border-radius: 15px;
+        padding: 30px;
+        width: 600px;
+        max-height: 85vh;
+        overflow-y: auto;
+        backdrop-filter: blur(20px);
+        border: 3px solid rgba(147, 51, 234, 0.6);
+        pointer-events: auto;
+        z-index: 1001;
+        color: white;
+    ">
+        <!-- Monster details will be populated by JavaScript -->
+    </div>
+
     <!-- Skills Panel -->
     <div id="skills-panel">
         <h2>🔮 Skills & Abilities</h2>

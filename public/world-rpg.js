@@ -23,6 +23,7 @@ import { CombatSystem } from './modules/CombatSystem.js';
 import { DialogueSystem } from './modules/DialogueSystem.js';
 import { SkillSystem } from './modules/SkillSystem.js';
 import { WorldInitializer } from './modules/WorldInitializer.js';
+import { BestiarySystem } from './modules/BestiarySystem.js';
 
 // ===== INITIALIZE WORLD SETUP =====
 const worldSetup = new WorldSetup({ useAdvancedTerrain: true });
@@ -52,6 +53,9 @@ const quests = questFactory.createStandardQuests();
 
 // Systems that will be initialized after player is created
 let questManager, skillSystem, combatSystem, cameraController, animationController, dialogueSystem;
+
+// ===== INITIALIZE BESTIARY SYSTEM =====
+const bestiarySystem = new BestiarySystem(addMessage);
 
 // ===== INITIALIZE FACTORIES =====
 const npcFactory = new NPCFactory(characterLoader);
@@ -177,6 +181,34 @@ function openSkillsPanel() {
 function closeSkillsPanel() {
   document.getElementById('skills-panel').classList.remove('show');
 }
+
+// ===== BESTIARY PANEL =====
+function openBestiary() {
+  document.getElementById('bestiary-panel').classList.add('show');
+  uiManager.updateBestiaryUI(bestiarySystem);
+}
+
+function closeBestiary() {
+  document.getElementById('bestiary-panel').classList.remove('show');
+}
+
+// Global function to show monster details
+window.showMonsterDetails = function(monsterType) {
+  const monsterData = bestiarySystem.getMonsterData(monsterType);
+  if (monsterData && bestiarySystem.isDiscovered(monsterType)) {
+    const allMonsters = bestiarySystem.getAllMonsters();
+    const fullMonsterData = allMonsters.find(m => m.type === monsterType);
+    uiManager.showMonsterDetails(fullMonsterData);
+  }
+};
+
+// Global function to close monster details
+window.closeMonsterDetails = function() {
+  document.getElementById('monster-details-panel').classList.remove('show');
+};
+
+// Global function to close bestiary
+window.closeBestiary = closeBestiary;
 
 function updateSkillsUI() {
   // Update attribute points available
@@ -472,7 +504,8 @@ window.addEventListener('keydown', (e) => {
       },
       updateUI,
       playerInventory,
-      LootSystem
+      LootSystem,
+      bestiarySystem
     );
   }
 
@@ -504,6 +537,15 @@ window.addEventListener('keydown', (e) => {
       closeSkillsPanel();
     } else {
       openSkillsPanel();
+    }
+  }
+  
+  if (e.key.toLowerCase() === 'b') {
+    const bestiaryPanel = document.getElementById('bestiary-panel');
+    if (bestiaryPanel.classList.contains('show')) {
+      closeBestiary();
+    } else {
+      openBestiary();
     }
   }
   

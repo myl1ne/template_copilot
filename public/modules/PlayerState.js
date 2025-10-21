@@ -83,7 +83,7 @@ export class PlayerState {
     // Clone the Baelin model
     const baelinModel = SkeletonUtils.clone(this.characterLoader.getModel('baelin'));
     baelinModel.scale.multiplyScalar(1.5); // Scale up slightly for player
-    baelinModel.rotation.y = Math.PI; // Face forward
+    baelinModel.rotation.y = 0; // Face forward
     
     // Configure meshes
     baelinModel.traverse((child) => {

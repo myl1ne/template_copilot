@@ -342,7 +342,23 @@ function updatePlayerItemsInTradeUI() {
 function buyItem(item) {
   const price = Math.ceil(item.value * 1.5);
   if (playerInventory.removeGold(price)) {
+    // Create new item and preserve all properties from the original item
     const newItem = new Item(item.id, item.name, item.icon, item.type, item.value, item.stats);
+    // Preserve slot property for equipment items
+    if (item.slot) {
+      newItem.slot = item.slot;
+    }
+    // Preserve rarity information
+    if (item.rarity) {
+      newItem.rarity = item.rarity;
+      newItem.rarityColor = item.rarityColor;
+      newItem.rarityIcon = item.rarityIcon;
+    }
+    // Preserve description
+    if (item.description) {
+      newItem.description = item.description;
+    }
+    
     if (playerInventory.addItem(newItem)) {
       document.getElementById('trade-gold-amount').textContent = playerInventory.gold;
       addMessage(`Bought ${item.rarityIcon || ''} ${item.name} for ${price} gold`, 'success');

@@ -531,6 +531,287 @@ export class MonsterFactory {
     }
 
     /**
+     * Create a bear monster
+     */
+    createBear(x, z, updateQuestProgress) {
+        return this.createMonster('bear', {
+            position: { x, z },
+            hp: 200,
+            damage: 35,
+            xp: 150,
+            respawnTime: 45,
+            attackCooldown: 2.5,
+            stance: 'defensive',
+            updateQuestProgress,
+            createMeshFn: (group) => {
+                // Body (large)
+                const bodyGeo = new THREE.CapsuleGeometry(0.8, 1.2, 16, 32);
+                const bodyMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x5d4037,
+                    roughness: 0.9
+                });
+                const body = new THREE.Mesh(bodyGeo, bodyMat);
+                body.position.y = 0.8;
+                body.rotation.z = Math.PI / 2;
+                group.add(body);
+                
+                // Head
+                const headGeo = new THREE.SphereGeometry(0.5, 16, 16);
+                const headMat = new THREE.MeshStandardMaterial({ color: 0x6d4c41 });
+                const head = new THREE.Mesh(headGeo, headMat);
+                head.position.set(0, 1.2, 0.7);
+                group.add(head);
+                
+                // Snout
+                const snoutGeo = new THREE.CapsuleGeometry(0.15, 0.3, 8, 16);
+                const snoutMat = new THREE.MeshStandardMaterial({ color: 0x4e342e });
+                const snout = new THREE.Mesh(snoutGeo, snoutMat);
+                snout.position.set(0, 1.1, 1.0);
+                snout.rotation.x = Math.PI / 2;
+                group.add(snout);
+                
+                // Ears
+                const earGeo = new THREE.ConeGeometry(0.15, 0.2, 8);
+                const earMat = new THREE.MeshStandardMaterial({ color: 0x5d4037 });
+                const leftEar = new THREE.Mesh(earGeo, earMat);
+                leftEar.position.set(-0.3, 1.5, 0.6);
+                group.add(leftEar);
+                const rightEar = new THREE.Mesh(earGeo, earMat);
+                rightEar.position.set(0.3, 1.5, 0.6);
+                group.add(rightEar);
+                
+                // Legs
+                const legGeo = new THREE.CylinderGeometry(0.2, 0.25, 0.8, 8);
+                const legMat = new THREE.MeshStandardMaterial({ color: 0x4e342e });
+                [[-0.4, 0.4], [0.4, 0.4], [-0.4, -0.4], [0.4, -0.4]].forEach(([x, z]) => {
+                    const leg = new THREE.Mesh(legGeo, legMat);
+                    leg.position.set(x, 0.4, z);
+                    group.add(leg);
+                });
+                
+                // Eyes
+                const eyeGeo = new THREE.SphereGeometry(0.08, 8, 8);
+                const eyeMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x000000,
+                    emissive: 0xff0000,
+                    emissiveIntensity: 0.5
+                });
+                const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+                leftEye.position.set(-0.2, 1.3, 0.95);
+                group.add(leftEye);
+                const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+                rightEye.position.set(0.2, 1.3, 0.95);
+                group.add(rightEye);
+            }
+        });
+    }
+
+    /**
+     * Create an orc monster
+     */
+    createOrc(x, z, updateQuestProgress) {
+        return this.createMonster('orc', {
+            position: { x, z },
+            hp: 150,
+            damage: 28,
+            xp: 100,
+            respawnTime: 40,
+            attackCooldown: 2,
+            stance: 'aggressive',
+            updateQuestProgress,
+            createMeshFn: (group) => {
+                // Body (muscular)
+                const bodyGeo = new THREE.CapsuleGeometry(0.45, 1.0, 16, 32);
+                const bodyMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x4a7c59,
+                    roughness: 0.8
+                });
+                const body = new THREE.Mesh(bodyGeo, bodyMat);
+                body.position.y = 1.0;
+                group.add(body);
+                
+                // Head (large and angular)
+                const headGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+                const headMat = new THREE.MeshStandardMaterial({ color: 0x3d6e4a });
+                const head = new THREE.Mesh(headGeo, headMat);
+                head.position.set(0, 1.8, 0);
+                group.add(head);
+                
+                // Tusks
+                const tuskGeo = new THREE.ConeGeometry(0.06, 0.3, 8);
+                const tuskMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xfffff0,
+                    metalness: 0.3
+                });
+                const leftTusk = new THREE.Mesh(tuskGeo, tuskMat);
+                leftTusk.position.set(-0.15, 1.6, 0.25);
+                leftTusk.rotation.x = -Math.PI / 6;
+                group.add(leftTusk);
+                const rightTusk = new THREE.Mesh(tuskGeo, tuskMat);
+                rightTusk.position.set(0.15, 1.6, 0.25);
+                rightTusk.rotation.x = -Math.PI / 6;
+                group.add(rightTusk);
+                
+                // Arms
+                const armGeo = new THREE.CapsuleGeometry(0.15, 0.8, 8, 16);
+                const armMat = new THREE.MeshStandardMaterial({ color: 0x4a7c59 });
+                const leftArm = new THREE.Mesh(armGeo, armMat);
+                leftArm.position.set(-0.5, 1.2, 0);
+                leftArm.rotation.z = -Math.PI / 4;
+                group.add(leftArm);
+                const rightArm = new THREE.Mesh(armGeo, armMat);
+                rightArm.position.set(0.5, 1.2, 0);
+                rightArm.rotation.z = Math.PI / 4;
+                group.add(rightArm);
+                
+                // Legs
+                const legGeo = new THREE.CapsuleGeometry(0.18, 0.7, 8, 16);
+                const legMat = new THREE.MeshStandardMaterial({ color: 0x3d6e4a });
+                const leftLeg = new THREE.Mesh(legGeo, legMat);
+                leftLeg.position.set(-0.2, 0.35, 0);
+                group.add(leftLeg);
+                const rightLeg = new THREE.Mesh(legGeo, legMat);
+                rightLeg.position.set(0.2, 0.35, 0);
+                group.add(rightLeg);
+                
+                // Weapon (club)
+                const clubGeo = new THREE.CylinderGeometry(0.1, 0.15, 0.9, 8);
+                const clubMat = new THREE.MeshStandardMaterial({ color: 0x4e342e });
+                const club = new THREE.Mesh(clubGeo, clubMat);
+                club.position.set(0.7, 1.0, 0);
+                club.rotation.z = Math.PI / 3;
+                group.add(club);
+                
+                // Eyes
+                const eyeGeo = new THREE.SphereGeometry(0.08, 8, 8);
+                const eyeMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xffff00,
+                    emissive: 0xffff00,
+                    emissiveIntensity: 0.6
+                });
+                const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+                leftEye.position.set(-0.12, 1.85, 0.25);
+                group.add(leftEye);
+                const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+                rightEye.position.set(0.12, 1.85, 0.25);
+                group.add(rightEye);
+            }
+        });
+    }
+
+    /**
+     * Create a dragon monster (legendary boss)
+     */
+    createDragon(x, z, updateQuestProgress) {
+        return this.createMonster('dragon', {
+            position: { x, z },
+            hp: 500,
+            damage: 60,
+            xp: 500,
+            respawnTime: 120,
+            attackCooldown: 3,
+            stance: 'aggressive',
+            updateQuestProgress,
+            createMeshFn: (group) => {
+                // Body (long and serpentine)
+                const bodyGeo = new THREE.CapsuleGeometry(0.8, 2.0, 16, 32);
+                const bodyMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x8b0000,
+                    metalness: 0.5,
+                    roughness: 0.3
+                });
+                const body = new THREE.Mesh(bodyGeo, bodyMat);
+                body.position.y = 1.5;
+                body.rotation.z = Math.PI / 2;
+                group.add(body);
+                
+                // Head (dragon)
+                const headGeo = new THREE.ConeGeometry(0.6, 1.2, 8);
+                const headMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xa00000,
+                    metalness: 0.4
+                });
+                const head = new THREE.Mesh(headGeo, headMat);
+                head.position.set(0, 2.0, 1.5);
+                head.rotation.x = -Math.PI / 2;
+                group.add(head);
+                
+                // Horns
+                const hornGeo = new THREE.ConeGeometry(0.1, 0.6, 8);
+                const hornMat = new THREE.MeshStandardMaterial({ color: 0x3e2723 });
+                [-0.3, 0.3].forEach((xOffset, i) => {
+                    const horn = new THREE.Mesh(hornGeo, hornMat);
+                    horn.position.set(xOffset, 2.6, 1.3);
+                    horn.rotation.x = -Math.PI / 6 * (i === 0 ? 1 : -1);
+                    group.add(horn);
+                });
+                
+                // Wings
+                const wingGeo = new THREE.ConeGeometry(1.2, 1.5, 3);
+                const wingMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x6a0000,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const leftWing = new THREE.Mesh(wingGeo, wingMat);
+                leftWing.position.set(-1.5, 1.8, 0);
+                leftWing.rotation.z = Math.PI / 2;
+                leftWing.rotation.y = Math.PI / 4;
+                group.add(leftWing);
+                const rightWing = new THREE.Mesh(wingGeo, wingMat);
+                rightWing.position.set(1.5, 1.8, 0);
+                rightWing.rotation.z = -Math.PI / 2;
+                rightWing.rotation.y = -Math.PI / 4;
+                group.add(rightWing);
+                
+                // Tail
+                const tailGeo = new THREE.ConeGeometry(0.3, 1.5, 8);
+                const tailMat = new THREE.MeshStandardMaterial({ color: 0x8b0000 });
+                const tail = new THREE.Mesh(tailGeo, tailMat);
+                tail.position.set(0, 1.2, -1.8);
+                tail.rotation.x = Math.PI / 2;
+                group.add(tail);
+                
+                // Legs
+                const legGeo = new THREE.CylinderGeometry(0.2, 0.3, 0.8, 8);
+                const legMat = new THREE.MeshStandardMaterial({ color: 0x6a0000 });
+                [[-0.6, 0.5], [0.6, 0.5], [-0.6, -0.5], [0.6, -0.5]].forEach(([x, z]) => {
+                    const leg = new THREE.Mesh(legGeo, legMat);
+                    leg.position.set(x, 0.4, z);
+                    group.add(leg);
+                });
+                
+                // Eyes (glowing)
+                const eyeGeo = new THREE.SphereGeometry(0.15, 8, 8);
+                const eyeMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xffff00,
+                    emissive: 0xffff00,
+                    emissiveIntensity: 1.0
+                });
+                const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+                leftEye.position.set(-0.25, 2.3, 1.8);
+                group.add(leftEye);
+                const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+                rightEye.position.set(0.25, 2.3, 1.8);
+                group.add(rightEye);
+                
+                // Fire breath effect (small glowing sphere)
+                const fireGeo = new THREE.SphereGeometry(0.2, 8, 8);
+                const fireMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xff4500,
+                    emissive: 0xff4500,
+                    emissiveIntensity: 1.5,
+                    transparent: true,
+                    opacity: 0.7
+                });
+                const fire = new THREE.Mesh(fireGeo, fireMat);
+                fire.position.set(0, 2.0, 2.2);
+                group.add(fire);
+            }
+        });
+    }
+
+    /**
      * Create a boss version of a monster
      */
     createBoss(monsterType, x, z, updateQuestProgress) {

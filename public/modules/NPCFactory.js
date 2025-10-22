@@ -68,10 +68,10 @@ export class NPCFactory {
         
         // Try to use FBX model if available
         if (npc.modelName && this.characterLoader.hasCharacter(npc.modelName)) {
-            // Clone the loaded model — the loader already applies the proper scale
+            // Clone the loaded model and apply the project-specific NPC FBX scale
             const charModel = SkeletonUtils.clone(this.characterLoader.getModel(npc.modelName));
-            // Make characters slightly bigger than the normalized size (hardcoded factor)
-            charModel.scale.multiplyScalar(1.5); // increase size by 1.5x
+            // Force small uniform scale for FBX NPC assets so they match scene units
+            charModel.scale.set(0.01, 0.01, 0.01);
             // Ensure the clone faces forward
             charModel.rotation.y = Math.PI;
 
@@ -118,8 +118,12 @@ export class NPCFactory {
         icon.position.y = 2.7;
         npcGroup.add(icon);
         
-        npcGroup.position.set(npc.position.x, 0, npc.position.z);
-        scene.add(npcGroup);
+    // Use provided Y if available (e.g., when loading a level), otherwise default to 0
+                // Clone the loaded model — FBXCharacterLoader already normalizes scale
+                // at load time based on bounding box. Do not re-scale here or models
+                // can end up incorrectly large/small. Keep the cloned model's scale
+                // as-is (the clone preserves the stored model.scale).
+                const charModel = SkeletonUtils.clone(this.characterLoader.getModel(npc.modelName));
         
         npc.mesh = npcGroup;
         npc.icon = icon;

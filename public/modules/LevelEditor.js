@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { MeshLibrary } from './MeshLibrary.js';
+import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 /**
  * LevelEditor - Tool for editing terrain, placing NPCs/monsters, and managing levels
@@ -392,13 +393,13 @@ export class LevelEditor {
         // Try to use loaded FBX model if available
         if (this.npcFactory && this.npcFactory.characterLoader) {
             const modelName = npcData.modelName || 'peasant';
-            const loadedModel = this.npcFactory.characterLoader.getCharacter(modelName);
+            const loadedModel = this.npcFactory.characterLoader.getModel(modelName);
             
             if (loadedModel) {
-                // Clone the FBX model
-                const npcMesh = loadedModel.clone();
+                // Deep-clone skinned FBX model using SkeletonUtils so bones/skeletons
+                // and skinned meshes are correctly duplicated (matching world-rpg behavior)
+                const npcMesh = SkeletonUtils.clone(loadedModel);
                 npcMesh.position.set(position.x, position.y, position.z);
-                npcMesh.scale.set(1, 1, 1);
                 npcMesh.userData.isNPCMarker = true;
                 npcMesh.userData.npcData = npcData;
                 this.scene.add(npcMesh);
@@ -682,11 +683,23 @@ export class LevelEditor {
         // Add NPC markers
         if (this.levelData.npcs) {
             this.levelData.npcs.forEach(npcData => {
-                const position = {
-                    x: npcData.position.x,
-                    y: 0,
-                    z: npcData.position.z
-                };
+                // Determine terrain height at NPC position so markers sit on the terrain
+                const npcX = npcData.position.x;
+                const npcZ = npcData.position.z;
+                let npcY = 0;
+                const terrain = this.scene.children.find(child => 
+                    child.geometry && child.geometry.type === 'PlaneGeometry'
+                );
+                if (terrain) {
+                    // Raycast down from a high Y to find the terrain surface at (x, z)
+                    this.raycaster.set(new THREE.Vector3(npcX, 1000, npcZ), new THREE.Vector3(0, -1, 0));
+                    const intersects = this.raycaster.intersectObject(terrain);
+                    if (intersects.length > 0) {
+                        npcY = intersects[0].point.y;
+                    }
+                }
+
+                const position = { x: npcX, y: npcY, z: npcZ };
                 this.addNPCMarker(position, npcData);
             });
             console.log(`Populated ${this.levelData.npcs.length} NPCs`);
@@ -695,11 +708,22 @@ export class LevelEditor {
         // Add monster markers
         if (this.levelData.monsters) {
             this.levelData.monsters.forEach(monsterData => {
-                const position = {
-                    x: monsterData.position.x,
-                    y: 0,
-                    z: monsterData.position.z
-                };
+                // Determine terrain height at monster position
+                const monX = monsterData.position.x;
+                const monZ = monsterData.position.z;
+                let monY = 0;
+                const terrainForMon = this.scene.children.find(child => 
+                    child.geometry && child.geometry.type === 'PlaneGeometry'
+                );
+                if (terrainForMon) {
+                    this.raycaster.set(new THREE.Vector3(monX, 1000, monZ), new THREE.Vector3(0, -1, 0));
+                    const intersectsMon = this.raycaster.intersectObject(terrainForMon);
+                    if (intersectsMon.length > 0) {
+                        monY = intersectsMon[0].point.y;
+                    }
+                }
+
+                const position = { x: monX, y: monY, z: monZ };
                 this.addMonsterMarker(position, monsterData.type);
             });
             console.log(`Populated ${this.levelData.monsters.length} monsters`);

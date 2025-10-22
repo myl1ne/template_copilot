@@ -3,10 +3,106 @@ import * as THREE from 'three';
 /**
  * CreatureLibrary - Creature mesh definitions
  * All creatures are built from primitive shapes with detailed features
+ * Now with animation support for idle, walk, attack, and attacked states
  */
 export class CreatureLibrary {
     /**
-     * Create a goblin mesh
+     * Create animation functions for a creature
+     * @param {THREE.Group} group - The creature group
+     * @param {Object} parts - Named parts for animation (body, head, weapon, etc.)
+     * @returns {Object} Animation functions
+     */
+    static createAnimations(group, parts) {
+        const animations = {
+            time: 0,
+            currentState: 'idle',
+            
+            idle: (delta) => {
+                animations.time += delta;
+                // Gentle breathing/bobbing
+                if (parts.body) {
+                    parts.body.position.y = parts.body.userData.originalY + Math.sin(animations.time * 2) * 0.02;
+                }
+                if (parts.head) {
+                    parts.head.position.y = parts.head.userData.originalY + Math.sin(animations.time * 2) * 0.03;
+                }
+            },
+            
+            walk: (delta) => {
+                animations.time += delta;
+                // Walking bob and sway
+                if (parts.body) {
+                    parts.body.position.y = parts.body.userData.originalY + Math.abs(Math.sin(animations.time * 4)) * 0.1;
+                    parts.body.rotation.z = Math.sin(animations.time * 4) * 0.1;
+                }
+                if (parts.head) {
+                    parts.head.rotation.x = Math.sin(animations.time * 4) * 0.05;
+                }
+                if (parts.weapon) {
+                    parts.weapon.rotation.x = Math.sin(animations.time * 4) * 0.2;
+                }
+            },
+            
+            attack: (delta) => {
+                animations.time += delta;
+                const attackCycle = (animations.time * 3) % (Math.PI * 2);
+                // Attack swing
+                if (parts.weapon) {
+                    if (attackCycle < Math.PI) {
+                        // Wind up
+                        parts.weapon.rotation.x = -attackCycle * 0.5;
+                    } else {
+                        // Swing down
+                        parts.weapon.rotation.x = (attackCycle - Math.PI) * 0.3;
+                    }
+                }
+                if (parts.body) {
+                    parts.body.rotation.y = Math.sin(attackCycle) * 0.2;
+                }
+            },
+            
+            attacked: (delta) => {
+                animations.time += delta;
+                // Recoil/hit reaction
+                const recoil = Math.max(0, 1 - animations.time * 2);
+                if (parts.body) {
+                    parts.body.position.z = parts.body.userData.originalZ - recoil * 0.2;
+                    parts.body.rotation.x = recoil * 0.3;
+                }
+                if (parts.head) {
+                    parts.head.rotation.x = -recoil * 0.2;
+                }
+            },
+            
+            update: (delta) => {
+                const stateFn = animations[animations.currentState];
+                if (stateFn) {
+                    stateFn(delta);
+                }
+            },
+            
+            setState: (state) => {
+                if (animations[state]) {
+                    animations.currentState = state;
+                    animations.time = 0;
+                }
+            }
+        };
+        
+        // Store original positions
+        Object.values(parts).forEach(part => {
+            if (part && part.position) {
+                part.userData.originalY = part.position.y;
+                part.userData.originalZ = part.position.z || 0;
+            }
+        });
+        
+        group.userData.animations = animations;
+        return animations;
+    }
+    
+    /**
+     * Create a goblin mesh with animations
      */
     static createGoblinMesh() {
         const group = new THREE.Group();
@@ -48,6 +144,9 @@ export class CreatureLibrary {
         club.castShadow = true;
         group.add(club);
         
+        // Setup animations
+        this.createAnimations(group, { body, head, weapon: club });
+        
         return group;
     }
     
@@ -85,21 +184,28 @@ export class CreatureLibrary {
         rightTusk.rotation.x = Math.PI / 6;
         group.add(rightTusk);
         
-        // Axe
+        // Axe - create weapon group first
+        const weapon = new THREE.Group();
+        weapon.position.set(0.5, 1.2, 0);
+        
         const handleGeo = new THREE.CylinderGeometry(0.08, 0.08, 1.2, 8);
         const handleMat = new THREE.MeshStandardMaterial({ color: 0x4a2511 });
         const handle = new THREE.Mesh(handleGeo, handleMat);
-        handle.position.set(0.5, 1.2, 0);
         handle.rotation.z = Math.PI / 4;
         handle.castShadow = true;
-        group.add(handle);
+        weapon.add(handle);
         
         const bladeGeo = new THREE.BoxGeometry(0.3, 0.4, 0.05);
         const bladeMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.8 });
         const blade = new THREE.Mesh(bladeGeo, bladeMat);
-        blade.position.set(0.85, 1.8, 0);
+        blade.position.set(0.35, 0.6, 0);
         blade.castShadow = true;
-        group.add(blade);
+        weapon.add(blade);
+        
+        group.add(weapon);
+        
+        // Setup animations
+        this.createAnimations(group, { body, head, weapon });
         
         return group;
     }
@@ -180,6 +286,9 @@ export class CreatureLibrary {
         tail.rotation.x = -Math.PI / 4;
         group.add(tail);
         
+        // Setup animations
+        this.createAnimations(group, { body, head });
+        
         return group;
     }
     
@@ -220,6 +329,9 @@ export class CreatureLibrary {
         snout.position.set(0, 1.2, 1.0);
         snout.rotation.x = Math.PI / 2;
         group.add(snout);
+        
+        // Setup animations
+        this.createAnimations(group, { body, head });
         
         return group;
     }
@@ -279,6 +391,9 @@ export class CreatureLibrary {
         tail.rotation.x = Math.PI;
         group.add(tail);
         
+        // Setup animations
+        this.createAnimations(group, { body, head });
+        
         return group;
     }
 
@@ -320,6 +435,9 @@ export class CreatureLibrary {
         tail.rotation.x = -Math.PI / 6;
         group.add(tail);
         
+        // Setup animations
+        this.createAnimations(group, { body, head });
+        
         return group;
     }
 
@@ -350,6 +468,9 @@ export class CreatureLibrary {
         head.rotation.x = Math.PI / 2;
         head.castShadow = true;
         group.add(head);
+        
+        // Setup animations
+        this.createAnimations(group, { body: group.children[0], head });
         
         return group;
     }
@@ -409,6 +530,9 @@ export class CreatureLibrary {
         const blade = new THREE.Mesh(bladeGeo, bladeMat);
         blade.position.set(0.3, 1.2, 0);
         group.add(blade);
+        
+        // Setup animations
+        this.createAnimations(group, { body: spine, head: skull, weapon: blade });
         
         return group;
     }
@@ -478,6 +602,9 @@ export class CreatureLibrary {
             group.add(leg);
         }
         
+        // Setup animations
+        this.createAnimations(group, { body, head });
+        
         return group;
     }
 
@@ -531,6 +658,9 @@ export class CreatureLibrary {
         rightWing.rotation.y = -Math.PI / 6;
         group.add(rightWing);
         
+        // Setup animations
+        this.createAnimations(group, { body, head });
+        
         return group;
     }
 
@@ -579,6 +709,9 @@ export class CreatureLibrary {
         trunk.castShadow = true;
         group.add(trunk);
         
+        // Setup animations
+        this.createAnimations(group, { body, head, weapon: trunk });
+        
         return group;
     }
 
@@ -623,6 +756,9 @@ export class CreatureLibrary {
         const core = new THREE.Mesh(coreGeo, coreMat);
         core.position.y = 0.3;
         group.add(core);
+        
+        // Setup animations (slime bounces and jiggles)
+        this.createAnimations(group, { body, core });
         
         return group;
     }

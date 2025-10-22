@@ -103,14 +103,23 @@ function onWindowResize() {
 /**
  * Animation loop
  */
-function animate() {
+let lastTime = 0;
+function animate(time) {
     requestAnimationFrame(animate);
+    
+    const delta = (time - lastTime) / 1000; // Convert to seconds
+    lastTime = time;
     
     controls.update();
     
     // Auto-rotate current mesh
     if (currentMesh && autoRotate) {
         currentMesh.rotation.y += 0.01;
+    }
+    
+    // Update creature animations
+    if (currentMesh && currentMesh.userData.animations) {
+        currentMesh.userData.animations.update(delta);
     }
     
     renderer.render(scene, camera);
@@ -191,6 +200,14 @@ function loadMesh(category, type) {
         });
         document.getElementById('selected-meshes').textContent = meshCount;
         
+        // Show/hide animation controls for creatures
+        const animControls = document.getElementById('animation-controls');
+        if (category === 'creatures' && currentMesh.userData.animations) {
+            animControls.style.display = 'flex';
+        } else {
+            animControls.style.display = 'none';
+        }
+        
         // Update active state
         document.querySelectorAll('.item-button').forEach(btn => {
             btn.classList.remove('active');
@@ -249,6 +266,7 @@ function toggleCategory(category) {
 function setupSearch() {
     const searchInput = document.getElementById('search');
     const filterSelect = document.getElementById('filter-category');
+    const animationSelect = document.getElementById('animation-state');
     
     function filterItems() {
         const searchTerm = searchInput.value.toLowerCase();
@@ -264,6 +282,13 @@ function setupSearch() {
             button.style.display = matchesSearch && matchesCategory ? 'block' : 'none';
         });
     }
+    
+    // Animation state change handler
+    animationSelect.addEventListener('change', (e) => {
+        if (currentMesh && currentMesh.userData.animations) {
+            currentMesh.userData.animations.setState(e.target.value);
+        }
+    });
     
     searchInput.addEventListener('input', filterItems);
     filterSelect.addEventListener('change', filterItems);

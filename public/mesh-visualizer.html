@@ -345,6 +345,15 @@
                 <option value="props">Props</option>
             </select>
         </div>
+        <div class="control-group" id="animation-controls" style="display: none;">
+            <label for="animation-state">Animation:</label>
+            <select id="animation-state">
+                <option value="idle">Idle</option>
+                <option value="walk">Walk</option>
+                <option value="attack">Attack</option>
+                <option value="attacked">Attacked</option>
+            </select>
+        </div>
         <button onclick="resetCamera()">Reset Camera</button>
         <button onclick="autoRotate = !autoRotate">Toggle Rotation</button>
     </div>

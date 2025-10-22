@@ -176,13 +176,13 @@ export class LevelLoader {
         }
 
         data.terrainFeatures.forEach(feature => {
-            let mesh = null;
+            let result = null; // may be a mesh or an object containing a .mesh property
             const x = feature.position.x;
             const z = feature.position.z;
 
             switch (feature.type) {
                 case 'hill':
-                    mesh = this.terrainFeatures.createHill(
+                    result = this.terrainFeatures.createHill(
                         x, z, 
                         feature.radius || 5,
                         feature.height || 3
@@ -190,7 +190,7 @@ export class LevelLoader {
                     break;
                     
                 case 'plateau':
-                    mesh = this.terrainFeatures.createPlateau(
+                    result = this.terrainFeatures.createPlateau(
                         x, z,
                         feature.width || 10,
                         feature.length || 10,
@@ -199,7 +199,7 @@ export class LevelLoader {
                     break;
                     
                 case 'valley':
-                    mesh = this.terrainFeatures.createValley(
+                    result = this.terrainFeatures.createValley(
                         x, z,
                         feature.radius || 5,
                         feature.depth || 2
@@ -207,7 +207,7 @@ export class LevelLoader {
                     break;
                     
                 case 'canyon':
-                    mesh = this.terrainFeatures.createCanyon(
+                    result = this.terrainFeatures.createCanyon(
                         x, z,
                         feature.length || 20,
                         feature.width || 5,
@@ -217,7 +217,7 @@ export class LevelLoader {
                     break;
                     
                 case 'cave_entrance':
-                    mesh = this.terrainFeatures.createCaveEntrance(
+                    result = this.terrainFeatures.createCaveEntrance(
                         x, z,
                         feature.radius || 3,
                         feature.height || 2
@@ -225,7 +225,7 @@ export class LevelLoader {
                     break;
                     
                 case 'bridge':
-                    mesh = this.terrainFeatures.createBridge(
+                    result = this.terrainFeatures.createBridge(
                         x, z,
                         feature.length || 10,
                         feature.width || 3,
@@ -234,7 +234,7 @@ export class LevelLoader {
                     break;
                     
                 case 'ramp':
-                    mesh = this.terrainFeatures.createRamp(
+                    result = this.terrainFeatures.createRamp(
                         x, z,
                         feature.length || 5,
                         feature.height || 3,
@@ -247,15 +247,30 @@ export class LevelLoader {
                     return;
             }
 
-            if (mesh) {
-                mesh.userData.featureType = feature.type;
-                mesh.userData.name = feature.name || feature.type;
-                
+            // Normalize result to a mesh object and attach metadata safely.
+            let meshObj = null;
+            if (!result) return;
+
+            // If the result is an object wrapper (returned by TerrainFeatures), use its .mesh
+            if (result.mesh) {
+                meshObj = result.mesh;
+            } else if (result.isMesh || result.isGroup || (typeof THREE !== 'undefined' && result instanceof THREE.Object3D)) {
+                meshObj = result;
+            } else {
+                console.warn('Unexpected terrain feature result for', feature.type, result);
+                return;
+            }
+
+            if (meshObj) {
+                meshObj.userData = meshObj.userData || {};
+                meshObj.userData.featureType = feature.type;
+                meshObj.userData.name = feature.name || feature.type;
+
                 this.placedObjects.terrainFeatures.push({
-                    mesh,
+                    mesh: meshObj,
                     data: feature
                 });
-                
+
                 console.log(`Created terrain feature: ${feature.type} at (${x}, ${z})`);
             }
         });

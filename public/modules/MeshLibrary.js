@@ -25,14 +25,18 @@ export class MeshLibrary {
      * @param {string} type - Specific type within that category
      */
     static getMesh(category, type) {
-        switch(category.toLowerCase()) {
+        const cat = category.toLowerCase();
+        switch(cat) {
             case 'creature':
+            case 'creatures':
             case 'monster':
                 return CreatureLibrary.getMesh(type);
             case 'building':
+            case 'buildings':
             case 'structure':
                 return BuildingLibrary.getMesh(type);
             case 'prop':
+            case 'props':
             case 'item':
             case 'decoration':
                 return PropsLibrary.getMesh(type);

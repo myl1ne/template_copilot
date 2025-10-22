@@ -5,6 +5,7 @@
 import { GameConfig } from './GameConfig.js';
 import { Item } from './InventorySystem.js';
 import { BiomeSystem } from './BiomeSystem.js';
+import { LevelLoader } from './LevelLoader.js';
 import * as THREE from 'three';
 
 export class WorldInitializer {
@@ -31,10 +32,15 @@ export class WorldInitializer {
     this.biomeSystem = terrainGenerator ? 
       new BiomeSystem(terrainGenerator, environmentFactory) : null;
     
+    // Initialize LevelLoader if terrain generator is provided
+    this.levelLoader = terrainGenerator ?
+      new LevelLoader(scene, terrainGenerator, npcFactory, monsterFactory, environmentFactory) : null;
+    
     this.npcs = [];
     this.environmentObjects = [];
     this.goblins = [];
     this.monsters = [];
+    this.levelData = null;
   }
 
   /**
@@ -403,7 +409,207 @@ export class WorldInitializer {
   }
 
   /**
-   * Initialize the complete world
+   * Load and initialize from level file
+   * @param {string} levelPath - Path to level JSON file
+   * @param {Object} inventory - Inventory system
+   * @param {Function} updateQuestProgressFn - Function to update quest progress
+   */
+  async initFromLevel(levelPath, inventory, updateQuestProgressFn) {
+    if (!this.levelLoader) {
+      console.error('LevelLoader not available - terrain generator required');
+      return;
+    }
+
+    await this.loadAssets();
+    
+    // Load level data
+    this.addMessage('Loading level data...', 'info');
+    this.levelData = await this.levelLoader.loadLevel(levelPath);
+    this.addMessage(`Level loaded: ${this.levelData.name}`, 'success');
+    
+    // Apply terrain features and decorations
+    this.levelLoader.applyLevel();
+    
+    // Create NPCs from level data
+    const npcConfigs = this.levelLoader.getNPCs();
+    this.createNPCsFromConfig(npcConfigs);
+    
+    // Create monsters from level data
+    const monsterConfigs = this.levelLoader.getMonsters();
+    this.createMonstersFromConfig(monsterConfigs, updateQuestProgressFn);
+    
+    // Create chests from level data
+    const chestConfigs = this.levelLoader.getChests();
+    this.createChestsFromConfig(chestConfigs, inventory);
+    
+    // Still create biome-aware trees and rocks
+    this.createEnvironmentObjects(inventory);
+    
+    this.addMessage('World initialization complete!', 'success');
+  }
+
+  /**
+   * Create NPCs from configuration data
+   * @param {Array} npcConfigs - NPC configuration array
+   */
+  createNPCsFromConfig(npcConfigs) {
+    if (!npcConfigs || npcConfigs.length === 0) {
+      return;
+    }
+
+    npcConfigs.forEach(config => {
+      // Create NPC data matching existing format
+      const npc = {
+        id: config.id,
+        name: config.name,
+        type: config.type,
+        position: config.position,
+        modelName: config.modelName,
+        dialogue: config.dialogue
+      };
+      
+      this.npcs.push(npc);
+      const npcObj = this.npcFactory.createNPCMesh(npc, this.scene);
+      this.environmentObjects.push(npcObj);
+
+      // Position NPCs on terrain
+      if (this.terrainGenerator && npc.mesh) {
+        const terrainHeight = this.terrainGenerator.getHeightAt(npc.position.x, npc.position.z);
+        npc.mesh.position.y = terrainHeight;
+      }
+
+      // Lift certain NPCs slightly
+      if (npc.id === 'elder' || npc.id === 'guard') {
+        try {
+          const meshGroup = npc.mesh;
+          let lift = 0.5;
+          if (meshGroup && meshGroup.children && meshGroup.children.length > 0) {
+            const firstChild = meshGroup.children.find(c => c.isMesh || c.isGroup) || meshGroup.children[0];
+            const bbox = new THREE.Box3().setFromObject(firstChild);
+            const size = bbox.getSize(new THREE.Vector3());
+            const h = size.y || 1.0;
+            lift = h * 0.25;
+          }
+          meshGroup.position.y += lift;
+        } catch (err) {
+          console.warn('Failed to lift NPC', npc.id, err);
+        }
+      }
+    });
+
+    this.addMessage(`Created ${npcConfigs.length} NPCs from level data`, 'info');
+  }
+
+  /**
+   * Create monsters from configuration data
+   * @param {Array} monsterConfigs - Monster configuration array
+   * @param {Function} updateQuestProgressFn - Quest progress callback
+   */
+  createMonstersFromConfig(monsterConfigs, updateQuestProgressFn) {
+    if (!monsterConfigs || monsterConfigs.length === 0) {
+      return;
+    }
+
+    monsterConfigs.forEach(config => {
+      let monster = null;
+      const x = config.position.x;
+      const z = config.position.z;
+
+      // Create monster based on type
+      switch (config.type) {
+        case 'goblin':
+          monster = this.monsterFactory.createGoblin(x, z, updateQuestProgressFn);
+          this.goblins.push(monster);
+          break;
+        case 'skeleton':
+          monster = this.monsterFactory.createSkeleton(x, z, updateQuestProgressFn);
+          this.monsters.push(monster);
+          break;
+        case 'spider':
+          monster = this.monsterFactory.createSpider(x, z, updateQuestProgressFn);
+          this.monsters.push(monster);
+          break;
+        case 'wolf':
+          monster = this.monsterFactory.createWolf(x, z, updateQuestProgressFn);
+          this.monsters.push(monster);
+          break;
+        case 'bear':
+          monster = this.monsterFactory.createBear(x, z, updateQuestProgressFn);
+          this.monsters.push(monster);
+          break;
+        case 'orc':
+          monster = this.monsterFactory.createOrc(x, z, updateQuestProgressFn);
+          this.monsters.push(monster);
+          break;
+        case 'troll':
+          monster = this.monsterFactory.createTroll(x, z, updateQuestProgressFn);
+          this.monsters.push(monster);
+          break;
+        case 'bat':
+          monster = this.monsterFactory.createBat(x, z, updateQuestProgressFn);
+          this.monsters.push(monster);
+          break;
+        case 'dragon':
+          monster = this.monsterFactory.createDragon(x, z, updateQuestProgressFn);
+          this.monsters.push(monster);
+          break;
+        default:
+          console.warn(`Unknown monster type: ${config.type}`);
+          return;
+      }
+
+      if (monster) {
+        // Override stats from config if provided
+        if (config.hp) monster.maxHp = config.hp;
+        if (config.hp) monster.hp = config.hp;
+        if (config.damage) monster.damage = config.damage;
+        if (config.xp) monster.xp = config.xp;
+        if (config.stance) monster.stance = config.stance;
+        if (config.level) monster.level = config.level;
+
+        // Position on terrain
+        this.positionMonsterOnTerrain(monster);
+        this.environmentObjects.push(monster);
+      }
+    });
+
+    this.addMessage(`Created ${monsterConfigs.length} monsters from level data`, 'info');
+  }
+
+  /**
+   * Create chests from configuration data
+   * @param {Array} chestConfigs - Chest configuration array
+   * @param {Object} inventory - Inventory system
+   */
+  createChestsFromConfig(chestConfigs, inventory) {
+    if (!chestConfigs || chestConfigs.length === 0) {
+      return;
+    }
+
+    chestConfigs.forEach(config => {
+      const x = config.position.x;
+      const z = config.position.z;
+      const height = this.terrainGenerator ? this.terrainGenerator.getHeightAt(x, z) : 0;
+
+      const chest = this.environmentFactory.createChest(x, z, Item, inventory, () => {});
+      
+      if (chest.mesh) {
+        chest.mesh.position.y = height + 0.2;
+      }
+      
+      // Mark as magical chest if specified
+      if (config.type === 'magical') {
+        chest.type = 'magical_chest';
+      }
+
+      this.environmentObjects.push(chest);
+    });
+
+    this.addMessage(`Created ${chestConfigs.length} chests from level data`, 'info');
+  }
+
+  /**
+   * Initialize the complete world (legacy method - creates default world)
    * @param {Object} inventory - Inventory system
    * @param {Function} updateQuestProgressFn - Function to update quest progress
    */

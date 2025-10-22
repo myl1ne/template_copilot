@@ -882,7 +882,8 @@ function monsterAttackPlayer(monster) {
   // Initialize merchant inventory after loot system is available
   dialogueSystem.initMerchantInventory(LootSystem);
   
-  await worldInitializer.initWorld(
+  await worldInitializer.initFromLevel(
+    '/levels/world_rpg_v2.json',
     playerInventory,
     (objectiveId, amount) => {
       questManager.updateProgress(

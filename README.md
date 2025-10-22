@@ -70,6 +70,32 @@ After using this template:
 - **GitHub Integration** - Seamless connection with development workflow
 - **Living Documents** - Documentation that stays current with development
 
+## 🎮 RPG Game & Level Editor
+
+This repository includes a full-featured 3D RPG game built with Three.js and a comprehensive level editor.
+
+### Features
+- **3D Terrain Generation**: Procedurally generated landscapes with biomes
+- **Character System**: Player with inventory, skills, and progression
+- **NPCs & Quests**: Interactive characters with dialogue and quest system
+- **Combat System**: Real-time combat with monsters and loot
+- **Level Editor**: Create and modify game levels with terrain editing, NPC placement, and monster spawning
+
+### Quick Start
+```bash
+npm install
+npm run dev
+```
+
+Then visit:
+- **Main Game**: http://localhost:3000/world-rpg.html
+- **Level Editor**: http://localhost:3000/level-editor.html
+
+### Level Editor Usage
+- **In-Game**: Press **P** to toggle level editor while playing
+- **Standalone**: Visit `/level-editor.html` for full editing features
+- **Documentation**: See [Level Editor Guide](docs/level-editor-guide.md)
+
 ---
 
 ## Template Information

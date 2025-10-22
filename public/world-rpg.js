@@ -24,6 +24,7 @@ import { DialogueSystem } from './modules/DialogueSystem.js';
 import { SkillSystem } from './modules/SkillSystem.js';
 import { WorldInitializer } from './modules/WorldInitializer.js';
 import { BestiarySystem } from './modules/BestiarySystem.js';
+import { LevelEditor } from './modules/LevelEditor.js';
 
 // ===== INITIALIZE WORLD SETUP =====
 const worldSetup = new WorldSetup({ useAdvancedTerrain: true });
@@ -56,6 +57,9 @@ let questManager, skillSystem, combatSystem, cameraController, animationControll
 
 // ===== INITIALIZE BESTIARY SYSTEM =====
 const bestiarySystem = new BestiarySystem(addMessage);
+
+// ===== INITIALIZE LEVEL EDITOR =====
+let levelEditor = null; // Will be initialized after camera and renderer are available
 
 // ===== INITIALIZE FACTORIES =====
 const npcFactory = new NPCFactory(characterLoader);
@@ -209,6 +213,23 @@ window.closeMonsterDetails = function() {
 
 // Global function to close bestiary
 window.closeBestiary = closeBestiary;
+
+// Level Editor Functions
+window.saveLevelFromGame = function() {
+  if (levelEditor) {
+    const levelName = document.getElementById('editor-level-name').value || 'world_rpg_custom';
+    levelEditor.saveLevel(levelName);
+    addMessage(`Level saved: ${levelName}.json`, 'success');
+  }
+};
+
+window.closeLevelEditorMenu = function() {
+  if (levelEditor) {
+    levelEditor.toggle();
+    document.getElementById('level-editor-menu').style.display = 'none';
+    addMessage('Level Editor Disabled', 'info');
+  }
+};
 
 function updateSkillsUI() {
   // Update attribute points available
@@ -565,6 +586,19 @@ window.addEventListener('keydown', (e) => {
     }
   }
   
+  // Toggle level editor with 'P' key
+  if (e.key.toLowerCase() === 'p' && levelEditor) {
+    const enabled = levelEditor.toggle();
+    const editorMenu = document.getElementById('level-editor-menu');
+    if (enabled) {
+      editorMenu.style.display = 'block';
+      addMessage('🛠️ Level Editor Enabled - Terrain editing active', 'info');
+    } else {
+      editorMenu.style.display = 'none';
+      addMessage('🛠️ Level Editor Disabled', 'info');
+    }
+  }
+  
   // Number keys for skill hotbar
   if (e.key >= '1' && e.key <= '5') {
     const slotIndex = parseInt(e.key) - 1;
@@ -873,6 +907,17 @@ function monsterAttackPlayer(monster) {
   uiManager.updateQuestUI(questManager.getActiveQuests());
   updateUI();
   addMessage('Explore the world! Use WASD to move, I for inventory', 'info');
+  
+  // ===== INITIALIZE LEVEL EDITOR =====
+  levelEditor = new LevelEditor(
+    scene,
+    terrainGenerator,
+    npcFactory,
+    monsterFactory,
+    camera,
+    renderer
+  );
+  addMessage('Press P to toggle Level Editor', 'info');
 })();
 
 // ===== ANIMATION LOOP =====

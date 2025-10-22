@@ -1208,6 +1208,7 @@
         <p><strong>I</strong> - Inventory</p>
         <p><strong>K</strong> - Skills</p>
         <p><strong>B</strong> - Bestiary</p>
+        <p><strong>P</strong> - Level Editor</p>
         <p><strong>Right Mouse</strong> - Rotate Camera</p>
         <p><strong>Mouse Wheel</strong> - Zoom</p>
     </div>
@@ -1498,6 +1499,76 @@
         </div>
         
         <button class="close-btn" onclick="closeSkillsPanel()">Close (K)</button>
+    </div>
+    
+    <!-- Level Editor Mini Menu -->
+    <div id="level-editor-menu" style="
+        display: none;
+        position: absolute;
+        top: 50%;
+        right: 20px;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.95);
+        border-radius: 15px;
+        padding: 20px;
+        width: 250px;
+        backdrop-filter: blur(15px);
+        border: 3px solid rgba(74, 222, 128, 0.5);
+        pointer-events: auto;
+        z-index: 1000;
+    ">
+        <h2 style="margin: 0 0 15px 0; color: #4ade80; font-size: 20px; border-bottom: 2px solid #4ade80; padding-bottom: 8px;">🛠️ Level Editor</h2>
+        
+        <p style="font-size: 12px; color: #cbd5e1; margin: 10px 0;">
+            Editor is now active! A green brush indicator will follow your cursor.
+        </p>
+        
+        <div style="margin: 15px 0;">
+            <label style="font-size: 13px; color: #94a3b8; display: block; margin-bottom: 8px;">Level Name</label>
+            <input type="text" id="editor-level-name" value="world_rpg_custom" style="
+                width: 100%;
+                background: rgba(255, 255, 255, 0.1);
+                border: 2px solid rgba(255, 255, 255, 0.2);
+                border-radius: 6px;
+                padding: 8px;
+                color: white;
+                font-size: 14px;
+            ">
+        </div>
+        
+        <button onclick="saveLevelFromGame()" style="
+            width: 100%;
+            background: #4ade80;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 8px 0;
+            transition: all 0.2s;
+        ">💾 Save Level</button>
+        
+        <button onclick="closeLevelEditorMenu()" style="
+            width: 100%;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 8px 0;
+            transition: all 0.2s;
+        ">Close Editor (P)</button>
+        
+        <div style="margin-top: 15px; padding: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; font-size: 11px; color: #94a3b8;">
+            <p style="margin: 5px 0;"><strong>Click & Drag</strong> - Raise terrain</p>
+            <p style="margin: 5px 0;"><strong>Shift + Click</strong> - Lower terrain</p>
+            <p style="margin: 5px 0;">For more editing options, visit the dedicated <a href="/level-editor.html" target="_blank" style="color: #4ade80;">Level Editor page</a></p>
+        </div>
     </div>
     
     <script type="module" src="/world-rpg.js"></script>

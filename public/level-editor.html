@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Level Editor</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        /* Editor Controls Panel */
+        #editor-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            color: white;
+            min-width: 300px;
+            max-width: 350px;
+            backdrop-filter: blur(10px);
+            border: 3px solid rgba(74, 222, 128, 0.5);
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        
+        #editor-panel h2 {
+            margin: 0 0 15px 0;
+            color: #4ade80;
+            font-size: 24px;
+            border-bottom: 2px solid #4ade80;
+            padding-bottom: 10px;
+        }
+        
+        #editor-panel h3 {
+            margin: 15px 0 10px 0;
+            color: #60a5fa;
+            font-size: 16px;
+        }
+        
+        .editor-section {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .mode-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .mode-btn {
+            background: rgba(96, 165, 250, 0.2);
+            color: #60a5fa;
+            border: 2px solid #60a5fa;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .mode-btn:hover {
+            background: rgba(96, 165, 250, 0.3);
+            transform: scale(1.05);
+        }
+        
+        .mode-btn.active {
+            background: #60a5fa;
+            color: black;
+        }
+        
+        .control-group {
+            margin: 12px 0;
+        }
+        
+        .control-label {
+            display: block;
+            font-size: 13px;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+        }
+        
+        .control-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 8px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .control-input:focus {
+            outline: none;
+            border-color: #4ade80;
+        }
+        
+        .action-btn {
+            width: 100%;
+            background: #4ade80;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 8px 0;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            background: #22c55e;
+            transform: scale(1.02);
+        }
+        
+        .action-btn.secondary {
+            background: #60a5fa;
+        }
+        
+        .action-btn.secondary:hover {
+            background: #3b82f6;
+        }
+        
+        .action-btn.danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .action-btn.danger:hover {
+            background: #dc2626;
+        }
+        
+        select.control-input {
+            cursor: pointer;
+            background: rgba(30, 30, 30, 0.9);
+        }
+        
+        select.control-input option {
+            background: #1a1a1a;
+            color: white;
+            padding: 8px;
+        }
+        
+        .info-text {
+            font-size: 12px;
+            color: #94a3b8;
+            margin: 8px 0;
+            line-height: 1.4;
+        }
+        
+        .toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #4ade80;
+            color: black;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .toggle-btn:hover {
+            background: #22c55e;
+            transform: scale(1.05);
+        }
+        
+        .toggle-btn.active {
+            background: #ef4444;
+            color: white;
+        }
+        
+        /* File Input Styling */
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-label {
+            display: block;
+            background: #a78bfa;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        .file-input-label:hover {
+            background: #8b5cf6;
+        }
+        
+        /* Status Message */
+        #status-message {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 10px;
+            padding: 15px 30px;
+            color: white;
+            font-size: 14px;
+            display: none;
+            backdrop-filter: blur(10px);
+            border: 2px solid #4ade80;
+        }
+        
+        #status-message.show {
+            display: block;
+        }
+        
+        /* Help Panel */
+        #help-panel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(74, 222, 128, 0.3);
+        }
+        
+        #help-panel h4 {
+            margin: 0 0 10px 0;
+            color: #4ade80;
+            font-size: 14px;
+        }
+        
+        #help-panel p {
+            margin: 5px 0;
+            font-size: 12px;
+            color: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    
+    <!-- Editor Toggle Button -->
+    <button id="toggle-editor" class="toggle-btn">🛠️ Enable Editor</button>
+    
+    <!-- Editor Controls Panel -->
+    <div id="editor-panel">
+        <h2>🛠️ Level Editor</h2>
+        
+        <!-- Mode Selection -->
+        <div class="editor-section">
+            <h3>📝 Edit Mode</h3>
+            <div class="mode-buttons">
+                <button class="mode-btn active" data-mode="terrain">🏔️ Terrain</button>
+                <button class="mode-btn" data-mode="npc">👤 NPCs</button>
+                <button class="mode-btn" data-mode="monster">👹 Monsters</button>
+                <button class="mode-btn" data-mode="quest">📜 Quests</button>
+            </div>
+        </div>
+        
+        <!-- Terrain Controls -->
+        <div class="editor-section" id="terrain-controls">
+            <h3>🏔️ Terrain Editor</h3>
+            <div class="control-group">
+                <label class="control-label">Brush Size</label>
+                <input type="range" class="control-input" id="brush-size" min="1" max="20" value="5" step="0.5">
+                <span id="brush-size-value" style="color: #4ade80;">5</span>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Brush Strength</label>
+                <input type="range" class="control-input" id="brush-strength" min="0.1" max="2" value="0.5" step="0.1">
+                <span id="brush-strength-value" style="color: #4ade80;">0.5</span>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Paint Color</label>
+                <input type="color" class="control-input" id="terrain-color" value="#3a7d44" style="height: 40px; cursor: pointer;">
+            </div>
+            <div class="control-group">
+                <label class="control-label">
+                    <input type="checkbox" id="paint-mode" style="margin-right: 8px;">
+                    Paint Mode (Color instead of Height)
+                </label>
+            </div>
+            <p class="info-text">💡 Click and drag to raise terrain. Hold Shift to lower. Enable Paint Mode to paint colors.</p>
+        </div>
+        
+        <!-- NPC Controls -->
+        <div class="editor-section" id="npc-controls" style="display: none;">
+            <h3>👤 NPC Placement</h3>
+            <div class="control-group">
+                <label class="control-label">NPC Type</label>
+                <select class="control-input" id="npc-type">
+                    <option value="">Select NPC Type</option>
+                    <option value="quest_giver">Quest Giver</option>
+                    <option value="merchant">Merchant</option>
+                    <option value="guard">Guard</option>
+                    <option value="hermit">Hermit</option>
+                    <option value="villager">Villager</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label class="control-label">NPC Model</label>
+                <select class="control-input" id="npc-model">
+                    <option value="">Default</option>
+                    <option value="baelin">Baelin</option>
+                    <option value="paladin">Paladin</option>
+                    <option value="peasant">Peasant</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label class="control-label">NPC Name</label>
+                <input type="text" class="control-input" id="npc-name" placeholder="Enter NPC name">
+            </div>
+            <p class="info-text">💡 Click on terrain to place NPC.</p>
+        </div>
+        
+        <!-- Monster Controls -->
+        <div class="editor-section" id="monster-controls" style="display: none;">
+            <h3>👹 Monster Placement</h3>
+            <div class="control-group">
+                <label class="control-label">Monster Type</label>
+                <select class="control-input" id="monster-type">
+                    <option value="">Select Monster Type</option>
+                    <option value="goblin">Goblin</option>
+                    <option value="orc">Orc</option>
+                    <option value="spider">Spider</option>
+                    <option value="wolf">Wolf</option>
+                    <option value="bear">Bear</option>
+                    <option value="dragon">Dragon (Boss)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label class="control-label">Stance</label>
+                <select class="control-input" id="monster-stance">
+                    <option value="defensive">Defensive (Default)</option>
+                    <option value="aggressive">Aggressive</option>
+                    <option value="flee">Flee</option>
+                </select>
+            </div>
+            <p class="info-text">💡 Click on terrain to place monster.</p>
+        </div>
+        
+        <!-- Quest Controls -->
+        <div class="editor-section" id="quest-controls" style="display: none;">
+            <h3>📜 Quest Management</h3>
+            <p class="info-text">Quest management coming soon! Currently, quests are defined in QuestFactory.js</p>
+            <button class="action-btn secondary">View Quest Templates</button>
+        </div>
+        
+        <!-- Save/Load Controls -->
+        <div class="editor-section">
+            <h3>💾 Save & Load</h3>
+            <div class="control-group">
+                <label class="control-label">Level Name</label>
+                <input type="text" class="control-input" id="level-name" placeholder="my_custom_level" value="custom_level">
+            </div>
+            <button class="action-btn" id="save-level">💾 Save Level (3 files)</button>
+            <p class="info-text" style="font-size: 11px; margin: 5px 0;">Saves: .json (objects), _heightmap.png, _colormap.png</p>
+            <div class="file-input-wrapper">
+                <input type="file" id="load-level-input" accept=".json,.png" multiple>
+                <label for="load-level-input" class="file-input-label">📂 Load Level Files</label>
+            </div>
+            <p class="info-text" style="font-size: 11px; margin: 5px 0;">Select all 3 files: .json, _heightmap.png, _colormap.png</p>
+            <button class="action-btn danger" id="clear-level">🗑️ Clear Level</button>
+        </div>
+        
+        <!-- Level Info -->
+        <div class="editor-section">
+            <h3>ℹ️ Level Info</h3>
+            <p class="info-text">
+                NPCs: <span id="npc-count" style="color: #4ade80;">0</span><br>
+                Monsters: <span id="monster-count" style="color: #4ade80;">0</span><br>
+                Quests: <span id="quest-count" style="color: #4ade80;">0</span>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Status Message -->
+    <div id="status-message"></div>
+    
+    <!-- Help Panel -->
+    <div id="help-panel">
+        <h4>⌨️ Editor Controls</h4>
+        <p><strong>WASD / Arrow Keys</strong> - Move Camera</p>
+        <p><strong>Space / Shift</strong> - Move Camera Up/Down</p>
+        <p><strong>Left Click</strong> - Place/Edit</p>
+        <p><strong>Shift + Click</strong> - Lower Terrain</p>
+        <p><strong>Right Click</strong> - Rotate Camera</p>
+        <p><strong>Mouse Wheel</strong> - Zoom</p>
+        <p><strong>E</strong> - Toggle Editor</p>
+    </div>
+    
+    <script type="module" src="/level-editor.js"></script>
+</body>
+</html>

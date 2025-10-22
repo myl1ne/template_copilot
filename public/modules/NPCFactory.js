@@ -65,32 +65,28 @@ export class NPCFactory {
      */
     createNPCMesh(npc, scene) {
         const npcGroup = new THREE.Group();
-        
+
         // Try to use FBX model if available
         if (npc.modelName && this.characterLoader.hasCharacter(npc.modelName)) {
-            // Clone the loaded model — the loader already applies the proper scale
-            const charModel = SkeletonUtils.clone(this.characterLoader.getModel(npc.modelName));
-            // Make characters slightly bigger than the normalized size (hardcoded factor)
-            charModel.scale.multiplyScalar(1.5); // increase size by 1.5x
+            // Deep-clone skinned model (preserves skeleton/bones)
+            const sourceModel = this.characterLoader.getModel(npc.modelName);
+            const charModel = SkeletonUtils.clone(sourceModel);
+
             // Ensure the clone faces forward
             charModel.rotation.y = Math.PI;
 
-            // Configure meshes: enable shadows and disable frustum culling for skinned meshes
-            // (skinned meshes can sometimes be incorrectly culled)
             // Lift the cloned model slightly so it doesn't intersect the ground
-            // (some FBX origins place geometry slightly below the world origin)
             if (charModel.position) charModel.position.y += 0.05;
 
+            // Configure child meshes
             charModel.traverse((child) => {
                 if (child.isMesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
-                    // Some FBX/skinned meshes have bounding/skeleton offsets that make
-                    // frustum culling remove them unexpectedly. Disable culling to be safe.
                     child.frustumCulled = false;
                 }
             });
-            
+
             npcGroup.add(charModel);
 
             // Setup animation mixer if animations are available
@@ -105,7 +101,7 @@ export class NPCFactory {
             // Fallback to primitive shapes
             this.createPrimitiveNPC(npcGroup, npc.type);
         }
-        
+
         // Add floating indicator icon
         const iconGeo = new THREE.SphereGeometry(0.15, 16, 16);
         const iconColor = npc.type === 'merchant' ? 0xfbbf24 : 0x22c55e;
@@ -117,13 +113,15 @@ export class NPCFactory {
         const icon = new THREE.Mesh(iconGeo, iconMat);
         icon.position.y = 2.7;
         npcGroup.add(icon);
-        
-        npcGroup.position.set(npc.position.x, 0, npc.position.z);
+
+        // Use provided Y if available (e.g., when loading a level), otherwise default to 0
+        const posY = (npc.position && typeof npc.position.y === 'number') ? npc.position.y : 0;
+        npcGroup.position.set(npc.position.x, posY, npc.position.z);
         scene.add(npcGroup);
-        
+
         npc.mesh = npcGroup;
         npc.icon = icon;
-        
+
         return {
             type: 'npc',
             npc: npc,

@@ -159,6 +159,36 @@ npcModelSelect.addEventListener('change', (e) => {
     }
 });
 
+// Populate NPC model select using loaded FBX character names
+function populateNPCModelSelect() {
+    // Clear current options
+    while (npcModelSelect.firstChild) npcModelSelect.removeChild(npcModelSelect.firstChild);
+
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = 'Default';
+    npcModelSelect.appendChild(defaultOpt);
+
+    // characterLoader.loadedModels should contain names loaded by FBXCharacterLoader
+    if (characterLoader && characterLoader.loadedModels) {
+        // Only include keys that look like model identifiers (alphanumeric, -, _)
+        const keys = Object.keys(characterLoader.loadedModels || {}).filter(k => /^[a-z0-9_-]+$/i.test(k));
+
+        // Add a couple of common non-FBX fallbacks the editor expects
+        const fallbackModels = ['paladin', 'peasant'];
+
+        const allModels = Array.from(new Set([...keys, ...fallbackModels]));
+        allModels.sort();
+
+        allModels.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+            npcModelSelect.appendChild(opt);
+        });
+    }
+}
+
 // NPC name input
 npcNameInput.addEventListener('input', (e) => {
     const type = npcTypeSelect.value;
@@ -387,6 +417,8 @@ async function init() {
     console.log('Level Editor ready!');
     showStatus('Level Editor Ready! Press E or click the button to start editing.');
     updateLevelInfo();
+    // Populate NPC model select from loaded FBX models used by the world RPG
+    populateNPCModelSelect();
     
     // Start animation loop
     animate(0);

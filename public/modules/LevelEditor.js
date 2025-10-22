@@ -382,12 +382,13 @@ export class LevelEditor {
         monsterMesh.userData.isMonsterMarker = true;
         monsterMesh.userData.monsterType = type;
         this.scene.add(monsterMesh);
+        console.log('Added monster mesh:', type, 'at', position);
     }
     
     /**
      * Add visual marker for placed NPC
      */
-    async addNPCMarker(position, npcData) {
+    addNPCMarker(position, npcData) {
         // Try to use loaded FBX model if available
         if (this.npcFactory && this.npcFactory.characterLoader) {
             const modelName = npcData.modelName || 'peasant';
@@ -401,6 +402,7 @@ export class LevelEditor {
                 npcMesh.userData.isNPCMarker = true;
                 npcMesh.userData.npcData = npcData;
                 this.scene.add(npcMesh);
+                console.log('Added NPC FBX mesh:', modelName, 'at', position);
                 return;
             }
         }
@@ -413,6 +415,7 @@ export class LevelEditor {
         marker.userData.isNPCMarker = true;
         marker.userData.npcData = npcData;
         this.scene.add(marker);
+        console.log('Added NPC cone marker at', position);
     }
     
     /**

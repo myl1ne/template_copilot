@@ -1,0 +1,541 @@
+{
+  "name": "enchanted_forest",
+  "description": "A magical realm where ancient trees whisper secrets and mystical creatures roam",
+  "version": "1.0",
+  "terrain": {
+    "size": 100,
+    "segments": 100,
+    "heightScale": 8,
+    "waterLevel": 3.0,
+    "seed": 88888
+  },
+  "npcs": [
+    {
+      "id": "druid_elder",
+      "name": "Arch Druid Sylvanas",
+      "type": "elder",
+      "position": { "x": 0, "z": 0 },
+      "modelName": "Wizard",
+      "dialogue": "The forest speaks to those who listen. What does your heart seek?"
+    },
+    {
+      "id": "elf_ranger",
+      "name": "Elven Ranger",
+      "type": "guard",
+      "position": { "x": 10, "z": 10 },
+      "modelName": "Soldier",
+      "dialogue": "I protect the sacred groves from those who would harm them."
+    },
+    {
+      "id": "fairy_merchant",
+      "name": "Pixie Trader",
+      "type": "merchant",
+      "position": { "x": -12, "z": 8 },
+      "modelName": "peasant",
+      "dialogue": "Magical trinkets and enchanted wares! All blessed by the forest!"
+    },
+    {
+      "id": "hermit_wizard",
+      "name": "Forest Wizard",
+      "type": "hermit",
+      "position": { "x": -30, "z": -30 },
+      "modelName": "Wizard",
+      "dialogue": "I've studied the arcane arts in this forest for centuries."
+    },
+    {
+      "id": "nature_priest",
+      "name": "Nature Priestess",
+      "type": "hermit",
+      "position": { "x": 25, "z": 25 },
+      "modelName": "Wizard",
+      "dialogue": "The spirits bless those who respect nature's balance."
+    },
+    {
+      "id": "wood_carver",
+      "name": "Master Woodcarver",
+      "type": "blacksmith",
+      "position": { "x": 5, "z": -8 },
+      "modelName": "peasant",
+      "dialogue": "I craft bows and staves from the forest's blessed wood."
+    }
+  ],
+  "monsters": [
+    {
+      "type": "spider",
+      "position": { "x": -20, "z": -20 },
+      "hp": 95,
+      "damage": 20,
+      "xp": 65,
+      "stance": "aggressive",
+      "level": 2
+    },
+    {
+      "type": "spider",
+      "position": { "x": -18, "z": -22 },
+      "hp": 95,
+      "damage": 20,
+      "xp": 65,
+      "stance": "aggressive",
+      "level": 2
+    },
+    {
+      "type": "spider",
+      "position": { "x": -22, "z": -18 },
+      "hp": 95,
+      "damage": 20,
+      "xp": 65,
+      "stance": "aggressive",
+      "level": 2
+    },
+    {
+      "type": "wolf",
+      "position": { "x": 20, "z": -25 },
+      "hp": 120,
+      "damage": 24,
+      "xp": 80,
+      "stance": "defensive",
+      "level": 3
+    },
+    {
+      "type": "wolf",
+      "position": { "x": 22, "z": -23 },
+      "hp": 120,
+      "damage": 24,
+      "xp": 80,
+      "stance": "defensive",
+      "level": 3
+    },
+    {
+      "type": "wolf",
+      "position": { "x": 18, "z": -27 },
+      "hp": 120,
+      "damage": 24,
+      "xp": 80,
+      "stance": "defensive",
+      "level": 3
+    },
+    {
+      "type": "bear",
+      "position": { "x": -35, "z": 10 },
+      "hp": 220,
+      "damage": 38,
+      "xp": 160,
+      "stance": "defensive",
+      "level": 5
+    },
+    {
+      "type": "goblin",
+      "position": { "x": 30, "z": 10 },
+      "hp": 90,
+      "damage": 18,
+      "xp": 55,
+      "stance": "aggressive",
+      "level": 2
+    },
+    {
+      "type": "goblin",
+      "position": { "x": 28, "z": 12 },
+      "hp": 90,
+      "damage": 18,
+      "xp": 55,
+      "stance": "aggressive",
+      "level": 2
+    },
+    {
+      "type": "goblin",
+      "position": { "x": 32, "z": 8 },
+      "hp": 90,
+      "damage": 18,
+      "xp": 55,
+      "stance": "aggressive",
+      "level": 2
+    },
+    {
+      "type": "troll",
+      "position": { "x": -15, "z": 30 },
+      "hp": 260,
+      "damage": 42,
+      "xp": 190,
+      "stance": "aggressive",
+      "level": 7
+    },
+    {
+      "type": "troll",
+      "position": { "x": -12, "z": 32 },
+      "hp": 260,
+      "damage": 42,
+      "xp": 190,
+      "stance": "aggressive",
+      "level": 7
+    },
+    {
+      "type": "bat",
+      "position": { "x": 0, "z": -35 },
+      "hp": 75,
+      "damage": 16,
+      "xp": 45,
+      "stance": "aggressive",
+      "level": 2
+    },
+    {
+      "type": "bat",
+      "position": { "x": 2, "z": -37 },
+      "hp": 75,
+      "damage": 16,
+      "xp": 45,
+      "stance": "aggressive",
+      "level": 2
+    }
+  ],
+  "buildings": [
+    {
+      "type": "house",
+      "position": { "x": 5, "z": 5 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Druid's Grove"
+    },
+    {
+      "type": "house",
+      "position": { "x": -15, "z": 10 },
+      "rotation": 1.57,
+      "scale": 1.0,
+      "name": "Fairy House"
+    },
+    {
+      "type": "house",
+      "position": { "x": 12, "z": 12 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Ranger's Lodge"
+    },
+    {
+      "type": "tower",
+      "position": { "x": 0, "z": 15 },
+      "rotation": 0,
+      "scale": 1.2,
+      "name": "Moonlight Tower"
+    },
+    {
+      "type": "well",
+      "position": { "x": -5, "z": 5 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Sacred Spring"
+    },
+    {
+      "type": "market_stall",
+      "position": { "x": -10, "z": 8 },
+      "rotation": 0.785,
+      "scale": 1.0,
+      "name": "Enchanted Market"
+    },
+    {
+      "type": "bridge",
+      "position": { "x": 0, "z": -10 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Mossy Bridge"
+    },
+    {
+      "type": "lighthouse",
+      "position": { "x": 25, "z": 28 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Sacred Beacon"
+    }
+  ],
+  "props": [
+    {
+      "type": "campfire",
+      "position": { "x": 0, "z": 8 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "mushroom",
+      "position": { "x": -5, "z": -5 },
+      "rotation": 0,
+      "scale": 1.2
+    },
+    {
+      "type": "mushroom",
+      "position": { "x": -7, "z": -3 },
+      "rotation": 0.5,
+      "scale": 1.0
+    },
+    {
+      "type": "mushroom",
+      "position": { "x": -3, "z": -7 },
+      "rotation": -0.3,
+      "scale": 1.3
+    },
+    {
+      "type": "mushroom",
+      "position": { "x": -6, "z": -6 },
+      "rotation": 1.2,
+      "scale": 0.9
+    },
+    {
+      "type": "mushroom",
+      "position": { "x": -8, "z": -4 },
+      "rotation": -0.7,
+      "scale": 1.1
+    },
+    {
+      "type": "mushroom",
+      "position": { "x": -30, "z": -28 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "mushroom",
+      "position": { "x": -32, "z": -30 },
+      "rotation": 0.8,
+      "scale": 1.2
+    },
+    {
+      "type": "crystal",
+      "position": { "x": 0, "z": 0 },
+      "rotation": 0,
+      "scale": 1.3,
+      "name": "Heart of the Forest"
+    },
+    {
+      "type": "crystal",
+      "position": { "x": 25, "z": 23 },
+      "rotation": 0,
+      "scale": 1.1,
+      "name": "Nature's Gem"
+    },
+    {
+      "type": "crystal",
+      "position": { "x": -20, "z": -18 },
+      "rotation": 0,
+      "scale": 0.9,
+      "name": "Spider Silk Crystal"
+    },
+    {
+      "type": "lantern",
+      "position": { "x": 4, "z": 6 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "lantern",
+      "position": { "x": 6, "z": 4 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "lantern",
+      "position": { "x": -14, "z": 9 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "lantern",
+      "position": { "x": -16, "z": 11 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "torch",
+      "position": { "x": -1, "z": 14 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "torch",
+      "position": { "x": 1, "z": 16 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "barrel",
+      "position": { "x": -11, "z": 7 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "barrel",
+      "position": { "x": -12, "z": 9 },
+      "rotation": 0.5,
+      "scale": 1.0
+    },
+    {
+      "type": "crate",
+      "position": { "x": -9, "z": 7 },
+      "rotation": 0.3,
+      "scale": 1.0
+    },
+    {
+      "type": "cauldron",
+      "position": { "x": -31, "z": -31 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Wizard's Cauldron"
+    },
+    {
+      "type": "bookshelf",
+      "position": { "x": -29, "z": -29 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "table",
+      "position": { "x": 4, "z": 4 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "chair",
+      "position": { "x": 3, "z": 3 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "chair",
+      "position": { "x": 5, "z": 3 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "signpost",
+      "position": { "x": 0, "z": -5 },
+      "rotation": 0.785,
+      "scale": 1.0,
+      "text": "Sacred Grove"
+    },
+    {
+      "type": "signpost",
+      "position": { "x": -10, "z": -10 },
+      "rotation": -0.785,
+      "scale": 1.0,
+      "text": "Spider Nest - Caution"
+    },
+    {
+      "type": "signpost",
+      "position": { "x": 15, "z": -15 },
+      "rotation": 1.57,
+      "scale": 1.0,
+      "text": "Wolf Den"
+    },
+    {
+      "type": "fence",
+      "position": { "x": 3, "z": -9 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "fence",
+      "position": { "x": 7, "z": -9 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "fence",
+      "position": { "x": 3, "z": -7 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "weapon_rack",
+      "position": { "x": 6, "z": -7 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Ranger's Bows"
+    }
+  ],
+  "chests": [
+    {
+      "position": { "x": -2, "z": 2 },
+      "type": "magical",
+      "loot": "rare"
+    },
+    {
+      "position": { "x": 26, "z": 26 },
+      "type": "magical",
+      "loot": "rare"
+    },
+    {
+      "position": { "x": -21, "z": -21 },
+      "type": "basic",
+      "loot": "random"
+    },
+    {
+      "position": { "x": 21, "z": -26 },
+      "type": "basic",
+      "loot": "random"
+    }
+  ],
+  "terrainFeatures": [
+    {
+      "type": "hill",
+      "position": { "x": 25, "z": 25 },
+      "radius": 9,
+      "height": 4,
+      "name": "Sacred Hill"
+    },
+    {
+      "type": "valley",
+      "position": { "x": 0, "z": -10 },
+      "radius": 6,
+      "depth": 2,
+      "name": "Misty Valley"
+    },
+    {
+      "type": "cave_entrance",
+      "position": { "x": -20, "z": -20 },
+      "radius": 3,
+      "height": 2,
+      "name": "Spider Grotto"
+    },
+    {
+      "type": "cave_entrance",
+      "position": { "x": 0, "z": -35 },
+      "radius": 2.5,
+      "height": 2,
+      "name": "Bat Hollow"
+    },
+    {
+      "type": "hill",
+      "position": { "x": -35, "z": 10 },
+      "radius": 7,
+      "height": 3,
+      "name": "Bear's Mound"
+    }
+  ],
+  "zones": [
+    {
+      "name": "Sacred Grove",
+      "bounds": { "minX": -18, "maxX": 18, "minZ": -8, "maxZ": 18 },
+      "description": "Protected heart of the enchanted forest",
+      "music": "peaceful"
+    },
+    {
+      "name": "Spider Grotto",
+      "bounds": { "minX": -25, "maxX": -15, "minZ": -25, "maxZ": -15 },
+      "description": "Web-covered caves filled with giant spiders",
+      "music": "tense"
+    },
+    {
+      "name": "Wolf Den",
+      "bounds": { "minX": 15, "maxX": 28, "minZ": -30, "maxZ": -20 },
+      "description": "Forest wolves protect their territory",
+      "music": "combat"
+    },
+    {
+      "name": "Goblin Hideout",
+      "bounds": { "minX": 25, "maxX": 35, "minZ": 5, "maxZ": 15 },
+      "description": "Forest goblins lurk in the shadows",
+      "music": "combat"
+    },
+    {
+      "name": "Troll Marshes",
+      "bounds": { "minX": -20, "maxX": -10, "minZ": 25, "maxZ": 35 },
+      "description": "Swamp trolls guard the wetlands",
+      "music": "tense"
+    }
+  ]
+}

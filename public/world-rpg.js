@@ -882,8 +882,14 @@ function monsterAttackPlayer(monster) {
   // Initialize merchant inventory after loot system is available
   dialogueSystem.initMerchantInventory(LootSystem);
   
+  // Get selected level from localStorage, default to world_rpg_v2.json
+  const selectedLevel = localStorage.getItem('selectedLevel') || 'world_rpg_v2.json';
+  const levelPath = `/levels/${selectedLevel}`;
+  
+  addMessage(`Loading level: ${selectedLevel}`, 'info');
+  
   await worldInitializer.initFromLevel(
-    '/levels/world_rpg_v2.json',
+    levelPath,
     playerInventory,
     (objectiveId, amount) => {
       questManager.updateProgress(

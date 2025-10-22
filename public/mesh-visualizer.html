@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesh Library Visualizer - RPG Content Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        #header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-bottom: 3px solid #4ade80;
+            backdrop-filter: blur(10px);
+        }
+
+        #header h1 {
+            font-size: 32px;
+            background: linear-gradient(90deg, #4ade80 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        #header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        #stats-bar {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 20px;
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            border-bottom: 2px solid rgba(74, 222, 128, 0.3);
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        #controls {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group label {
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+
+        select, input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 14px;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #4ade80;
+        }
+
+        button {
+            background: #4ade80;
+            color: black;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: #22c55e;
+            transform: scale(1.05);
+        }
+
+        #main-container {
+            display: flex;
+            height: calc(100vh - 180px);
+        }
+
+        #sidebar {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.7);
+            border-right: 2px solid rgba(74, 222, 128, 0.3);
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .category {
+            margin-bottom: 20px;
+        }
+
+        .category-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4ade80;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #4ade80;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-count {
+            font-size: 14px;
+            background: rgba(74, 222, 128, 0.2);
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .item-button {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 10px;
+            color: #cbd5e1;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+
+        .item-button:hover {
+            background: rgba(74, 222, 128, 0.2);
+            border-color: #4ade80;
+            transform: translateX(5px);
+        }
+
+        .item-button.active {
+            background: rgba(74, 222, 128, 0.3);
+            border-color: #4ade80;
+            color: #4ade80;
+            font-weight: bold;
+        }
+
+        #viewer {
+            flex: 1;
+            position: relative;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 10px;
+            padding: 20px;
+            min-width: 250px;
+            border: 2px solid rgba(74, 222, 128, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        #info-panel h3 {
+            color: #4ade80;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 13px;
+        }
+
+        .info-label {
+            color: #94a3b8;
+        }
+
+        .info-value {
+            color: #cbd5e1;
+            font-weight: bold;
+        }
+
+        #viewer-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 10px;
+            padding: 15px 20px;
+            border: 2px solid rgba(74, 222, 128, 0.5);
+            backdrop-filter: blur(10px);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .viewer-btn {
+            background: rgba(74, 222, 128, 0.2);
+            border: 2px solid #4ade80;
+            color: #4ade80;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .viewer-btn:hover {
+            background: rgba(74, 222, 128, 0.4);
+        }
+
+        .viewer-btn.active {
+            background: #4ade80;
+            color: black;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(74, 222, 128, 0.5);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(74, 222, 128, 0.7);
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-size: 18px;
+            color: #4ade80;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(74, 222, 128, 0.2);
+            border-top-color: #4ade80;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>📚 Mesh Library Visualizer</h1>
+        <p>Browse and preview all 3D models in the RPG mesh library</p>
+    </div>
+
+    <div id="stats-bar">
+        <div class="stat">
+            <div class="stat-value" id="total-count">0</div>
+            <div class="stat-label">Total Models</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="creatures-count">0</div>
+            <div class="stat-label">Creatures</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="buildings-count">0</div>
+            <div class="stat-label">Buildings</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="props-count">0</div>
+            <div class="stat-label">Props</div>
+        </div>
+    </div>
+
+    <div id="controls">
+        <div class="control-group">
+            <label for="search">🔍 Search:</label>
+            <input type="text" id="search" placeholder="Type to search...">
+        </div>
+        <div class="control-group">
+            <label for="filter-category">Category:</label>
+            <select id="filter-category">
+                <option value="all">All Categories</option>
+                <option value="creatures">Creatures</option>
+                <option value="buildings">Buildings</option>
+                <option value="props">Props</option>
+            </select>
+        </div>
+        <div class="control-group" id="animation-controls" style="display: none;">
+            <label for="animation-state">Animation:</label>
+            <select id="animation-state">
+                <option value="idle">Idle</option>
+                <option value="walk">Walk</option>
+                <option value="attack">Attack</option>
+                <option value="attacked">Attacked</option>
+            </select>
+        </div>
+        <button onclick="resetCamera()">Reset Camera</button>
+        <button onclick="autoRotate = !autoRotate">Toggle Rotation</button>
+    </div>
+
+    <div id="main-container">
+        <div id="sidebar">
+            <div class="category" id="creatures-category">
+                <div class="category-header" onclick="toggleCategory('creatures')">
+                    <span>🐉 Creatures</span>
+                    <span class="category-count" id="creatures-cat-count">0</span>
+                </div>
+                <div class="item-list" id="creatures-list"></div>
+            </div>
+
+            <div class="category" id="buildings-category">
+                <div class="category-header" onclick="toggleCategory('buildings')">
+                    <span>🏰 Buildings</span>
+                    <span class="category-count" id="buildings-cat-count">0</span>
+                </div>
+                <div class="item-list" id="buildings-list"></div>
+            </div>
+
+            <div class="category" id="props-category">
+                <div class="category-header" onclick="toggleCategory('props')">
+                    <span>⚔️ Props</span>
+                    <span class="category-count" id="props-cat-count">0</span>
+                </div>
+                <div class="item-list" id="props-list"></div>
+            </div>
+        </div>
+
+        <div id="viewer">
+            <div id="canvas-container"></div>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div>Loading...</div>
+            </div>
+            <div id="info-panel">
+                <h3 id="selected-name">Select a model</h3>
+                <div class="info-row">
+                    <span class="info-label">Category:</span>
+                    <span class="info-value" id="selected-category">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Type:</span>
+                    <span class="info-value" id="selected-type">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Meshes:</span>
+                    <span class="info-value" id="selected-meshes">-</span>
+                </div>
+            </div>
+            <div id="viewer-controls">
+                <span style="color: #94a3b8; font-size: 12px;">Controls:</span>
+                <span style="color: #cbd5e1; font-size: 12px;">🖱️ Drag to rotate • 🔍 Scroll to zoom</span>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/mesh-visualizer.js"></script>
+</body>
+</html>

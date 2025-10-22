@@ -502,13 +502,352 @@ export class PropsLibrary {
     }
 
     /**
+     * Create a treasure chest
+     */
+    static createTreasureChestMesh() {
+        const group = new THREE.Group();
+        
+        const woodMat = new THREE.MeshStandardMaterial({ color: 0x8b7355 });
+        const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9 });
+        
+        // Base
+        const baseGeo = new THREE.BoxGeometry(0.8, 0.5, 0.6);
+        const base = new THREE.Mesh(baseGeo, woodMat);
+        base.position.y = 0.25;
+        base.castShadow = true;
+        group.add(base);
+        
+        // Lid
+        const lidGeo = new THREE.BoxGeometry(0.85, 0.4, 0.65);
+        const lid = new THREE.Mesh(lidGeo, woodMat);
+        lid.position.set(0, 0.6, 0);
+        lid.rotation.x = -Math.PI / 6;
+        lid.castShadow = true;
+        group.add(lid);
+        
+        // Gold bands
+        for (let i = 0; i < 3; i++) {
+            const bandGeo = new THREE.BoxGeometry(0.9, 0.05, 0.7);
+            const band = new THREE.Mesh(bandGeo, goldMat);
+            band.position.y = 0.1 + i * 0.2;
+            group.add(band);
+        }
+        
+        // Lock
+        const lockGeo = new THREE.BoxGeometry(0.15, 0.2, 0.1);
+        const lock = new THREE.Mesh(lockGeo, goldMat);
+        lock.position.set(0, 0.3, 0.36);
+        group.add(lock);
+        
+        return group;
+    }
+
+    /**
+     * Create a potion bottle
+     */
+    static createPotionMesh() {
+        const group = new THREE.Group();
+        
+        // Bottle
+        const bottleGeo = new THREE.CylinderGeometry(0.12, 0.15, 0.5, 16);
+        const bottleMat = new THREE.MeshStandardMaterial({ 
+            color: 0x00ff00,
+            transparent: true,
+            opacity: 0.7
+        });
+        const bottle = new THREE.Mesh(bottleGeo, bottleMat);
+        bottle.position.y = 0.25;
+        bottle.castShadow = true;
+        group.add(bottle);
+        
+        // Cork
+        const corkGeo = new THREE.CylinderGeometry(0.08, 0.1, 0.1, 8);
+        const corkMat = new THREE.MeshStandardMaterial({ color: 0x8b7355 });
+        const cork = new THREE.Mesh(corkGeo, corkMat);
+        cork.position.y = 0.55;
+        group.add(cork);
+        
+        // Liquid (glowing)
+        const liquidGeo = new THREE.CylinderGeometry(0.11, 0.14, 0.4, 16);
+        const liquidMat = new THREE.MeshStandardMaterial({ 
+            color: 0x00ff00,
+            emissive: 0x00ff00,
+            emissiveIntensity: 0.5
+        });
+        const liquid = new THREE.Mesh(liquidGeo, liquidMat);
+        liquid.position.y = 0.2;
+        group.add(liquid);
+        
+        return group;
+    }
+
+    /**
+     * Create a magic staff
+     */
+    static createStaffMesh() {
+        const group = new THREE.Group();
+        
+        // Staff shaft
+        const shaftGeo = new THREE.CylinderGeometry(0.04, 0.05, 1.5, 8);
+        const shaftMat = new THREE.MeshStandardMaterial({ color: 0x4a2511 });
+        const shaft = new THREE.Mesh(shaftGeo, shaftMat);
+        shaft.position.y = 0.75;
+        shaft.castShadow = true;
+        group.add(shaft);
+        
+        // Crystal orb on top
+        const orbGeo = new THREE.SphereGeometry(0.15, 16, 16);
+        const orbMat = new THREE.MeshStandardMaterial({ 
+            color: 0x9370db,
+            emissive: 0x9370db,
+            emissiveIntensity: 1,
+            transparent: true,
+            opacity: 0.8
+        });
+        const orb = new THREE.Mesh(orbGeo, orbMat);
+        orb.position.y = 1.6;
+        group.add(orb);
+        
+        // Crystal spikes around orb
+        for (let i = 0; i < 6; i++) {
+            const angle = (i / 6) * Math.PI * 2;
+            const spikeGeo = new THREE.ConeGeometry(0.03, 0.2, 6);
+            const spike = new THREE.Mesh(spikeGeo, orbMat);
+            spike.position.set(
+                Math.cos(angle) * 0.15,
+                1.6,
+                Math.sin(angle) * 0.15
+            );
+            spike.rotation.z = Math.cos(angle) * Math.PI / 2;
+            spike.rotation.x = Math.sin(angle) * Math.PI / 2;
+            group.add(spike);
+        }
+        
+        return group;
+    }
+
+    /**
+     * Create a shield
+     */
+    static createShieldMesh() {
+        const group = new THREE.Group();
+        
+        // Shield face
+        const shieldGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.1, 16, 1, false, 0, Math.PI * 2);
+        const shieldMat = new THREE.MeshStandardMaterial({ color: 0x4169e1, metalness: 0.8 });
+        const shield = new THREE.Mesh(shieldGeo, shieldMat);
+        shield.position.y = 0.6;
+        shield.rotation.x = Math.PI / 2;
+        shield.castShadow = true;
+        group.add(shield);
+        
+        // Boss (center decoration)
+        const bossGeo = new THREE.SphereGeometry(0.15, 16, 16);
+        const bossMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9 });
+        const boss = new THREE.Mesh(bossGeo, bossMat);
+        boss.position.set(0, 0.6, 0.1);
+        group.add(boss);
+        
+        // Rim
+        const rimGeo = new THREE.TorusGeometry(0.5, 0.04, 8, 16);
+        const rim = new THREE.Mesh(rimGeo, bossMat);
+        rim.position.y = 0.6;
+        rim.rotation.x = Math.PI / 2;
+        group.add(rim);
+        
+        return group;
+    }
+
+    /**
+     * Create a flag/banner
+     */
+    static createFlagMesh() {
+        const group = new THREE.Group();
+        
+        // Pole
+        const poleGeo = new THREE.CylinderGeometry(0.04, 0.04, 2, 8);
+        const poleMat = new THREE.MeshStandardMaterial({ color: 0x8b7355 });
+        const pole = new THREE.Mesh(poleGeo, poleMat);
+        pole.position.y = 1;
+        pole.castShadow = true;
+        group.add(pole);
+        
+        // Banner (red)
+        const bannerGeo = new THREE.BoxGeometry(0.8, 1, 0.02);
+        const bannerMat = new THREE.MeshStandardMaterial({ color: 0xff0000, side: THREE.DoubleSide });
+        const banner = new THREE.Mesh(bannerGeo, bannerMat);
+        banner.position.set(0.4, 1.5, 0);
+        group.add(banner);
+        
+        // Emblem (gold)
+        const emblemGeo = new THREE.BoxGeometry(0.3, 0.3, 0.03);
+        const emblemMat = new THREE.MeshStandardMaterial({ color: 0xffd700 });
+        const emblem = new THREE.Mesh(emblemGeo, emblemMat);
+        emblem.position.set(0.4, 1.5, 0.02);
+        group.add(emblem);
+        
+        return group;
+    }
+
+    /**
+     * Create a fountain
+     */
+    static createFountainMesh() {
+        const group = new THREE.Group();
+        
+        const stoneMat = new THREE.MeshStandardMaterial({ color: 0x8a8a8a });
+        
+        // Base
+        const baseGeo = new THREE.CylinderGeometry(0.8, 0.9, 0.3, 16);
+        const base = new THREE.Mesh(baseGeo, stoneMat);
+        base.position.y = 0.15;
+        base.castShadow = true;
+        group.add(base);
+        
+        // Bowl
+        const bowlGeo = new THREE.SphereGeometry(0.6, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+        const bowl = new THREE.Mesh(bowlGeo, stoneMat);
+        bowl.position.y = 0.3;
+        bowl.castShadow = true;
+        group.add(bowl);
+        
+        // Central pillar
+        const pillarGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.8, 8);
+        const pillar = new THREE.Mesh(pillarGeo, stoneMat);
+        pillar.position.y = 0.7;
+        group.add(pillar);
+        
+        // Water (blue, transparent)
+        const waterGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.1, 16);
+        const waterMat = new THREE.MeshStandardMaterial({ 
+            color: 0x4169e1,
+            transparent: true,
+            opacity: 0.6
+        });
+        const water = new THREE.Mesh(waterGeo, waterMat);
+        water.position.y = 0.45;
+        group.add(water);
+        
+        // Water spray (top)
+        const sprayGeo = new THREE.SphereGeometry(0.12, 8, 8);
+        const spray = new THREE.Mesh(sprayGeo, waterMat);
+        spray.position.y = 1.15;
+        group.add(spray);
+        
+        return group;
+    }
+
+    /**
+     * Create a magical portal
+     */
+    static createPortalMesh() {
+        const group = new THREE.Group();
+        
+        // Portal frame
+        const frameMat = new THREE.MeshStandardMaterial({ color: 0x4a4a4a, metalness: 0.8 });
+        
+        // Pillars
+        const pillarGeo = new THREE.CylinderGeometry(0.15, 0.15, 2.5, 8);
+        const leftPillar = new THREE.Mesh(pillarGeo, frameMat);
+        leftPillar.position.set(-0.8, 1.25, 0);
+        leftPillar.castShadow = true;
+        group.add(leftPillar);
+        const rightPillar = new THREE.Mesh(pillarGeo, frameMat);
+        rightPillar.position.set(0.8, 1.25, 0);
+        rightPillar.castShadow = true;
+        group.add(rightPillar);
+        
+        // Top arch
+        const archGeo = new THREE.TorusGeometry(0.8, 0.15, 8, 16, Math.PI);
+        const arch = new THREE.Mesh(archGeo, frameMat);
+        arch.position.y = 2.5;
+        arch.rotation.z = Math.PI;
+        group.add(arch);
+        
+        // Portal energy (swirling colors)
+        const portalGeo = new THREE.PlaneGeometry(1.4, 2.3);
+        const portalMat = new THREE.MeshStandardMaterial({ 
+            color: 0x9370db,
+            emissive: 0x9370db,
+            emissiveIntensity: 0.8,
+            transparent: true,
+            opacity: 0.7,
+            side: THREE.DoubleSide
+        });
+        const portal = new THREE.Mesh(portalGeo, portalMat);
+        portal.position.y = 1.25;
+        group.add(portal);
+        
+        // Energy particles
+        for (let i = 0; i < 10; i++) {
+            const particleGeo = new THREE.SphereGeometry(0.05, 8, 8);
+            const particleMat = new THREE.MeshStandardMaterial({ 
+                color: 0x00ffff,
+                emissive: 0x00ffff,
+                emissiveIntensity: 1
+            });
+            const particle = new THREE.Mesh(particleGeo, particleMat);
+            particle.position.set(
+                (Math.random() - 0.5) * 1.2,
+                Math.random() * 2,
+                (Math.random() - 0.5) * 0.2
+            );
+            group.add(particle);
+        }
+        
+        return group;
+    }
+
+    /**
+     * Create a spellbook
+     */
+    static createSpellbookMesh() {
+        const group = new THREE.Group();
+        
+        // Book
+        const bookGeo = new THREE.BoxGeometry(0.5, 0.08, 0.6);
+        const bookMat = new THREE.MeshStandardMaterial({ color: 0x8b0000 });
+        const book = new THREE.Mesh(bookGeo, bookMat);
+        book.position.y = 0.04;
+        book.rotation.y = Math.PI / 6;
+        book.castShadow = true;
+        group.add(book);
+        
+        // Cover decoration (gold)
+        const decorGeo = new THREE.BoxGeometry(0.4, 0.1, 0.5);
+        const decorMat = new THREE.MeshStandardMaterial({ color: 0xffd700 });
+        const decor = new THREE.Mesh(decorGeo, decorMat);
+        decor.position.set(0, 0.09, 0);
+        decor.rotation.y = Math.PI / 6;
+        group.add(decor);
+        
+        // Magical glow
+        const glowGeo = new THREE.BoxGeometry(0.45, 0.12, 0.55);
+        const glowMat = new THREE.MeshStandardMaterial({ 
+            color: 0xff00ff,
+            emissive: 0xff00ff,
+            emissiveIntensity: 0.5,
+            transparent: true,
+            opacity: 0.3
+        });
+        const glow = new THREE.Mesh(glowGeo, glowMat);
+        glow.position.set(0, 0.1, 0);
+        glow.rotation.y = Math.PI / 6;
+        group.add(glow);
+        
+        return group;
+    }
+
+    /**
      * Get all prop types
      */
     static getAllTypes() {
         return [
             'barrel', 'crate', 'campfire', 'torch', 'signpost',
             'table', 'chair', 'bed', 'bookshelf', 'lantern',
-            'mushroom', 'crystal', 'tombstone', 'cauldron', 'weapon_rack'
+            'mushroom', 'crystal', 'tombstone', 'cauldron', 'weapon_rack',
+            'treasure_chest', 'potion', 'staff', 'shield', 'flag',
+            'fountain', 'portal', 'spellbook'
         ];
     }
 
@@ -532,6 +871,14 @@ export class PropsLibrary {
             case 'tombstone': return this.createTombstoneMesh();
             case 'cauldron': return this.createCauldronMesh();
             case 'weapon_rack': return this.createWeaponRackMesh();
+            case 'treasure_chest': return this.createTreasureChestMesh();
+            case 'potion': return this.createPotionMesh();
+            case 'staff': return this.createStaffMesh();
+            case 'shield': return this.createShieldMesh();
+            case 'flag': return this.createFlagMesh();
+            case 'fountain': return this.createFountainMesh();
+            case 'portal': return this.createPortalMesh();
+            case 'spellbook': return this.createSpellbookMesh();
             default:
                 // Fallback: simple sphere
                 const group = new THREE.Group();

@@ -764,12 +764,378 @@ export class CreatureLibrary {
     }
 
     /**
+     * Create a phoenix mesh (mythical fire bird)
+     */
+    static createPhoenixMesh() {
+        const group = new THREE.Group();
+        
+        const fireMat = new THREE.MeshStandardMaterial({ 
+            color: 0xff4500,
+            emissive: 0xff4500,
+            emissiveIntensity: 0.8
+        });
+        
+        // Body
+        const bodyGeo = new THREE.SphereGeometry(0.3, 16, 16);
+        const body = new THREE.Mesh(bodyGeo, fireMat);
+        body.position.y = 1.5;
+        body.scale.set(1, 1.2, 0.8);
+        body.castShadow = true;
+        group.add(body);
+        
+        // Head
+        const headGeo = new THREE.SphereGeometry(0.2, 16, 16);
+        const head = new THREE.Mesh(headGeo, fireMat);
+        head.position.y = 1.9;
+        head.castShadow = true;
+        group.add(head);
+        
+        // Beak
+        const beakGeo = new THREE.ConeGeometry(0.08, 0.2, 8);
+        const beakMat = new THREE.MeshStandardMaterial({ color: 0xffd700 });
+        const beak = new THREE.Mesh(beakGeo, beakMat);
+        beak.position.set(0, 1.85, 0.25);
+        beak.rotation.x = Math.PI / 2;
+        group.add(beak);
+        
+        // Tail feathers (fire)
+        const featherMat = new THREE.MeshStandardMaterial({ 
+            color: 0xff6347,
+            emissive: 0xff6347,
+            emissiveIntensity: 0.6,
+            transparent: true,
+            opacity: 0.8
+        });
+        for (let i = 0; i < 5; i++) {
+            const featherGeo = new THREE.ConeGeometry(0.1, 0.8 + i * 0.1, 8);
+            const feather = new THREE.Mesh(featherGeo, featherMat);
+            feather.position.set((i - 2) * 0.15, 1.2 - i * 0.1, -0.4 - i * 0.1);
+            feather.rotation.x = -Math.PI / 4;
+            group.add(feather);
+        }
+        
+        // Wings (fire effect)
+        const wingGeo = new THREE.ConeGeometry(0.6, 1.2, 3);
+        const leftWing = new THREE.Mesh(wingGeo, featherMat);
+        leftWing.position.set(-0.5, 1.6, 0);
+        leftWing.rotation.z = -Math.PI / 2.5;
+        leftWing.rotation.y = Math.PI / 6;
+        group.add(leftWing);
+        const rightWing = new THREE.Mesh(wingGeo, featherMat);
+        rightWing.position.set(0.5, 1.6, 0);
+        rightWing.rotation.z = Math.PI / 2.5;
+        rightWing.rotation.y = -Math.PI / 6;
+        group.add(rightWing);
+        
+        // Setup animations
+        this.createAnimations(group, { body, head });
+        
+        return group;
+    }
+
+    /**
+     * Create a unicorn mesh (magical horse)
+     */
+    static createUnicornMesh() {
+        const group = new THREE.Group();
+        
+        const bodyMat = new THREE.MeshStandardMaterial({ 
+            color: 0xffffff,
+            metalness: 0.3,
+            roughness: 0.5
+        });
+        
+        // Body
+        const bodyGeo = new THREE.CapsuleGeometry(0.35, 1.0, 4, 8);
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 1.0;
+        body.rotation.z = Math.PI / 2;
+        body.castShadow = true;
+        group.add(body);
+        
+        // Neck
+        const neckGeo = new THREE.CylinderGeometry(0.15, 0.2, 0.6, 8);
+        const neck = new THREE.Mesh(neckGeo, bodyMat);
+        neck.position.set(0, 1.5, 0.6);
+        neck.rotation.x = Math.PI / 6;
+        neck.castShadow = true;
+        group.add(neck);
+        
+        // Head
+        const headGeo = new THREE.BoxGeometry(0.25, 0.3, 0.4);
+        const head = new THREE.Mesh(headGeo, bodyMat);
+        head.position.set(0, 1.85, 0.8);
+        head.castShadow = true;
+        group.add(head);
+        
+        // Horn (magical)
+        const hornGeo = new THREE.ConeGeometry(0.08, 0.6, 8);
+        const hornMat = new THREE.MeshStandardMaterial({ 
+            color: 0xffd700,
+            metalness: 0.9,
+            emissive: 0xffd700,
+            emissiveIntensity: 0.3
+        });
+        const horn = new THREE.Mesh(hornGeo, hornMat);
+        horn.position.set(0, 2.3, 0.85);
+        horn.rotation.x = -Math.PI / 6;
+        group.add(horn);
+        
+        // Mane (rainbow)
+        const colors = [0xff0000, 0xff7f00, 0xffff00, 0x00ff00, 0x0000ff, 0x8b00ff];
+        for (let i = 0; i < 6; i++) {
+            const maneMat = new THREE.MeshStandardMaterial({ color: colors[i] });
+            const maneGeo = new THREE.BoxGeometry(0.1, 0.3, 0.05);
+            const mane = new THREE.Mesh(maneGeo, maneMat);
+            mane.position.set(0, 1.7 + i * 0.05, 0.5 + i * 0.05);
+            group.add(mane);
+        }
+        
+        // Tail (rainbow)
+        for (let i = 0; i < 6; i++) {
+            const tailMat = new THREE.MeshStandardMaterial({ color: colors[5 - i] });
+            const tailGeo = new THREE.CylinderGeometry(0.05, 0.03, 0.4, 8);
+            const tail = new THREE.Mesh(tailGeo, tailMat);
+            tail.position.set(0, 1.0 - i * 0.05, -0.6 - i * 0.1);
+            tail.rotation.x = -Math.PI / 4 - i * 0.1;
+            group.add(tail);
+        }
+        
+        // Setup animations
+        this.createAnimations(group, { body, head });
+        
+        return group;
+    }
+
+    /**
+     * Create a minotaur mesh (bull-headed warrior)
+     */
+    static createMinotaurMesh() {
+        const group = new THREE.Group();
+        
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+        
+        // Body (massive)
+        const bodyGeo = new THREE.CapsuleGeometry(0.5, 1.5, 4, 8);
+        const body = new THREE.Mesh(bodyGeo, bodyMat);
+        body.position.y = 1.5;
+        body.castShadow = true;
+        group.add(body);
+        
+        // Chest (muscular)
+        const chestGeo = new THREE.BoxGeometry(0.8, 0.8, 0.6);
+        const chest = new THREE.Mesh(chestGeo, bodyMat);
+        chest.position.y = 2.0;
+        group.add(chest);
+        
+        // Bull head
+        const headGeo = new THREE.BoxGeometry(0.5, 0.4, 0.6);
+        const head = new THREE.Mesh(headGeo, bodyMat);
+        head.position.y = 2.7;
+        head.castShadow = true;
+        group.add(head);
+        
+        // Snout
+        const snoutGeo = new THREE.BoxGeometry(0.3, 0.25, 0.4);
+        const snout = new THREE.Mesh(snoutGeo, bodyMat);
+        snout.position.set(0, 2.6, 0.5);
+        group.add(snout);
+        
+        // Horns
+        const hornGeo = new THREE.ConeGeometry(0.08, 0.5, 8);
+        const hornMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const leftHorn = new THREE.Mesh(hornGeo, hornMat);
+        leftHorn.position.set(-0.25, 2.95, 0.1);
+        leftHorn.rotation.z = -Math.PI / 4;
+        group.add(leftHorn);
+        const rightHorn = new THREE.Mesh(hornGeo, hornMat);
+        rightHorn.position.set(0.25, 2.95, 0.1);
+        rightHorn.rotation.z = Math.PI / 4;
+        group.add(rightHorn);
+        
+        // Axe (large)
+        const weapon = new THREE.Group();
+        weapon.position.set(0.6, 1.5, 0);
+        
+        const handleGeo = new THREE.CylinderGeometry(0.1, 0.1, 1.5, 8);
+        const handleMat = new THREE.MeshStandardMaterial({ color: 0x4a2511 });
+        const handle = new THREE.Mesh(handleGeo, handleMat);
+        handle.castShadow = true;
+        weapon.add(handle);
+        
+        const bladeGeo = new THREE.BoxGeometry(0.5, 0.6, 0.08);
+        const bladeMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.9 });
+        const blade = new THREE.Mesh(bladeGeo, bladeMat);
+        blade.position.y = 0.9;
+        blade.castShadow = true;
+        weapon.add(blade);
+        
+        group.add(weapon);
+        
+        // Setup animations
+        this.createAnimations(group, { body, head, weapon });
+        
+        return group;
+    }
+
+    /**
+     * Create a fairy mesh (tiny magical being)
+     */
+    static createFairyMesh() {
+        const group = new THREE.Group();
+        
+        const skinMat = new THREE.MeshStandardMaterial({ color: 0xffdbac });
+        
+        // Body (tiny)
+        const bodyGeo = new THREE.CapsuleGeometry(0.1, 0.3, 4, 8);
+        const body = new THREE.Mesh(bodyGeo, skinMat);
+        body.position.y = 0.5;
+        body.castShadow = true;
+        group.add(body);
+        
+        // Head
+        const headGeo = new THREE.SphereGeometry(0.12, 16, 16);
+        const head = new THREE.Mesh(headGeo, skinMat);
+        head.position.y = 0.75;
+        head.castShadow = true;
+        group.add(head);
+        
+        // Hair (colorful)
+        const hairMat = new THREE.MeshStandardMaterial({ color: 0xff69b4 });
+        const hairGeo = new THREE.SphereGeometry(0.14, 8, 8);
+        const hair = new THREE.Mesh(hairGeo, hairMat);
+        hair.position.y = 0.82;
+        hair.scale.y = 0.6;
+        group.add(hair);
+        
+        // Wings (butterfly-like)
+        const wingMat = new THREE.MeshStandardMaterial({ 
+            color: 0x87ceeb,
+            transparent: true,
+            opacity: 0.7,
+            emissive: 0x87ceeb,
+            emissiveIntensity: 0.3,
+            side: THREE.DoubleSide
+        });
+        
+        // Upper wings
+        const upperWingGeo = new THREE.CircleGeometry(0.25, 16);
+        const leftUpperWing = new THREE.Mesh(upperWingGeo, wingMat);
+        leftUpperWing.position.set(-0.15, 0.6, -0.05);
+        leftUpperWing.rotation.y = Math.PI / 4;
+        group.add(leftUpperWing);
+        const rightUpperWing = new THREE.Mesh(upperWingGeo, wingMat);
+        rightUpperWing.position.set(0.15, 0.6, -0.05);
+        rightUpperWing.rotation.y = -Math.PI / 4;
+        group.add(rightUpperWing);
+        
+        // Lower wings
+        const lowerWingGeo = new THREE.CircleGeometry(0.18, 16);
+        const leftLowerWing = new THREE.Mesh(lowerWingGeo, wingMat);
+        leftLowerWing.position.set(-0.12, 0.4, -0.08);
+        leftLowerWing.rotation.y = Math.PI / 3;
+        group.add(leftLowerWing);
+        const rightLowerWing = new THREE.Mesh(lowerWingGeo, wingMat);
+        rightLowerWing.position.set(0.12, 0.4, -0.08);
+        rightLowerWing.rotation.y = -Math.PI / 3;
+        group.add(rightLowerWing);
+        
+        // Magic wand
+        const wandGeo = new THREE.CylinderGeometry(0.01, 0.01, 0.3, 8);
+        const wandMat = new THREE.MeshStandardMaterial({ color: 0xffd700 });
+        const wand = new THREE.Mesh(wandGeo, wandMat);
+        wand.position.set(0.15, 0.5, 0);
+        wand.rotation.z = Math.PI / 4;
+        group.add(wand);
+        
+        // Star on wand
+        const starGeo = new THREE.SphereGeometry(0.04, 8, 8);
+        const starMat = new THREE.MeshStandardMaterial({ 
+            color: 0xffff00,
+            emissive: 0xffff00,
+            emissiveIntensity: 1
+        });
+        const star = new THREE.Mesh(starGeo, starMat);
+        star.position.set(0.25, 0.65, 0);
+        group.add(star);
+        
+        // Setup animations
+        this.createAnimations(group, { body, head, weapon: wand });
+        
+        return group;
+    }
+
+    /**
+     * Create an elemental mesh (living energy)
+     */
+    static createElementalMesh() {
+        const group = new THREE.Group();
+        
+        // Core (glowing energy)
+        const coreGeo = new THREE.SphereGeometry(0.3, 16, 16);
+        const coreMat = new THREE.MeshStandardMaterial({ 
+            color: 0x00ffff,
+            emissive: 0x00ffff,
+            emissiveIntensity: 1,
+            transparent: true,
+            opacity: 0.8
+        });
+        const core = new THREE.Mesh(coreGeo, coreMat);
+        core.position.y = 1.2;
+        core.castShadow = true;
+        group.add(core);
+        
+        // Energy swirls
+        const swirlMat = new THREE.MeshStandardMaterial({ 
+            color: 0x00bfff,
+            emissive: 0x00bfff,
+            emissiveIntensity: 0.7,
+            transparent: true,
+            opacity: 0.6
+        });
+        
+        for (let i = 0; i < 6; i++) {
+            const angle = (i / 6) * Math.PI * 2;
+            const swirlGeo = new THREE.TorusGeometry(0.2 + i * 0.05, 0.05, 8, 16);
+            const swirl = new THREE.Mesh(swirlGeo, swirlMat);
+            swirl.position.set(
+                Math.cos(angle) * 0.3,
+                1.2 + Math.sin(i) * 0.3,
+                Math.sin(angle) * 0.3
+            );
+            swirl.rotation.x = angle;
+            swirl.rotation.y = i * 0.5;
+            group.add(swirl);
+        }
+        
+        // "Eyes" (bright spots)
+        const eyeGeo = new THREE.SphereGeometry(0.08, 8, 8);
+        const eyeMat = new THREE.MeshStandardMaterial({ 
+            color: 0xffffff,
+            emissive: 0xffffff,
+            emissiveIntensity: 2
+        });
+        const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+        leftEye.position.set(-0.15, 1.3, 0.25);
+        group.add(leftEye);
+        const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+        rightEye.position.set(0.15, 1.3, 0.25);
+        group.add(rightEye);
+        
+        // Setup animations
+        this.createAnimations(group, { body: core, head: core });
+        
+        return group;
+    }
+
+    /**
      * Get all creature types
      */
     static getAllTypes() {
         return [
             'goblin', 'orc', 'spider', 'wolf', 'bear', 'dragon',
-            'rat', 'snake', 'skeleton', 'scorpion', 'bat', 'troll', 'slime'
+            'rat', 'snake', 'skeleton', 'scorpion', 'bat', 'troll', 'slime',
+            'phoenix', 'unicorn', 'minotaur', 'fairy', 'elemental'
         ];
     }
 
@@ -791,6 +1157,11 @@ export class CreatureLibrary {
             case 'bat': return this.createBatMesh();
             case 'troll': return this.createTrollMesh();
             case 'slime': return this.createSlimeMesh();
+            case 'phoenix': return this.createPhoenixMesh();
+            case 'unicorn': return this.createUnicornMesh();
+            case 'minotaur': return this.createMinotaurMesh();
+            case 'fairy': return this.createFairyMesh();
+            case 'elemental': return this.createElementalMesh();
             default:
                 // Fallback
                 const group = new THREE.Group();

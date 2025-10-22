@@ -326,7 +326,7 @@ export class LevelEditor {
             console.log('NPC placed:', npcData);
             
             // Add visual marker for the NPC
-            this.addNPCMarker(point, npcData.name);
+            this.addNPCMarker(point, npcData);
         }
     }
     
@@ -387,12 +387,31 @@ export class LevelEditor {
     /**
      * Add visual marker for placed NPC
      */
-    addNPCMarker(position, name) {
+    async addNPCMarker(position, npcData) {
+        // Try to use loaded FBX model if available
+        if (this.npcFactory && this.npcFactory.characterLoader) {
+            const modelName = npcData.modelName || 'peasant';
+            const loadedModel = this.npcFactory.characterLoader.getCharacter(modelName);
+            
+            if (loadedModel) {
+                // Clone the FBX model
+                const npcMesh = loadedModel.clone();
+                npcMesh.position.set(position.x, position.y, position.z);
+                npcMesh.scale.set(1, 1, 1);
+                npcMesh.userData.isNPCMarker = true;
+                npcMesh.userData.npcData = npcData;
+                this.scene.add(npcMesh);
+                return;
+            }
+        }
+        
+        // Fallback to blue cone if FBX not available
         const geometry = new THREE.ConeGeometry(0.5, 1.5, 8);
         const material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
         const marker = new THREE.Mesh(geometry, material);
         marker.position.set(position.x, position.y + 1, position.z);
         marker.userData.isNPCMarker = true;
+        marker.userData.npcData = npcData;
         this.scene.add(marker);
     }
     
@@ -640,11 +659,62 @@ export class LevelEditor {
                 this.applyColormapFromImage(colormapImage);
             }
             
+            // Populate NPCs and monsters in the scene
+            this.populateLoadedObjects();
+            
             return true;
         } catch (error) {
             console.error('Failed to load level:', error);
             return false;
         }
+    }
+    
+    /**
+     * Populate NPCs and monsters after loading a level
+     */
+    populateLoadedObjects() {
+        // Clear existing markers
+        this.clearMarkers();
+        
+        // Add NPC markers
+        if (this.levelData.npcs) {
+            this.levelData.npcs.forEach(npcData => {
+                const position = {
+                    x: npcData.position.x,
+                    y: 0,
+                    z: npcData.position.z
+                };
+                this.addNPCMarker(position, npcData);
+            });
+            console.log(`Populated ${this.levelData.npcs.length} NPCs`);
+        }
+        
+        // Add monster markers
+        if (this.levelData.monsters) {
+            this.levelData.monsters.forEach(monsterData => {
+                const position = {
+                    x: monsterData.position.x,
+                    y: 0,
+                    z: monsterData.position.z
+                };
+                this.addMonsterMarker(position, monsterData.type);
+            });
+            console.log(`Populated ${this.levelData.monsters.length} monsters`);
+        }
+    }
+    
+    /**
+     * Clear all object markers from the scene
+     */
+    clearMarkers() {
+        const markersToRemove = [];
+        this.scene.children.forEach(child => {
+            if (child.userData.isNPCMarker || child.userData.isMonsterMarker) {
+                markersToRemove.push(child);
+            }
+        });
+        markersToRemove.forEach(marker => this.scene.remove(marker));
+        console.log(`Cleared ${markersToRemove.length} markers`);
     }
     
     /**
@@ -751,6 +821,9 @@ export class LevelEditor {
             monsters: [],
             quests: []
         };
+        
+        // Clear visual markers
+        this.clearMarkers();
         
         console.log('Level cleared');
     }

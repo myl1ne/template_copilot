@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { MeshLibrary } from './MeshLibrary.js';
 
 /**
  * LevelEditor - Tool for editing terrain, placing NPCs/monsters, and managing levels
@@ -375,12 +376,12 @@ export class LevelEditor {
      * Add visual marker for placed monster
      */
     addMonsterMarker(position, type) {
-        const geometry = new THREE.ConeGeometry(0.5, 1.5, 8);
-        const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const marker = new THREE.Mesh(geometry, material);
-        marker.position.set(position.x, position.y + 1, position.z);
-        marker.userData.isMonsterMarker = true;
-        this.scene.add(marker);
+        // Use actual monster mesh from MeshLibrary
+        const monsterMesh = MeshLibrary.getMonsterMesh(type);
+        monsterMesh.position.set(position.x, position.y, position.z);
+        monsterMesh.userData.isMonsterMarker = true;
+        monsterMesh.userData.monsterType = type;
+        this.scene.add(monsterMesh);
     }
     
     /**

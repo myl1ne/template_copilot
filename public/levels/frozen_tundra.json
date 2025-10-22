@@ -1,0 +1,488 @@
+{
+  "name": "frozen_tundra",
+  "description": "A harsh icy wasteland where only the strongest survive",
+  "version": "1.0",
+  "terrain": {
+    "size": 100,
+    "segments": 100,
+    "heightScale": 10,
+    "waterLevel": 2.0,
+    "seed": 77777
+  },
+  "npcs": [
+    {
+      "id": "ice_elder",
+      "name": "Frost Elder",
+      "type": "elder",
+      "position": { "x": 0, "z": 0 },
+      "modelName": "Wizard",
+      "dialogue": "The eternal winter tests all who enter. Stay close to the fires."
+    },
+    {
+      "id": "snow_hunter",
+      "name": "Tundra Hunter",
+      "type": "guard",
+      "position": { "x": 5, "z": -5 },
+      "modelName": "Soldier",
+      "dialogue": "I've tracked these lands for years. Beware the ice wolves!"
+    },
+    {
+      "id": "ice_merchant",
+      "name": "Frost Merchant",
+      "type": "merchant",
+      "position": { "x": -8, "z": 5 },
+      "modelName": "peasant",
+      "dialogue": "Warm clothes and hot food for the right price!"
+    },
+    {
+      "id": "hermit_shaman",
+      "name": "Ice Shaman",
+      "type": "hermit",
+      "position": { "x": -30, "z": -30 },
+      "modelName": "Wizard",
+      "dialogue": "The spirits of the frozen north speak through me."
+    }
+  ],
+  "monsters": [
+    {
+      "type": "wolf",
+      "position": { "x": -20, "z": 20 },
+      "hp": 140,
+      "damage": 28,
+      "xp": 90,
+      "stance": "aggressive",
+      "level": 4
+    },
+    {
+      "type": "wolf",
+      "position": { "x": -18, "z": 22 },
+      "hp": 140,
+      "damage": 28,
+      "xp": 90,
+      "stance": "aggressive",
+      "level": 4
+    },
+    {
+      "type": "wolf",
+      "position": { "x": -22, "z": 18 },
+      "hp": 140,
+      "damage": 28,
+      "xp": 90,
+      "stance": "aggressive",
+      "level": 4
+    },
+    {
+      "type": "wolf",
+      "position": { "x": -20, "z": 24 },
+      "hp": 150,
+      "damage": 30,
+      "xp": 100,
+      "stance": "aggressive",
+      "level": 5
+    },
+    {
+      "type": "bear",
+      "position": { "x": 25, "z": -25 },
+      "hp": 250,
+      "damage": 42,
+      "xp": 180,
+      "stance": "defensive",
+      "level": 6
+    },
+    {
+      "type": "bear",
+      "position": { "x": 28, "z": -28 },
+      "hp": 250,
+      "damage": 42,
+      "xp": 180,
+      "stance": "defensive",
+      "level": 6
+    },
+    {
+      "type": "troll",
+      "position": { "x": -35, "z": 10 },
+      "hp": 280,
+      "damage": 45,
+      "xp": 200,
+      "stance": "aggressive",
+      "level": 8
+    },
+    {
+      "type": "troll",
+      "position": { "x": -32, "z": 12 },
+      "hp": 280,
+      "damage": 45,
+      "xp": 200,
+      "stance": "aggressive",
+      "level": 8
+    },
+    {
+      "type": "troll",
+      "position": { "x": -38, "z": 8 },
+      "hp": 300,
+      "damage": 48,
+      "xp": 220,
+      "stance": "aggressive",
+      "level": 9
+    },
+    {
+      "type": "skeleton",
+      "position": { "x": 15, "z": 30 },
+      "hp": 110,
+      "damage": 22,
+      "xp": 80,
+      "stance": "defensive",
+      "level": 3
+    },
+    {
+      "type": "skeleton",
+      "position": { "x": 18, "z": 28 },
+      "hp": 110,
+      "damage": 22,
+      "xp": 80,
+      "stance": "defensive",
+      "level": 3
+    },
+    {
+      "type": "skeleton",
+      "position": { "x": 12, "z": 32 },
+      "hp": 110,
+      "damage": 22,
+      "xp": 80,
+      "stance": "defensive",
+      "level": 3
+    },
+    {
+      "type": "orc",
+      "position": { "x": 0, "z": -30 },
+      "hp": 170,
+      "damage": 30,
+      "xp": 110,
+      "stance": "aggressive",
+      "level": 5
+    },
+    {
+      "type": "orc",
+      "position": { "x": 3, "z": -33 },
+      "hp": 170,
+      "damage": 30,
+      "xp": 110,
+      "stance": "aggressive",
+      "level": 5
+    },
+    {
+      "type": "orc",
+      "position": { "x": -3, "z": -27 },
+      "hp": 170,
+      "damage": 30,
+      "xp": 110,
+      "stance": "aggressive",
+      "level": 5
+    },
+    {
+      "type": "dragon",
+      "position": { "x": 35, "z": 35 },
+      "hp": 550,
+      "damage": 65,
+      "xp": 550,
+      "stance": "aggressive",
+      "level": 10
+    }
+  ],
+  "buildings": [
+    {
+      "type": "house",
+      "position": { "x": 5, "z": 5 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Elder's Igloo"
+    },
+    {
+      "type": "house",
+      "position": { "x": -10, "z": 8 },
+      "rotation": 1.57,
+      "scale": 1.0,
+      "name": "Ice Lodge"
+    },
+    {
+      "type": "house",
+      "position": { "x": 8, "z": -8 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Hunter's Cabin"
+    },
+    {
+      "type": "tower",
+      "position": { "x": -5, "z": -5 },
+      "rotation": 0,
+      "scale": 1.3,
+      "name": "Frost Tower"
+    },
+    {
+      "type": "lighthouse",
+      "position": { "x": -40, "z": 40 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Northern Light"
+    },
+    {
+      "type": "well",
+      "position": { "x": 0, "z": 8 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Frozen Well"
+    },
+    {
+      "type": "bridge",
+      "position": { "x": -15, "z": 0 },
+      "rotation": 0,
+      "scale": 1.2,
+      "name": "Ice Bridge"
+    }
+  ],
+  "props": [
+    {
+      "type": "campfire",
+      "position": { "x": 0, "z": 3 },
+      "rotation": 0,
+      "scale": 1.2
+    },
+    {
+      "type": "campfire",
+      "position": { "x": -20, "z": 20 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Wolf Den Fire"
+    },
+    {
+      "type": "campfire",
+      "position": { "x": -35, "z": 10 },
+      "rotation": 0,
+      "scale": 1.3,
+      "name": "Troll Camp"
+    },
+    {
+      "type": "torch",
+      "position": { "x": 4, "z": 6 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "torch",
+      "position": { "x": 6, "z": 4 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "torch",
+      "position": { "x": -9, "z": 7 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "torch",
+      "position": { "x": -11, "z": 9 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "lantern",
+      "position": { "x": -4, "z": -4 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "lantern",
+      "position": { "x": -6, "z": -6 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "crystal",
+      "position": { "x": 35, "z": 33 },
+      "rotation": 0,
+      "scale": 1.8,
+      "name": "Ice Crystal"
+    },
+    {
+      "type": "crystal",
+      "position": { "x": -30, "z": -28 },
+      "rotation": 0,
+      "scale": 1.2,
+      "name": "Frost Gem"
+    },
+    {
+      "type": "barrel",
+      "position": { "x": -9, "z": 4 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "barrel",
+      "position": { "x": -10, "z": 6 },
+      "rotation": 0.5,
+      "scale": 1.0
+    },
+    {
+      "type": "crate",
+      "position": { "x": -7, "z": 4 },
+      "rotation": 0.3,
+      "scale": 1.0
+    },
+    {
+      "type": "crate",
+      "position": { "x": 7, "z": -7 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "signpost",
+      "position": { "x": 0, "z": -5 },
+      "rotation": 0.785,
+      "scale": 1.0,
+      "text": "Frost Village"
+    },
+    {
+      "type": "signpost",
+      "position": { "x": -12, "z": 12 },
+      "rotation": -0.785,
+      "scale": 1.0,
+      "text": "Wolf Pack Territory"
+    },
+    {
+      "type": "signpost",
+      "position": { "x": 15, "z": -15 },
+      "rotation": 1.57,
+      "scale": 1.0,
+      "text": "Bear Caves Ahead"
+    },
+    {
+      "type": "tombstone",
+      "position": { "x": 14, "z": 29 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "tombstone",
+      "position": { "x": 16, "z": 31 },
+      "rotation": 0.5,
+      "scale": 1.0
+    },
+    {
+      "type": "tombstone",
+      "position": { "x": 17, "z": 28 },
+      "rotation": -0.3,
+      "scale": 1.0
+    },
+    {
+      "type": "cauldron",
+      "position": { "x": -31, "z": -31 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Shaman's Pot"
+    },
+    {
+      "type": "bookshelf",
+      "position": { "x": -29, "z": -29 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "table",
+      "position": { "x": 4, "z": 4 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "chair",
+      "position": { "x": 3, "z": 3 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "chair",
+      "position": { "x": 5, "z": 3 },
+      "rotation": 0,
+      "scale": 1.0
+    }
+  ],
+  "chests": [
+    {
+      "position": { "x": 37, "z": 37 },
+      "type": "magical",
+      "loot": "legendary"
+    },
+    {
+      "position": { "x": 27, "z": -27 },
+      "type": "magical",
+      "loot": "rare"
+    },
+    {
+      "position": { "x": -36, "z": 12 },
+      "type": "magical",
+      "loot": "rare"
+    },
+    {
+      "position": { "x": 5, "z": 0 },
+      "type": "basic",
+      "loot": "random"
+    }
+  ],
+  "terrainFeatures": [
+    {
+      "type": "hill",
+      "position": { "x": 35, "z": 35 },
+      "radius": 10,
+      "height": 6,
+      "name": "Ice Dragon's Mountain"
+    },
+    {
+      "type": "hill",
+      "position": { "x": -35, "z": 10 },
+      "radius": 8,
+      "height": 5,
+      "name": "Troll Hill"
+    },
+    {
+      "type": "valley",
+      "position": { "x": -15, "z": 0 },
+      "radius": 7,
+      "depth": 3,
+      "name": "Frozen Valley"
+    },
+    {
+      "type": "plateau",
+      "position": { "x": 15, "z": 30 },
+      "width": 10,
+      "length": 10,
+      "height": 4,
+      "name": "Skeleton's Plateau"
+    }
+  ],
+  "zones": [
+    {
+      "name": "Frost Village",
+      "bounds": { "minX": -12, "maxX": 12, "minZ": -10, "maxZ": 10 },
+      "description": "Protected settlement against the eternal winter",
+      "music": "peaceful"
+    },
+    {
+      "name": "Wolf Territory",
+      "bounds": { "minX": -25, "maxX": -15, "minZ": 15, "maxZ": 25 },
+      "description": "Ice wolves hunt in packs",
+      "music": "combat"
+    },
+    {
+      "name": "Bear Caves",
+      "bounds": { "minX": 20, "maxX": 32, "minZ": -32, "maxZ": -20 },
+      "description": "Polar bears den in frozen caverns",
+      "music": "tense"
+    },
+    {
+      "name": "Ice Dragon's Peak",
+      "bounds": { "minX": 30, "maxX": 40, "minZ": 30, "maxZ": 40 },
+      "description": "Legendary ice dragon rules from the summit",
+      "music": "boss"
+    }
+  ]
+}

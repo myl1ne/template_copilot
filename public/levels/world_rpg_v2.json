@@ -1,0 +1,557 @@
+{
+  "name": "world_rpg_v2",
+  "description": "Enhanced World RPG level using mesh library and advanced terrain features",
+  "version": "2.0",
+  "terrain": {
+    "size": 100,
+    "segments": 100,
+    "heightScale": 12,
+    "waterLevel": 2.5,
+    "seed": 42069
+  },
+  "npcs": [
+    {
+      "id": "elder",
+      "name": "Village Elder",
+      "type": "elder",
+      "position": { "x": 5, "z": 5 },
+      "modelName": "peasant",
+      "dialogue": "Welcome, brave adventurer! Our village needs your help."
+    },
+    {
+      "id": "guard",
+      "name": "Town Guard",
+      "type": "guard",
+      "position": { "x": 8, "z": 3 },
+      "modelName": "Soldier",
+      "dialogue": "The roads are dangerous. Be careful out there."
+    },
+    {
+      "id": "merchant",
+      "name": "Traveling Merchant",
+      "type": "merchant",
+      "position": { "x": -8, "z": 8 },
+      "modelName": "peasant",
+      "dialogue": "Looking to buy or sell?"
+    },
+    {
+      "id": "hermit",
+      "name": "Forest Hermit",
+      "type": "hermit",
+      "position": { "x": -25, "z": -25 },
+      "modelName": "Wizard",
+      "dialogue": "I have ancient knowledge to share with those who seek it."
+    },
+    {
+      "id": "blacksmith",
+      "name": "Village Blacksmith",
+      "type": "blacksmith",
+      "position": { "x": 12, "z": -5 },
+      "modelName": "peasant",
+      "dialogue": "I can forge mighty weapons and sturdy armor."
+    }
+  ],
+  "monsters": [
+    {
+      "type": "goblin",
+      "position": { "x": -20, "z": -18 },
+      "hp": 80,
+      "damage": 15,
+      "xp": 50,
+      "stance": "aggressive",
+      "level": 1
+    },
+    {
+      "type": "goblin",
+      "position": { "x": -18, "z": -22 },
+      "hp": 80,
+      "damage": 15,
+      "xp": 50,
+      "stance": "aggressive",
+      "level": 1
+    },
+    {
+      "type": "goblin",
+      "position": { "x": -22, "z": -20 },
+      "hp": 80,
+      "damage": 15,
+      "xp": 50,
+      "stance": "aggressive",
+      "level": 1
+    },
+    {
+      "type": "skeleton",
+      "position": { "x": 30, "z": 8 },
+      "hp": 100,
+      "damage": 20,
+      "xp": 75,
+      "stance": "defensive",
+      "level": 2
+    },
+    {
+      "type": "skeleton",
+      "position": { "x": 32, "z": 12 },
+      "hp": 100,
+      "damage": 20,
+      "xp": 75,
+      "stance": "defensive",
+      "level": 2
+    },
+    {
+      "type": "skeleton",
+      "position": { "x": 28, "z": 10 },
+      "hp": 100,
+      "damage": 20,
+      "xp": 75,
+      "stance": "defensive",
+      "level": 2
+    },
+    {
+      "type": "spider",
+      "position": { "x": 25, "z": -23 },
+      "hp": 90,
+      "damage": 18,
+      "xp": 60,
+      "stance": "aggressive",
+      "level": 2
+    },
+    {
+      "type": "spider",
+      "position": { "x": 27, "z": -27 },
+      "hp": 90,
+      "damage": 18,
+      "xp": 60,
+      "stance": "aggressive",
+      "level": 2
+    },
+    {
+      "type": "wolf",
+      "position": { "x": -28, "z": 28 },
+      "hp": 110,
+      "damage": 22,
+      "xp": 75,
+      "stance": "aggressive",
+      "level": 3
+    },
+    {
+      "type": "wolf",
+      "position": { "x": -32, "z": 32 },
+      "hp": 110,
+      "damage": 22,
+      "xp": 75,
+      "stance": "aggressive",
+      "level": 3
+    },
+    {
+      "type": "bear",
+      "position": { "x": -35, "z": -10 },
+      "hp": 200,
+      "damage": 35,
+      "xp": 150,
+      "stance": "defensive",
+      "level": 5
+    },
+    {
+      "type": "orc",
+      "position": { "x": 15, "z": -30 },
+      "hp": 150,
+      "damage": 28,
+      "xp": 100,
+      "stance": "aggressive",
+      "level": 4
+    },
+    {
+      "type": "orc",
+      "position": { "x": 10, "z": -32 },
+      "hp": 150,
+      "damage": 28,
+      "xp": 100,
+      "stance": "aggressive",
+      "level": 4
+    }
+  ],
+  "buildings": [
+    {
+      "type": "house",
+      "position": { "x": 10, "z": 8 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Elder's House"
+    },
+    {
+      "type": "house",
+      "position": { "x": 15, "z": 0 },
+      "rotation": 1.57,
+      "scale": 1.0,
+      "name": "Guard's House"
+    },
+    {
+      "type": "house",
+      "position": { "x": -15, "z": 5 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Merchant's House"
+    },
+    {
+      "type": "tower",
+      "position": { "x": 20, "z": 20 },
+      "rotation": 0,
+      "scale": 1.2,
+      "name": "Watch Tower"
+    },
+    {
+      "type": "barn",
+      "position": { "x": 18, "z": -10 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Village Barn"
+    },
+    {
+      "type": "market_stall",
+      "position": { "x": -5, "z": 10 },
+      "rotation": 0.785,
+      "scale": 1.0,
+      "name": "Market Stall"
+    },
+    {
+      "type": "windmill",
+      "position": { "x": 25, "z": 5 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Old Windmill"
+    },
+    {
+      "type": "well",
+      "position": { "x": 3, "z": 12 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Village Well"
+    },
+    {
+      "type": "bridge",
+      "position": { "x": 0, "z": -8 },
+      "rotation": 0,
+      "scale": 1.5,
+      "name": "Stone Bridge"
+    },
+    {
+      "type": "lighthouse",
+      "position": { "x": -40, "z": 40 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Coastal Lighthouse"
+    }
+  ],
+  "props": [
+    {
+      "type": "campfire",
+      "position": { "x": 0, "z": -10 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "campfire",
+      "position": { "x": -20, "z": -20 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Goblin Camp Fire"
+    },
+    {
+      "type": "barrel",
+      "position": { "x": -6, "z": 9 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "barrel",
+      "position": { "x": -7, "z": 10 },
+      "rotation": 0.5,
+      "scale": 1.0
+    },
+    {
+      "type": "crate",
+      "position": { "x": -4, "z": 9 },
+      "rotation": 0.3,
+      "scale": 1.0
+    },
+    {
+      "type": "crate",
+      "position": { "x": 17, "z": -9 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "crate",
+      "position": { "x": 19, "z": -9 },
+      "rotation": 0.7,
+      "scale": 1.0
+    },
+    {
+      "type": "signpost",
+      "position": { "x": 0, "z": 0 },
+      "rotation": 0.785,
+      "scale": 1.0,
+      "text": "Village Center"
+    },
+    {
+      "type": "signpost",
+      "position": { "x": -12, "z": -12 },
+      "rotation": -0.785,
+      "scale": 1.0,
+      "text": "Danger: Goblin Camp"
+    },
+    {
+      "type": "signpost",
+      "position": { "x": 20, "z": 5 },
+      "rotation": 1.57,
+      "scale": 1.0,
+      "text": "Skeleton Graveyard"
+    },
+    {
+      "type": "torch",
+      "position": { "x": 8, "z": 7 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "torch",
+      "position": { "x": 12, "z": 9 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "torch",
+      "position": { "x": 13, "z": 2 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "torch",
+      "position": { "x": 17, "z": 2 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "lantern",
+      "position": { "x": -14, "z": 4 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "lantern",
+      "position": { "x": -16, "z": 6 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "tombstone",
+      "position": { "x": 29, "z": 9 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "tombstone",
+      "position": { "x": 31, "z": 11 },
+      "rotation": 0.3,
+      "scale": 1.0
+    },
+    {
+      "type": "tombstone",
+      "position": { "x": 30, "z": 13 },
+      "rotation": -0.3,
+      "scale": 1.0
+    },
+    {
+      "type": "tombstone",
+      "position": { "x": 28, "z": 11 },
+      "rotation": 0.5,
+      "scale": 1.0
+    },
+    {
+      "type": "weapon_rack",
+      "position": { "x": 11, "z": -6 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Blacksmith's Weapons"
+    },
+    {
+      "type": "cauldron",
+      "position": { "x": -26, "z": -26 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Hermit's Cauldron"
+    },
+    {
+      "type": "crystal",
+      "position": { "x": 24, "z": -26 },
+      "rotation": 0,
+      "scale": 1.2,
+      "name": "Spider Cave Crystal"
+    },
+    {
+      "type": "mushroom",
+      "position": { "x": -24, "z": -24 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "mushroom",
+      "position": { "x": -26, "z": -23 },
+      "rotation": 0.5,
+      "scale": 0.8
+    },
+    {
+      "type": "mushroom",
+      "position": { "x": -25, "z": -27 },
+      "rotation": -0.3,
+      "scale": 1.1
+    },
+    {
+      "type": "table",
+      "position": { "x": 9, "z": 7 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "chair",
+      "position": { "x": 8.5, "z": 6.5 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "chair",
+      "position": { "x": 9.5, "z": 6.5 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "bookshelf",
+      "position": { "x": -24, "z": -25 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "fence",
+      "position": { "x": 16, "z": -8 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "fence",
+      "position": { "x": 16, "z": -11 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "fence",
+      "position": { "x": 20, "z": -8 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "fence",
+      "position": { "x": 20, "z": -11 },
+      "rotation": 0,
+      "scale": 1.0
+    }
+  ],
+  "chests": [
+    {
+      "position": { "x": 5, "z": -5 },
+      "type": "basic",
+      "loot": "random"
+    },
+    {
+      "position": { "x": -7, "z": 8 },
+      "type": "basic",
+      "loot": "random"
+    },
+    {
+      "position": { "x": -21, "z": -21 },
+      "type": "magical",
+      "loot": "rare"
+    },
+    {
+      "position": { "x": 30, "z": 10 },
+      "type": "magical",
+      "loot": "rare"
+    }
+  ],
+  "terrainFeatures": [
+    {
+      "type": "hill",
+      "position": { "x": -15, "z": -15 },
+      "radius": 8,
+      "height": 4
+    },
+    {
+      "type": "hill",
+      "position": { "x": 20, "z": 15 },
+      "radius": 10,
+      "height": 5
+    },
+    {
+      "type": "plateau",
+      "position": { "x": 30, "z": 10 },
+      "width": 12,
+      "length": 12,
+      "height": 3,
+      "name": "Skeleton Graveyard Plateau"
+    },
+    {
+      "type": "valley",
+      "position": { "x": 0, "z": -8 },
+      "radius": 6,
+      "depth": 2,
+      "name": "Bridge Valley"
+    },
+    {
+      "type": "canyon",
+      "position": { "x": 25, "z": -25 },
+      "length": 15,
+      "width": 4,
+      "depth": 4,
+      "rotation": 0.785,
+      "name": "Spider Canyon"
+    },
+    {
+      "type": "cave_entrance",
+      "position": { "x": 24, "z": -24 },
+      "radius": 3,
+      "height": 2.5,
+      "name": "Spider Cave"
+    }
+  ],
+  "zones": [
+    {
+      "name": "Village Center",
+      "bounds": { "minX": -5, "maxX": 25, "minZ": -5, "maxZ": 25 },
+      "description": "Safe zone with NPCs and shops",
+      "music": "peaceful"
+    },
+    {
+      "name": "Goblin Camp",
+      "bounds": { "minX": -25, "maxX": -15, "minZ": -25, "maxZ": -15 },
+      "description": "Dangerous goblin territory",
+      "music": "combat"
+    },
+    {
+      "name": "Skeleton Graveyard",
+      "bounds": { "minX": 25, "maxX": 35, "minZ": 5, "maxZ": 15 },
+      "description": "Undead haunted grounds",
+      "music": "eerie"
+    },
+    {
+      "name": "Spider Canyon",
+      "bounds": { "minX": 20, "maxX": 30, "minZ": -30, "maxZ": -20 },
+      "description": "Spider infested canyon",
+      "music": "tense"
+    },
+    {
+      "name": "Wolf Territory",
+      "bounds": { "minX": -35, "maxX": -25, "minZ": 25, "maxZ": 35 },
+      "description": "Wild wolf pack hunting grounds",
+      "music": "wilderness"
+    }
+  ]
+}

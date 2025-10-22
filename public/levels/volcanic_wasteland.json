@@ -1,0 +1,463 @@
+{
+  "name": "volcanic_wasteland",
+  "description": "A treacherous realm of fire and ash where dragons reign supreme",
+  "version": "1.0",
+  "terrain": {
+    "size": 100,
+    "segments": 100,
+    "heightScale": 15,
+    "waterLevel": 1.5,
+    "seed": 66666
+  },
+  "npcs": [
+    {
+      "id": "fire_sage",
+      "name": "Fire Sage Ignis",
+      "type": "hermit",
+      "position": { "x": -35, "z": 35 },
+      "modelName": "Wizard",
+      "dialogue": "The flames speak of ancient power. Will you harness it or be consumed?"
+    },
+    {
+      "id": "lava_smith",
+      "name": "Lavaforge Blacksmith",
+      "type": "blacksmith",
+      "position": { "x": 5, "z": 10 },
+      "modelName": "peasant",
+      "dialogue": "I forge weapons in dragon fire itself! Show me your gold."
+    },
+    {
+      "id": "ash_merchant",
+      "name": "Ash Trader",
+      "type": "merchant",
+      "position": { "x": -5, "z": 8 },
+      "modelName": "peasant",
+      "dialogue": "Rare treasures salvaged from the lava flows. Everything must go!"
+    }
+  ],
+  "monsters": [
+    {
+      "type": "dragon",
+      "position": { "x": 30, "z": -30 },
+      "hp": 600,
+      "damage": 70,
+      "xp": 600,
+      "stance": "aggressive",
+      "level": 10
+    },
+    {
+      "type": "dragon",
+      "position": { "x": -40, "z": -35 },
+      "hp": 500,
+      "damage": 60,
+      "xp": 500,
+      "stance": "aggressive",
+      "level": 9
+    },
+    {
+      "type": "orc",
+      "position": { "x": 15, "z": -25 },
+      "hp": 180,
+      "damage": 32,
+      "xp": 120,
+      "stance": "aggressive",
+      "level": 5
+    },
+    {
+      "type": "orc",
+      "position": { "x": 18, "z": -22 },
+      "hp": 180,
+      "damage": 32,
+      "xp": 120,
+      "stance": "aggressive",
+      "level": 5
+    },
+    {
+      "type": "orc",
+      "position": { "x": 12, "z": -28 },
+      "hp": 180,
+      "damage": 32,
+      "xp": 120,
+      "stance": "aggressive",
+      "level": 5
+    },
+    {
+      "type": "orc",
+      "position": { "x": 20, "z": -20 },
+      "hp": 200,
+      "damage": 35,
+      "xp": 140,
+      "stance": "aggressive",
+      "level": 6
+    },
+    {
+      "type": "goblin",
+      "position": { "x": -15, "z": -15 },
+      "hp": 100,
+      "damage": 20,
+      "xp": 60,
+      "stance": "aggressive",
+      "level": 3
+    },
+    {
+      "type": "goblin",
+      "position": { "x": -12, "z": -18 },
+      "hp": 100,
+      "damage": 20,
+      "xp": 60,
+      "stance": "aggressive",
+      "level": 3
+    },
+    {
+      "type": "goblin",
+      "position": { "x": -18, "z": -12 },
+      "hp": 100,
+      "damage": 20,
+      "xp": 60,
+      "stance": "aggressive",
+      "level": 3
+    },
+    {
+      "type": "goblin",
+      "position": { "x": -15, "z": -20 },
+      "hp": 100,
+      "damage": 20,
+      "xp": 60,
+      "stance": "aggressive",
+      "level": 3
+    },
+    {
+      "type": "skeleton",
+      "position": { "x": 25, "z": 25 },
+      "hp": 120,
+      "damage": 25,
+      "xp": 90,
+      "stance": "aggressive",
+      "level": 4
+    },
+    {
+      "type": "skeleton",
+      "position": { "x": 28, "z": 22 },
+      "hp": 120,
+      "damage": 25,
+      "xp": 90,
+      "stance": "aggressive",
+      "level": 4
+    },
+    {
+      "type": "skeleton",
+      "position": { "x": 22, "z": 28 },
+      "hp": 120,
+      "damage": 25,
+      "xp": 90,
+      "stance": "aggressive",
+      "level": 4
+    },
+    {
+      "type": "troll",
+      "position": { "x": -25, "z": 0 },
+      "hp": 250,
+      "damage": 40,
+      "xp": 180,
+      "stance": "aggressive",
+      "level": 7
+    },
+    {
+      "type": "troll",
+      "position": { "x": -28, "z": 3 },
+      "hp": 250,
+      "damage": 40,
+      "xp": 180,
+      "stance": "aggressive",
+      "level": 7
+    },
+    {
+      "type": "bat",
+      "position": { "x": 0, "z": -35 },
+      "hp": 80,
+      "damage": 18,
+      "xp": 50,
+      "stance": "aggressive",
+      "level": 3
+    },
+    {
+      "type": "bat",
+      "position": { "x": 2, "z": -38 },
+      "hp": 80,
+      "damage": 18,
+      "xp": 50,
+      "stance": "aggressive",
+      "level": 3
+    },
+    {
+      "type": "bat",
+      "position": { "x": -2, "z": -32 },
+      "hp": 80,
+      "damage": 18,
+      "xp": 50,
+      "stance": "aggressive",
+      "level": 3
+    }
+  ],
+  "buildings": [
+    {
+      "type": "tower",
+      "position": { "x": 0, "z": 5 },
+      "rotation": 0,
+      "scale": 1.5,
+      "name": "Obsidian Watchtower"
+    },
+    {
+      "type": "house",
+      "position": { "x": 8, "z": 12 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Scorched Refuge"
+    },
+    {
+      "type": "house",
+      "position": { "x": -8, "z": 10 },
+      "rotation": 1.57,
+      "scale": 1.0,
+      "name": "Ash Shelter"
+    },
+    {
+      "type": "lighthouse",
+      "position": { "x": -40, "z": 40 },
+      "rotation": 0,
+      "scale": 1.2,
+      "name": "Flame Beacon"
+    },
+    {
+      "type": "castle_wall",
+      "position": { "x": 5, "z": 0 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Lava Fortification"
+    },
+    {
+      "type": "castle_wall",
+      "position": { "x": -5, "z": 0 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Lava Fortification"
+    }
+  ],
+  "props": [
+    {
+      "type": "campfire",
+      "position": { "x": 0, "z": 10 },
+      "rotation": 0,
+      "scale": 1.5
+    },
+    {
+      "type": "campfire",
+      "position": { "x": 15, "z": -25 },
+      "rotation": 0,
+      "scale": 1.3,
+      "name": "Orc War Fire"
+    },
+    {
+      "type": "campfire",
+      "position": { "x": -15, "z": -15 },
+      "rotation": 0,
+      "scale": 1.2,
+      "name": "Goblin Flame"
+    },
+    {
+      "type": "torch",
+      "position": { "x": 6, "z": 11 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "torch",
+      "position": { "x": 10, "z": 13 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "torch",
+      "position": { "x": -6, "z": 9 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "torch",
+      "position": { "x": -10, "z": 11 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "crystal",
+      "position": { "x": 30, "z": -28 },
+      "rotation": 0,
+      "scale": 1.5,
+      "name": "Fire Crystal"
+    },
+    {
+      "type": "crystal",
+      "position": { "x": -40, "z": -33 },
+      "rotation": 0,
+      "scale": 1.3,
+      "name": "Molten Gem"
+    },
+    {
+      "type": "weapon_rack",
+      "position": { "x": 6, "z": 9 },
+      "rotation": 0,
+      "scale": 1.0,
+      "name": "Lavaforge Weapons"
+    },
+    {
+      "type": "cauldron",
+      "position": { "x": -36, "z": 36 },
+      "rotation": 0,
+      "scale": 1.2,
+      "name": "Sage's Cauldron"
+    },
+    {
+      "type": "barrel",
+      "position": { "x": -6, "z": 7 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "barrel",
+      "position": { "x": -7, "z": 9 },
+      "rotation": 0.5,
+      "scale": 1.0
+    },
+    {
+      "type": "crate",
+      "position": { "x": -4, "z": 7 },
+      "rotation": 0.3,
+      "scale": 1.0
+    },
+    {
+      "type": "crate",
+      "position": { "x": 7, "z": 10 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "signpost",
+      "position": { "x": 0, "z": 0 },
+      "rotation": 0.785,
+      "scale": 1.0,
+      "text": "Volcanic Safe Zone"
+    },
+    {
+      "type": "signpost",
+      "position": { "x": 10, "z": -15 },
+      "rotation": -0.785,
+      "scale": 1.0,
+      "text": "Danger: Orc War Camp"
+    },
+    {
+      "type": "signpost",
+      "position": { "x": 20, "z": -20 },
+      "rotation": 1.57,
+      "scale": 1.0,
+      "text": "Dragon's Lair - Turn Back!"
+    },
+    {
+      "type": "tombstone",
+      "position": { "x": 24, "z": 24 },
+      "rotation": 0,
+      "scale": 1.0
+    },
+    {
+      "type": "tombstone",
+      "position": { "x": 26, "z": 26 },
+      "rotation": 0.5,
+      "scale": 1.0
+    },
+    {
+      "type": "tombstone",
+      "position": { "x": 27, "z": 23 },
+      "rotation": -0.3,
+      "scale": 1.0
+    }
+  ],
+  "chests": [
+    {
+      "position": { "x": 32, "z": -32 },
+      "type": "magical",
+      "loot": "legendary"
+    },
+    {
+      "position": { "x": -42, "z": -37 },
+      "type": "magical",
+      "loot": "legendary"
+    },
+    {
+      "position": { "x": -26, "z": 2 },
+      "type": "magical",
+      "loot": "rare"
+    },
+    {
+      "position": { "x": 8, "z": 5 },
+      "type": "basic",
+      "loot": "random"
+    }
+  ],
+  "terrainFeatures": [
+    {
+      "type": "hill",
+      "position": { "x": 30, "z": -30 },
+      "radius": 12,
+      "height": 8,
+      "name": "Dragon's Peak"
+    },
+    {
+      "type": "hill",
+      "position": { "x": -40, "z": -35 },
+      "radius": 10,
+      "height": 7,
+      "name": "Lava Mount"
+    },
+    {
+      "type": "canyon",
+      "position": { "x": -15, "z": -15 },
+      "length": 18,
+      "width": 5,
+      "depth": 6,
+      "rotation": 0.785,
+      "name": "Goblin Ravine"
+    },
+    {
+      "type": "cave_entrance",
+      "position": { "x": 0, "z": -35 },
+      "radius": 4,
+      "height": 3,
+      "name": "Bat Cavern"
+    }
+  ],
+  "zones": [
+    {
+      "name": "Safe Haven",
+      "bounds": { "minX": -10, "maxX": 15, "minZ": 0, "maxZ": 15 },
+      "description": "Protected settlement in the volcanic wasteland",
+      "music": "tense"
+    },
+    {
+      "name": "Goblin Ravine",
+      "bounds": { "minX": -20, "maxX": -10, "minZ": -20, "maxZ": -10 },
+      "description": "Lava goblins infest this deadly canyon",
+      "music": "combat"
+    },
+    {
+      "name": "Orc War Camp",
+      "bounds": { "minX": 10, "maxX": 25, "minZ": -30, "maxZ": -15 },
+      "description": "Fire orcs prepare for war",
+      "music": "combat"
+    },
+    {
+      "name": "Dragon Territory",
+      "bounds": { "minX": 25, "maxX": 40, "minZ": -40, "maxZ": -25 },
+      "description": "The ancient dragons' domain",
+      "music": "boss"
+    }
+  ]
+}

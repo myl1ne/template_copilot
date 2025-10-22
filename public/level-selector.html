@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World RPG - Level Selector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 95%;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            background: linear-gradient(135deg, #4ade80, #3b82f6, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(74, 222, 128, 0.3);
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 1.2em;
+        }
+
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .level-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            animation: fadeInUp 0.8s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--card-color-1), var(--card-color-2));
+        }
+
+        .level-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px var(--card-glow);
+        }
+
+        .level-card.classic {
+            --card-color-1: #4ade80;
+            --card-color-2: #22c55e;
+            --card-glow: rgba(74, 222, 128, 0.4);
+        }
+
+        .level-card.volcanic {
+            --card-color-1: #f97316;
+            --card-color-2: #dc2626;
+            --card-glow: rgba(249, 115, 22, 0.4);
+        }
+
+        .level-card.frozen {
+            --card-color-1: #3b82f6;
+            --card-color-2: #06b6d4;
+            --card-glow: rgba(59, 130, 246, 0.4);
+        }
+
+        .level-card.enchanted {
+            --card-color-1: #a855f7;
+            --card-color-2: #ec4899;
+            --card-glow: rgba(168, 85, 247, 0.4);
+        }
+
+        .level-card.desert {
+            --card-color-1: #f59e0b;
+            --card-color-2: #eab308;
+            --card-glow: rgba(245, 158, 11, 0.4);
+        }
+
+        .level-icon {
+            font-size: 4em;
+            text-align: center;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.3));
+        }
+
+        .level-title {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .level-subtitle {
+            color: #94a3b8;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .level-description {
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+
+        .level-stats {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.75em;
+            color: #94a3b8;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .difficulty.easy {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+
+        .difficulty.medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .difficulty.hard {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .difficulty.extreme {
+            background: rgba(168, 85, 247, 0.2);
+            color: #a855f7;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #64748b;
+            animation: fadeIn 1s ease;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .level-card:nth-child(1) { animation-delay: 0.1s; }
+        .level-card:nth-child(2) { animation-delay: 0.2s; }
+        .level-card:nth-child(3) { animation-delay: 0.3s; }
+        .level-card:nth-child(4) { animation-delay: 0.4s; }
+        .level-card:nth-child(5) { animation-delay: 0.5s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚔️ World RPG Adventures ⚔️</h1>
+            <p>Choose Your Destiny</p>
+        </div>
+
+        <div class="levels-grid">
+            <!-- Classic Adventure -->
+            <div class="level-card classic" onclick="selectLevel('world_rpg_v2.json')">
+                <div class="level-icon">🏰</div>
+                <div class="level-title">Classic Adventure</div>
+                <div class="level-subtitle">The Original Quest</div>
+                <div class="level-description">
+                    Explore a balanced world with villages, goblin camps, and ancient graveyards. Perfect for beginners!
+                </div>
+                <div class="difficulty easy">⭐ Easy</div>
+                <div class="level-stats">
+                    <div class="stat">
+                        <span class="stat-label">ZONES</span>
+                        <span class="stat-value">5</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">ENEMIES</span>
+                        <span class="stat-value">13</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">NPCS</span>
+                        <span class="stat-value">5</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Volcanic Wasteland -->
+            <div class="level-card volcanic" onclick="selectLevel('volcanic_wasteland.json')">
+                <div class="level-icon">🌋</div>
+                <div class="level-title">Volcanic Wasteland</div>
+                <div class="level-subtitle">Realm of Fire & Ash</div>
+                <div class="level-description">
+                    Navigate through scorching lava fields and face fire-breathing dragons. High risk, high reward!
+                </div>
+                <div class="difficulty hard">⭐⭐⭐ Hard</div>
+                <div class="level-stats">
+                    <div class="stat">
+                        <span class="stat-label">ZONES</span>
+                        <span class="stat-value">4</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">ENEMIES</span>
+                        <span class="stat-value">18</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">NPCS</span>
+                        <span class="stat-value">3</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Frozen Tundra -->
+            <div class="level-card frozen" onclick="selectLevel('frozen_tundra.json')">
+                <div class="level-icon">❄️</div>
+                <div class="level-title">Frozen Tundra</div>
+                <div class="level-subtitle">Land of Ice & Mystery</div>
+                <div class="level-description">
+                    Survive in frozen wastelands where ice wolves and frost trolls roam. Resources are scarce!
+                </div>
+                <div class="difficulty hard">⭐⭐⭐ Hard</div>
+                <div class="level-stats">
+                    <div class="stat">
+                        <span class="stat-label">ZONES</span>
+                        <span class="stat-value">4</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">ENEMIES</span>
+                        <span class="stat-value">16</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">NPCS</span>
+                        <span class="stat-value">4</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enchanted Forest -->
+            <div class="level-card enchanted" onclick="selectLevel('enchanted_forest.json')">
+                <div class="level-icon">🌳</div>
+                <div class="level-title">Enchanted Forest</div>
+                <div class="level-subtitle">Realm of Magic & Wonder</div>
+                <div class="level-description">
+                    Discover magical groves filled with mystical creatures and ancient secrets. Magic awaits!
+                </div>
+                <div class="difficulty medium">⭐⭐ Medium</div>
+                <div class="level-stats">
+                    <div class="stat">
+                        <span class="stat-label">ZONES</span>
+                        <span class="stat-value">5</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">ENEMIES</span>
+                        <span class="stat-value">14</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">NPCS</span>
+                        <span class="stat-value">6</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desert Oasis -->
+            <div class="level-card desert" onclick="selectLevel('desert_oasis.json')">
+                <div class="level-icon">🏜️</div>
+                <div class="level-title">Desert Oasis</div>
+                <div class="level-subtitle">Ancient Sands & Lost Treasures</div>
+                <div class="level-description">
+                    Explore golden dunes and ancient pyramids. Beware of scorpions and tomb guardians!
+                </div>
+                <div class="difficulty extreme">⭐⭐⭐⭐ Extreme</div>
+                <div class="level-stats">
+                    <div class="stat">
+                        <span class="stat-label">ZONES</span>
+                        <span class="stat-value">4</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">ENEMIES</span>
+                        <span class="stat-value">20</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">NPCS</span>
+                        <span class="stat-value">4</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Select a level to begin your adventure</p>
+            <a href="menu.html" class="back-button">← Back to Main Menu</a>
+        </div>
+    </div>
+
+    <script>
+        function selectLevel(levelFile) {
+            // Store selected level in localStorage
+            localStorage.setItem('selectedLevel', levelFile);
+            // Navigate to the game
+            window.location.href = 'world-rpg.html';
+        }
+    </script>
+</body>
+</html>

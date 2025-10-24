@@ -1,81 +1,100 @@
-# [Project Name] Template
+# Evo - Evolution Simulator
 
-> **Note**: This is a meta-template repository. Replace `[Project Name]` and all placeholder content with your actual project information.
+An evolutionary sandbox that grows lifeforms from 3D primitives using digital DNA. Watch creatures evolve, adapt, and compete in a physics-based environment powered by Three.js and neural networks.
 
-Template for kickstarting new projects with GitHub Copilot-managed documentation.
+![Evo Simulator](https://github.com/user-attachments/assets/8160d4ed-d48a-4d7e-83e3-4f1191632b5b)
 
 ## 🚀 Quick Start
 
-1. **Use this template** to create a new repository
-2. **Replace placeholders** in all documentation files with your project information
-3. **Configure GitHub Copilot** to automatically maintain your documentation
-4. **Set up issue labels** for automatic backlog synchronization
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-## 📚 Documentation Structure
+2. **Run the simulation**
+   ```bash
+   npm run dev
+   ```
 
-This template provides a complete documentation ecosystem that GitHub Copilot will maintain:
+3. **Open your browser** to `http://localhost:5173`
 
-### Core Documents
-- **[Project Overview](docs/project-overview.md)** - One-page summary of your project
-- **[Status & Roadmap](docs/roadmap.md)** - Current status and long-term planning
-- **[Current Backlog](docs/backlog.md)** - Task tracking synchronized with GitHub Issues
+4. **Watch evolution happen** - creatures will spawn, evolve, and compete for fitness!
 
-### Copilot Configuration
-- **[Copilot Instructions](.github/copilot-instructions.md)** - Instructions for maintaining documentation
+## 🧬 Key Features
 
-## 🤖 How It Works
+- **Digital DNA System** - Creatures are defined by genetic code that determines their structure
+- **3D Primitive Bodies** - Procedurally generated bodies from boxes, spheres, and cylinders
+- **Neural Network Control** - Each creature has a brain that learns to control its body
+- **Physics Simulation** - Realistic physics using cannon-es
+- **Natural Selection** - Creatures compete for fitness, best performers breed
+- **Emergent Behavior** - Complex behaviors emerge from simple rules
+- **Real-time Evolution** - Watch generations evolve before your eyes
 
-This template includes:
+## 📚 Documentation
 
-1. **GitHub Copilot Instructions** - Automated documentation maintenance rules
-2. **Structured Templates** - Consistent format for all project documentation  
-3. **GitHub Integration** - Automatic synchronization with issues and project boards
-4. **Living Documentation** - Documents that evolve with your project
+- **[Project Overview](docs/project-overview.md)** - Detailed project information
+- **[Status & Roadmap](docs/roadmap.md)** - Current status and future plans
+- **[Current Backlog](docs/backlog.md)** - Development tasks and progress
 
-## 🛠️ Customization
+## 🎮 How It Works
 
-After using this template:
+### 1. **Genesis (Primal Soup)**
+   - Simulation starts with random creatures spawned in a "primal soup"
+   - Each creature has unique DNA defining its structure and traits
 
-1. **Update Project Information**:
-   - Replace `[Project Name]` throughout all files
-   - Add your actual project description and details
-   - Configure repository-specific information
+### 2. **Life Cycle**
+   - Creatures use neural networks to sense and control their bodies
+   - They consume energy as they move and think
+   - Fitness is measured by distance traveled and survival time
 
-2. **Customize Documentation**:
-   - Modify templates to match your project needs
-   - Add project-specific sections or remove unused ones
-   - Update the roadmap with your actual goals
+### 3. **Natural Selection**
+   - Each generation lasts 30 seconds
+   - Top 20% of performers are selected for breeding
+   - New generation is created through crossover and mutation
 
-3. **Configure GitHub Integration**:
-   - Set up issue labels for automatic backlog updates
-   - Configure project boards if needed
-   - Enable GitHub Copilot for your repository
+### 4. **Evolution**
+   - Successful traits are passed to offspring
+   - Random mutations introduce variation
+   - Over time, creatures adapt to move more efficiently
 
-## 📖 Usage Guide
+## 🎨 Inspired By
 
-### For Project Maintainers
-- The documentation will be automatically updated by GitHub Copilot
-- Review and approve Copilot's suggested changes
-- Manually update when major project changes occur
+- **Spore** - Creature evolution and procedural generation
+- **From Dust** - Emergence and natural systems
+- **Creatures** - Neural networks and artificial life
 
-### For Contributors
-- Check the [backlog](docs/backlog.md) for current tasks
-- Refer to the [roadmap](docs/roadmap.md) for project direction
-- Read the [project overview](docs/project-overview.md) for context
+## 🛠️ Technology Stack
 
-## 🎯 Benefits
+- **Three.js** - 3D graphics and rendering
+- **cannon-es** - Physics simulation
+- **Vite** - Build tool and dev server
+- **Vanilla JavaScript** - No framework, pure ES6 modules
 
-- **Consistent Documentation** - Standardized format across all projects
-- **Automated Maintenance** - Reduced manual documentation overhead  
-- **GitHub Integration** - Seamless connection with development workflow
-- **Living Documents** - Documentation that stays current with development
+## 🔧 Controls
 
----
+- **Mouse** - Rotate camera (drag), zoom (scroll)
+- **Reset Button** - Start new simulation from scratch
+- **Spawn Button** - Add a random creature to current generation
+- **Pause Button** - Pause/resume simulation
 
-## Template Information
+## 📝 Project Structure
 
-This is the `template_copilot` repository - a meta-template for creating copilot-managed documentation systems.
+```
+src/
+├── dna/
+│   └── Genome.js          # Digital DNA system
+├── neural/
+│   └── NeuralNetwork.js   # Brain for creatures
+├── creatures/
+│   └── Creature.js        # Creature entity
+├── evolution/
+│   └── EvolutionManager.js # Evolution and selection
+└── main.js                # Main application
+```
 
-**Template Version**: 1.0.0  
-**Last Updated**: 2024-09-27  
-**License**: MIT
+## 📄 License
+
+MIT License - Feel free to use and modify!
+
+**Version**: 0.1.0  
+**Last Updated**: 2025-10-24

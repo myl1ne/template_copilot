@@ -42,15 +42,28 @@ export class MAC {
      * Add a child MAC or create a new one
      * @param {MAC|string} macOrType - MAC instance or type string
      * @param {Object} params - Parameters if creating new MAC
+     * @param {Object} transform - Optional transform {position, rotation, scale}
      * @returns {MAC} This MAC for chaining
      */
-    add(macOrType, params = {}) {
+    add(macOrType, params = {}, transform = {}) {
         let child;
         if (macOrType instanceof MAC) {
             child = macOrType;
         } else {
             child = new MAC(macOrType, params);
         }
+        
+        // Apply transform to child if provided
+        if (transform.position) {
+            child.position(...transform.position);
+        }
+        if (transform.rotation) {
+            child.rotation(...transform.rotation);
+        }
+        if (transform.scale) {
+            child.scale(...transform.scale);
+        }
+        
         this.children.push(child);
         return this;
     }
@@ -169,6 +182,46 @@ export class MAC {
      */
     clone() {
         return MAC.fromJSON(this.toJSON());
+    }
+
+    /**
+     * Add animation function to this MAC
+     * @param {Function} animateFn - Animation function(delta, time)
+     * @returns {MAC} This MAC for chaining
+     */
+    animate(animateFn) {
+        if (!this.animationFn) {
+            this.animationFn = animateFn;
+        }
+        return this;
+    }
+
+    /**
+     * Get animation-ready mesh with update function
+     */
+    buildAnimated() {
+        const mesh = this.build();
+        
+        if (this.animationFn || this.children.some(c => c.animationFn)) {
+            mesh.userData.time = 0;
+            mesh.userData.animate = (delta) => {
+                mesh.userData.time += delta;
+                
+                // Apply animation to this mesh
+                if (this.animationFn) {
+                    this.animationFn(mesh, delta, mesh.userData.time);
+                }
+                
+                // Apply animations to children
+                this.children.forEach((child, index) => {
+                    if (child.animationFn && mesh.children[index]) {
+                        child.animationFn(mesh.children[index], delta, mesh.userData.time);
+                    }
+                });
+            };
+        }
+        
+        return mesh;
     }
 }
 

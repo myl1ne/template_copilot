@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { MAC, MACLibrary } from './modules/mac/MACCore.js';
 import './modules/mac/MACExamples.js';
+import './modules/mac/MACAnimations.js';
 
 // Scene setup
 let scene, camera, renderer, controls;
@@ -63,13 +64,22 @@ function initScene() {
     scene.add(ground);
 }
 
+let clock = new THREE.Clock();
+
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
     
+    const delta = clock.getDelta();
+    
     // Rotate current mesh slowly
     if (currentMesh) {
         currentMesh.rotation.y += 0.005;
+        
+        // Run animation if available
+        if (currentMesh.userData.animate) {
+            currentMesh.userData.animate(delta);
+        }
     }
     
     renderer.render(scene, camera);
@@ -78,25 +88,29 @@ function animate() {
 function loadExamples() {
     const templates = MACLibrary.getAll();
     
-    // Filter interesting examples for demo
+    // Showcase the best examples with variety
     const showcaseTemplates = [
-        'simple_tree',
-        'detailed_tree',
-        'simple_house',
-        'tower',
-        'knight',
-        'cart',
-        'campfire',
-        'market_stall',
-        'barrel',
-        'torch',
-        'fence_section',
-        'bridge'
+        'village_square',        // Epic scene
+        'dragons_lair',          // Epic scene
+        'dragon_animated',       // Animated creature
+        'wizard_casting',        // Animated character
+        'knight_animated',       // Animated character
+        'fountain_animated',     // Animated prop
+        'campfire_animated',     // Animated environment
+        'windmill',              // Animated building
+        'tower',                 // Complex structure
+        'house',                 // Building
+        'tree',                  // Nature
+        'market_stall',          // Composed structure
+        'cart',                  // Vehicle
+        'crystal_animated'       // Magical prop
     ];
     
     showcaseTemplates.forEach(name => {
         if (templates.includes(name)) {
-            examples.push({ name, mac: MACLibrary.get(name) });
+            const mac = MACLibrary.get(name);
+            const isAnimated = name.includes('animated') || name === 'windmill';
+            examples.push({ name, mac, isAnimated });
         }
     });
     
@@ -118,13 +132,18 @@ function showExample(index) {
         scene.remove(currentMesh);
     }
     
-    // Build and add new mesh
-    currentMesh = example.mac.build();
+    // Build mesh (animated if applicable)
+    if (example.isAnimated) {
+        currentMesh = example.mac.buildAnimated();
+    } else {
+        currentMesh = example.mac.build();
+    }
     scene.add(currentMesh);
     
     // Update UI
-    document.getElementById('currentMesh').textContent = `${index + 1}/${examples.length}: ${example.name}`;
-    document.getElementById('displayInfo').textContent = example.name;
+    const animatedTag = example.isAnimated ? ' [ANIMATED]' : '';
+    document.getElementById('currentMesh').textContent = `${index + 1}/${examples.length}: ${example.name}${animatedTag}`;
+    document.getElementById('displayInfo').textContent = example.name + animatedTag;
     
     // Auto-adjust camera for different sized objects
     adjustCamera(example.name);
@@ -133,14 +152,23 @@ function showExample(index) {
 function adjustCamera(exampleName) {
     // Different examples need different camera positions
     const cameraSettings = {
-        'tower': { pos: [8, 6, 8], target: [0, 3, 0] },
-        'detailed_tree': { pos: [6, 5, 6], target: [0, 2, 0] },
-        'knight': { pos: [4, 3, 4], target: [0, 1, 0] },
-        'market_stall': { pos: [5, 4, 5], target: [0, 1, 0] },
-        'bridge': { pos: [6, 3, 6], target: [0, 0, 0] }
+        'village_square': { pos: [20, 15, 20], target: [0, 3, 0] },
+        'dragons_lair': { pos: [8, 6, 8], target: [0, 2, 0] },
+        'dragon_animated': { pos: [6, 4, 6], target: [0, 2, 0] },
+        'tower': { pos: [10, 8, 10], target: [0, 4, 0] },
+        'house': { pos: [8, 6, 8], target: [0, 2, 0] },
+        'tree': { pos: [6, 5, 6], target: [0, 2, 0] },
+        'knight_animated': { pos: [4, 3, 4], target: [0, 1, 0] },
+        'wizard_casting': { pos: [5, 4, 5], target: [0, 1.5, 0] },
+        'market_stall': { pos: [6, 5, 6], target: [0, 1, 0] },
+        'cart': { pos: [3, 2, 3], target: [0, 0.5, 0] },
+        'fountain_animated': { pos: [5, 4, 5], target: [0, 1.5, 0] },
+        'windmill': { pos: [8, 6, 8], target: [0, 2.5, 0] },
+        'campfire_animated': { pos: [3, 2, 3], target: [0, 0.5, 0] },
+        'crystal_animated': { pos: [3, 2, 3], target: [0, 0.75, 0] }
     };
     
-    const setting = cameraSettings[exampleName] || { pos: [4, 4, 4], target: [0, 1, 0] };
+    const setting = cameraSettings[exampleName] || { pos: [5, 5, 5], target: [0, 1, 0] };
     
     camera.position.set(...setting.pos);
     controls.target.set(...setting.target);

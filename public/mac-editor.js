@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { MAC, MACLibrary, MACBuilder } from './modules/mac/MACCore.js';
 import { MACPersistence } from './modules/mac/MACPersistence.js';
 import './modules/mac/MACExamples.js'; // Load example templates
+import './modules/mac/MACAnimations.js'; // Load animated templates
 
 // Scene setup
 let scene, camera, renderer, controls;
@@ -71,9 +72,19 @@ function initScene() {
     updateDisplay();
 }
 
+let clock = new THREE.Clock();
+
 function animate() {
     requestAnimationFrame(animate);
     controls.update();
+    
+    const delta = clock.getDelta();
+    
+    // Run animation if current mesh supports it
+    if (currentMesh && currentMesh.userData.animate) {
+        currentMesh.userData.animate(delta);
+    }
+    
     renderer.render(scene, camera);
 }
 
@@ -83,9 +94,17 @@ function updateDisplay() {
         scene.remove(currentMesh);
     }
 
-    // Build and add new mesh
+    // Build and add new mesh (try animated version if available)
     if (currentMAC) {
-        currentMesh = currentMAC.build();
+        // Check if MAC has animations
+        const hasAnimation = currentMAC.animationFn || 
+                           currentMAC.children.some(c => c.animationFn);
+        
+        if (hasAnimation) {
+            currentMesh = currentMAC.buildAnimated();
+        } else {
+            currentMesh = currentMAC.build();
+        }
         scene.add(currentMesh);
         
         // Update info panel

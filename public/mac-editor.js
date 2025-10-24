@@ -10,6 +10,8 @@ let scene, camera, renderer, controls;
 let currentMAC = null;
 let currentMesh = null;
 let gridHelper = null;
+let selectedNode = null;  // Currently selected node in hierarchy
+let gizmoMode = 'translate';  // translate, rotate, or scale
 
 function initScene() {
     // Scene
@@ -114,6 +116,143 @@ function updateDisplay() {
         // Update code display
         const code = currentMAC.toCode();
         document.getElementById('codeDisplay').textContent = code;
+        
+        // Update hierarchy tree
+        updateHierarchyTree();
+    }
+}
+
+function updateHierarchyTree() {
+    const treeContainer = document.getElementById('hierarchyTree');
+    if (!treeContainer) return;
+    
+    treeContainer.innerHTML = '';
+    
+    if (!currentMAC) {
+        treeContainer.innerHTML = '<div style="padding: 10px; color: #808080;">No MAC loaded</div>';
+        return;
+    }
+    
+    // Build the tree
+    const rootNode = buildTreeNode(currentMAC, 'root', 0);
+    treeContainer.appendChild(rootNode);
+}
+
+function buildTreeNode(mac, path, depth) {
+    const nodeDiv = document.createElement('div');
+    nodeDiv.className = 'tree-node';
+    nodeDiv.dataset.path = path;
+    
+    // Icon based on type
+    const icon = mac.type === 'group' ? '📁' : '📦';
+    
+    // Node content
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'tree-node-content';
+    contentDiv.innerHTML = `
+        <span class="tree-node-icon">${icon}</span>
+        <span class="tree-node-label">${mac.type}</span>
+        <span class="tree-node-type">${mac.children.length} children, ${mac.transforms.length} transforms</span>
+    `;
+    
+    // Node actions
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'tree-node-actions';
+    
+    const selectBtn = document.createElement('button');
+    selectBtn.className = 'tree-node-btn';
+    selectBtn.textContent = 'Select';
+    selectBtn.onclick = (e) => {
+        e.stopPropagation();
+        selectNodeByPath(path);
+    };
+    
+    actionsDiv.appendChild(selectBtn);
+    
+    nodeDiv.appendChild(contentDiv);
+    nodeDiv.appendChild(actionsDiv);
+    
+    // Click to select
+    nodeDiv.onclick = (e) => {
+        if (e.target === nodeDiv || e.target.closest('.tree-node-content')) {
+            selectNodeByPath(path);
+        }
+    };
+    
+    // Add children
+    if (mac.children && mac.children.length > 0) {
+        const childrenDiv = document.createElement('div');
+        childrenDiv.className = 'tree-children';
+        
+        mac.children.forEach((child, index) => {
+            const childPath = `${path}.children[${index}]`;
+            const childNode = buildTreeNode(child, childPath, depth + 1);
+            childrenDiv.appendChild(childNode);
+        });
+        
+        nodeDiv.appendChild(childrenDiv);
+    }
+    
+    return nodeDiv;
+}
+
+function selectNodeByPath(path) {
+    // Remove previous selection
+    document.querySelectorAll('.tree-node').forEach(node => {
+        node.classList.remove('selected');
+    });
+    
+    // Add selection to clicked node
+    const nodeElement = document.querySelector(`[data-path="${path}"]`);
+    if (nodeElement) {
+        nodeElement.classList.add('selected');
+    }
+    
+    // Get the actual MAC node
+    selectedNode = getNodeByPath(currentMAC, path);
+    
+    // Update UI
+    updateSelectedNodeInfo();
+}
+
+function getNodeByPath(mac, path) {
+    if (path === 'root') {
+        return mac;
+    }
+    
+    // Parse path like "root.children[0].children[1]"
+    const parts = path.split('.').slice(1); // Remove 'root'
+    let current = mac;
+    
+    for (const part of parts) {
+        if (part.startsWith('children[')) {
+            const index = parseInt(part.match(/\d+/)[0]);
+            current = current.children[index];
+        }
+    }
+    
+    return current;
+}
+
+function updateSelectedNodeInfo() {
+    const infoSpan = document.getElementById('selectedNodeInfo');
+    if (!infoSpan) return;
+    
+    if (!selectedNode) {
+        infoSpan.textContent = 'None';
+        return;
+    }
+    
+    infoSpan.textContent = `${selectedNode.type} (${selectedNode.children.length} children)`;
+    
+    // Update transform inputs with current values
+    if (selectedNode.transforms && selectedNode.transforms.length > 0) {
+        const lastTransform = selectedNode.transforms[selectedNode.transforms.length - 1];
+        if (lastTransform.type === gizmoMode) {
+            document.getElementById('transformX').value = lastTransform.value[0] || 0;
+            document.getElementById('transformY').value = lastTransform.value[1] || 0;
+            document.getElementById('transformZ').value = lastTransform.value[2] || 0;
+        }
     }
 }
 
@@ -336,6 +475,132 @@ document.getElementById('clearBtn').addEventListener('click', () => {
         updateDisplay();
     }
 });
+
+// Hierarchy tab event listeners
+document.getElementById('gizmoTranslate')?.addEventListener('click', () => {
+    gizmoMode = 'translate';
+    document.querySelectorAll('.gizmo-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('gizmoTranslate').classList.add('active');
+    updateTransformInputLabels();
+});
+
+document.getElementById('gizmoRotate')?.addEventListener('click', () => {
+    gizmoMode = 'rotate';
+    document.querySelectorAll('.gizmo-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('gizmoRotate').classList.add('active');
+    updateTransformInputLabels();
+});
+
+document.getElementById('gizmoScale')?.addEventListener('click', () => {
+    gizmoMode = 'scale';
+    document.querySelectorAll('.gizmo-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('gizmoScale').classList.add('active');
+    updateTransformInputLabels();
+});
+
+document.getElementById('applyGizmoTransform')?.addEventListener('click', () => {
+    if (!selectedNode) {
+        alert('Please select a node from the hierarchy tree');
+        return;
+    }
+    
+    const x = parseFloat(document.getElementById('transformX').value) || 0;
+    const y = parseFloat(document.getElementById('transformY').value) || 0;
+    const z = parseFloat(document.getElementById('transformZ').value) || 0;
+    
+    // Apply transform based on mode
+    switch(gizmoMode) {
+        case 'translate':
+            selectedNode.position(x, y, z);
+            break;
+        case 'rotate':
+            selectedNode.rotation(x, y, z);
+            break;
+        case 'scale':
+            selectedNode.scale(x, y, z);
+            break;
+    }
+    
+    updateDisplay();
+});
+
+document.getElementById('deleteNodeBtn')?.addEventListener('click', () => {
+    if (!selectedNode || selectedNode === currentMAC) {
+        alert('Cannot delete root node or no node selected');
+        return;
+    }
+    
+    if (confirm('Delete selected node?')) {
+        // Find and remove from parent
+        removeNodeFromMAC(currentMAC, selectedNode);
+        selectedNode = null;
+        updateDisplay();
+    }
+});
+
+document.getElementById('duplicateNodeBtn')?.addEventListener('click', () => {
+    if (!selectedNode) {
+        alert('Please select a node to duplicate');
+        return;
+    }
+    
+    const clonedNode = selectedNode.clone();
+    
+    // If it's the root, replace current MAC
+    if (selectedNode === currentMAC) {
+        currentMAC = clonedNode;
+    } else {
+        // Add to parent (for now, add to root)
+        currentMAC.children.push(clonedNode);
+    }
+    
+    updateDisplay();
+});
+
+function updateTransformInputLabels() {
+    const labels = document.querySelectorAll('.transform-input label');
+    if (gizmoMode === 'scale') {
+        labels[0].textContent = 'Scale X';
+        labels[1].textContent = 'Scale Y';
+        labels[2].textContent = 'Scale Z';
+        // Set default scale values
+        document.getElementById('transformX').value = 1;
+        document.getElementById('transformY').value = 1;
+        document.getElementById('transformZ').value = 1;
+    } else if (gizmoMode === 'rotate') {
+        labels[0].textContent = 'Rot X';
+        labels[1].textContent = 'Rot Y';
+        labels[2].textContent = 'Rot Z';
+        document.getElementById('transformX').value = 0;
+        document.getElementById('transformY').value = 0;
+        document.getElementById('transformZ').value = 0;
+    } else {
+        labels[0].textContent = 'X';
+        labels[1].textContent = 'Y';
+        labels[2].textContent = 'Z';
+        document.getElementById('transformX').value = 0;
+        document.getElementById('transformY').value = 0;
+        document.getElementById('transformZ').value = 0;
+    }
+}
+
+function removeNodeFromMAC(mac, nodeToRemove) {
+    // Remove from children
+    const index = mac.children.indexOf(nodeToRemove);
+    if (index > -1) {
+        mac.children.splice(index, 1);
+        return true;
+    }
+    
+    // Recursively search in children
+    for (const child of mac.children) {
+        if (removeNodeFromMAC(child, nodeToRemove)) {
+            return true;
+        }
+    }
+    
+    return false;
+}
 
 // Tab switching
 document.querySelectorAll('.tab').forEach(tab => {

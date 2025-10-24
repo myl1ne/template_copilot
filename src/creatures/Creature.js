@@ -17,10 +17,16 @@ export class Creature {
         this.alive = true;
         this.foodCollected = 0;
         
-        // Neural network for control (inputs: sensors, outputs: motor commands)
-        const inputSize = 9; // velocity(3), energy(1), food direction(3), time(1), height(1)
+        // Social/higher-level behaviors
+        this.signalColor = new THREE.Color(1, 1, 1); // Communication via color
+        this.socialBehavior = this.genome.genes.aggression; // 0=cooperative, 1=competitive
+        this.nearestCreatureDirection = new THREE.Vector3(0, 0, 0);
+        this.nearbyCreatureCount = 0;
+        
+        // Neural network for control (expanded inputs for social sensing)
+        const inputSize = 13; // velocity(3), energy(1), food direction(3), time(1), height(1), creature direction(3), nearby count(1)
         const hiddenSize = this.genome.genes.neuralLayers[0] || 4;
-        const outputSize = 3; // force x, y, z
+        const outputSize = 4; // force x, y, z, signal intensity
         this.brain = new NeuralNetwork(inputSize, hiddenSize, outputSize);
         
         // Three.js visual components
@@ -41,6 +47,9 @@ export class Creature {
         
         // Vision/sensing
         this.nearestFoodDirection = new THREE.Vector3(0, 0, 0);
+        
+        // Communication marker (small sphere above creature)
+        this.createSignalMarker();
     }
 
     buildFromGenome(startPosition) {
@@ -134,7 +143,31 @@ export class Creature {
         });
     }
 
-    sense(foodManager = null) {
+    createSignalMarker() {
+        // Small sphere above creature for communication
+        const geometry = new THREE.SphereGeometry(0.2, 8, 8);
+        const material = new THREE.MeshPhongMaterial({
+            color: this.signalColor,
+            emissive: this.signalColor,
+            emissiveIntensity: 0.5,
+            transparent: true,
+            opacity: 0.7
+        });
+        this.signalMarker = new THREE.Mesh(geometry, material);
+        this.group.add(this.signalMarker);
+    }
+
+    updateSignalMarker() {
+        if (this.signalMarker && this.mainBody) {
+            this.signalMarker.position.set(
+                this.mainBody.position.x,
+                this.mainBody.position.y + 1.5,
+                this.mainBody.position.z
+            );
+        }
+    }
+
+    sense(foodManager = null, otherCreatures = []) {
         // Gather sensory inputs
         const velocity = this.mainBody.velocity;
         const position = this.mainBody.position;
@@ -160,6 +193,36 @@ export class Creature {
             }
         }
         
+        // Social sensing: detect nearest creature
+        let creatureDirX = 0, creatureDirY = 0, creatureDirZ = 0;
+        let nearbyCount = 0;
+        let minDistance = Infinity;
+        
+        otherCreatures.forEach(other => {
+            if (other !== this && other.alive) {
+                const dx = other.mainBody.position.x - position.x;
+                const dy = other.mainBody.position.y - position.y;
+                const dz = other.mainBody.position.z - position.z;
+                const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                
+                // Count nearby creatures (within 10 units)
+                if (distance < 10) {
+                    nearbyCount++;
+                }
+                
+                // Track nearest creature
+                if (distance < minDistance && distance > 0) {
+                    minDistance = distance;
+                    creatureDirX = dx / distance;
+                    creatureDirY = dy / distance;
+                    creatureDirZ = dz / distance;
+                }
+            }
+        });
+        
+        this.nearbyCreatureCount = nearbyCount;
+        this.nearestCreatureDirection.set(creatureDirX, creatureDirY, creatureDirZ);
+        
         return [
             velocity.x / 10,  // Normalized velocity
             velocity.y / 10,
@@ -167,15 +230,19 @@ export class Creature {
             foodDirX,  // Direction to nearest food
             foodDirY,
             foodDirZ,
+            creatureDirX,  // Direction to nearest creature
+            creatureDirY,
+            creatureDirZ,
+            nearbyCount / 10,  // Normalized nearby creature count
             Math.sin(this.age / 10),  // Time-based input
             position.y / 10,  // Height
             this.energy / 100  // Energy level
         ];
     }
 
-    think(foodManager = null) {
+    think(foodManager = null, otherCreatures = []) {
         // Use neural network to decide actions
-        const inputs = this.sense(foodManager);
+        const inputs = this.sense(foodManager, otherCreatures);
         const outputs = this.brain.forward(inputs);
         return outputs;
     }
@@ -190,12 +257,27 @@ export class Creature {
         
         this.mainBody.applyForce(force);
         
+        // Update signal color based on 4th output (communication)
+        if (actions.length >= 4) {
+            const signalIntensity = Math.abs(actions[3]);
+            this.signalColor.setRGB(
+                signalIntensity,
+                this.socialBehavior,
+                1 - this.socialBehavior
+            );
+            if (this.signalMarker) {
+                this.signalMarker.material.color.copy(this.signalColor);
+                this.signalMarker.material.emissive.copy(this.signalColor);
+                this.signalMarker.material.opacity = signalIntensity * 0.7 + 0.3;
+            }
+        }
+        
         // Energy cost for actions
         const actionMagnitude = Math.sqrt(actions[0] ** 2 + actions[1] ** 2 + actions[2] ** 2);
         this.energy -= actionMagnitude * 0.01;
     }
 
-    update(deltaTime, foodManager = null) {
+    update(deltaTime, foodManager = null, otherCreatures = []) {
         if (!this.alive) return;
         
         this.age += deltaTime;
@@ -208,8 +290,8 @@ export class Creature {
             return;
         }
         
-        // Think and act
-        const actions = this.think(foodManager);
+        // Think and act with social awareness
+        const actions = this.think(foodManager, otherCreatures);
         this.act(actions);
         
         // Update visual meshes to match physics bodies
@@ -219,14 +301,23 @@ export class Creature {
             mesh.quaternion.copy(body.quaternion);
         });
         
+        // Update signal marker position
+        this.updateSignalMarker();
+        
         // Calculate fitness based on distance traveled
         const currentPosition = new THREE.Vector3().copy(this.mainBody.position);
         const distance = currentPosition.distanceTo(this.lastPosition);
         this.distanceTraveled += distance;
         this.lastPosition.copy(currentPosition);
         
-        // Fitness = food collected (primary) + survival time + movement efficiency
-        this.fitness = this.foodCollected * 100 + this.age * 2 + this.distanceTraveled * 5;
+        // Enhanced fitness with social bonus
+        // Cooperative creatures get bonus for being near others, competitive ones penalized
+        const socialFactor = this.socialBehavior < 0.5 ? 
+            (this.nearbyCreatureCount * 5) :  // Cooperative bonus
+            -(this.nearbyCreatureCount * 2);  // Competitive penalty
+        
+        // Fitness = food collected (primary) + survival time + movement + social factor
+        this.fitness = this.foodCollected * 100 + this.age * 2 + this.distanceTraveled * 5 + socialFactor;
         
         // Die if fallen too far
         if (this.mainBody.position.y < -20) {

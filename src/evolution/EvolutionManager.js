@@ -1,6 +1,7 @@
 import { Creature } from '../creatures/Creature.js';
 import { Genome } from '../dna/Genome.js';
 import { FoodManager } from '../environment/Food.js';
+import { ObstacleManager } from '../environment/Obstacles.js';
 
 /**
  * EvolutionManager - Handles natural selection and evolution
@@ -21,6 +22,9 @@ export class EvolutionManager {
         
         // Food management
         this.foodManager = new FoodManager(scene, world);
+        
+        // Obstacle management for environmental complexity
+        this.obstacleManager = new ObstacleManager(scene, world);
     }
 
     initialize() {
@@ -29,6 +33,9 @@ export class EvolutionManager {
         
         // Initialize food sources
         this.foodManager.initialize();
+        
+        // Initialize environmental obstacles
+        this.obstacleManager.initialize();
     }
 
     spawnInitialPopulation() {
@@ -70,9 +77,9 @@ export class EvolutionManager {
         // Update food
         this.foodManager.update(deltaTime);
         
-        // Update all creatures
+        // Update all creatures with social awareness
         this.creatures.forEach(creature => {
-            creature.update(deltaTime, this.foodManager);
+            creature.update(deltaTime, this.foodManager, this.creatures);
             
             // Check for food collisions
             this.foodManager.checkCollisions(creature);
@@ -173,8 +180,9 @@ export class EvolutionManager {
         this.bestFitness = 0;
         this.bestGenome = null;
         
-        // Reset food
+        // Reset food and obstacles
         this.foodManager.reset();
+        this.obstacleManager.reset();
         
         // Restart with new population
         this.spawnInitialPopulation();

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAC Editor - MeshAsCode</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr 400px;
+            grid-template-rows: 60px 1fr;
+            height: 100vh;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background: #252525;
+            padding: 15px 20px;
+            border-bottom: 2px solid #404040;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #4a9eff;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            background: #4a9eff;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #357abd;
+        }
+
+        .btn-secondary {
+            background: #505050;
+        }
+
+        .btn-secondary:hover {
+            background: #606060;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .sidebar {
+            background: #202020;
+            border-right: 1px solid #404040;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .sidebar h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #4a9eff;
+        }
+
+        .template-list {
+            list-style: none;
+        }
+
+        .template-item {
+            padding: 10px;
+            margin-bottom: 5px;
+            background: #2a2a2a;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .template-item:hover {
+            background: #353535;
+        }
+
+        .template-item.active {
+            background: #4a9eff;
+            color: white;
+        }
+
+        .viewport {
+            background: #1a1a1a;
+            position: relative;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .viewport-controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .editor-panel {
+            background: #202020;
+            border-left: 1px solid #404040;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-section {
+            padding: 20px;
+            border-bottom: 1px solid #404040;
+        }
+
+        .panel-section h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #4a9eff;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #b0b0b0;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            background: #2a2a2a;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+
+        .code-editor {
+            background: #1e1e1e;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #d4d4d4;
+            overflow-x: auto;
+            white-space: pre;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .code-editor-textarea {
+            width: 100%;
+            min-height: 300px;
+            background: #1e1e1e;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #d4d4d4;
+            resize: vertical;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .info-panel {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .info-panel strong {
+            color: #4a9eff;
+        }
+
+        .tabs {
+            display: flex;
+            background: #2a2a2a;
+            border-bottom: 1px solid #404040;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            background: #353535;
+        }
+
+        .tab.active {
+            border-bottom-color: #4a9eff;
+            color: #4a9eff;
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .primitive-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .primitive-btn {
+            padding: 15px;
+            background: #2a2a2a;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .primitive-btn:hover {
+            background: #353535;
+            border-color: #4a9eff;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #404040;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #505050;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 MAC Editor</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary" id="newBtn">New</button>
+                <button class="btn btn-secondary" id="loadBtn">Load</button>
+                <button class="btn" id="saveBtn">Save</button>
+                <button class="btn btn-secondary" id="exportBtn">Export</button>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <h2>Templates</h2>
+            <ul class="template-list" id="templateList"></ul>
+            
+            <h2 style="margin-top: 30px;">Saved Assets</h2>
+            <ul class="template-list" id="savedList"></ul>
+        </div>
+
+        <div class="viewport">
+            <canvas id="canvas"></canvas>
+            <div class="viewport-controls">
+                <button class="btn btn-secondary" id="resetCameraBtn">Reset Camera</button>
+                <button class="btn btn-secondary" id="toggleGridBtn">Toggle Grid</button>
+            </div>
+        </div>
+
+        <div class="editor-panel">
+            <div class="tabs">
+                <div class="tab active" data-tab="properties">Properties</div>
+                <div class="tab" data-tab="code">Code</div>
+                <div class="tab" data-tab="compose">Compose</div>
+            </div>
+
+            <div class="tab-content active" data-content="properties">
+                <div class="panel-section">
+                    <h3>Current MAC</h3>
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="macName" placeholder="my_mac">
+                    </div>
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select id="macType">
+                            <option value="group">Group</option>
+                            <option value="box">Box</option>
+                            <option value="sphere">Sphere</option>
+                            <option value="cylinder">Cylinder</option>
+                            <option value="cone">Cone</option>
+                            <option value="capsule">Capsule</option>
+                            <option value="torus">Torus</option>
+                            <option value="plane">Plane</option>
+                            <option value="ring">Ring</option>
+                        </select>
+                    </div>
+                    <div class="info-panel">
+                        <strong>Children:</strong> <span id="childCount">0</span><br>
+                        <strong>Transforms:</strong> <span id="transformCount">0</span>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Transform</h3>
+                    <div class="form-group">
+                        <label>Position (X, Y, Z)</label>
+                        <input type="text" id="position" placeholder="0, 0, 0">
+                    </div>
+                    <div class="form-group">
+                        <label>Rotation (X, Y, Z)</label>
+                        <input type="text" id="rotation" placeholder="0, 0, 0">
+                    </div>
+                    <div class="form-group">
+                        <label>Scale (X, Y, Z)</label>
+                        <input type="text" id="scale" placeholder="1, 1, 1">
+                    </div>
+                    <button class="btn" id="applyTransformBtn">Apply Transform</button>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Material</h3>
+                    <div class="form-group">
+                        <label>Color (hex)</label>
+                        <input type="text" id="color" placeholder="0xffffff">
+                    </div>
+                    <div class="form-group">
+                        <label>Metalness (0-1)</label>
+                        <input type="text" id="metalness" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Roughness (0-1)</label>
+                        <input type="text" id="roughness" placeholder="0.5">
+                    </div>
+                    <button class="btn" id="applyMaterialBtn">Apply Material</button>
+                </div>
+            </div>
+
+            <div class="tab-content" data-content="code">
+                <div class="panel-section">
+                    <h3>Generated Code</h3>
+                    <div class="code-editor" id="codeDisplay"></div>
+                    <div class="button-group">
+                        <button class="btn" id="copyCodeBtn">Copy Code</button>
+                        <button class="btn btn-secondary" id="editCodeBtn">Edit Code</button>
+                    </div>
+                </div>
+
+                <div class="panel-section" id="codeEditSection" style="display: none;">
+                    <h3>Edit Code</h3>
+                    <textarea class="code-editor-textarea" id="codeEditor"></textarea>
+                    <div class="button-group">
+                        <button class="btn" id="applyCodeBtn">Apply Code</button>
+                        <button class="btn btn-secondary" id="cancelCodeBtn">Cancel</button>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Export</h3>
+                    <div class="button-group">
+                        <button class="btn" id="exportCodeFileBtn">Export as .js</button>
+                        <button class="btn" id="exportJsonBtn">Export as .json</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" data-content="compose">
+                <div class="panel-section">
+                    <h3>Add Primitive</h3>
+                    <div class="primitive-grid">
+                        <div class="primitive-btn" data-primitive="box">📦 Box</div>
+                        <div class="primitive-btn" data-primitive="sphere">⚽ Sphere</div>
+                        <div class="primitive-btn" data-primitive="cylinder">🛢️ Cylinder</div>
+                        <div class="primitive-btn" data-primitive="cone">🍦 Cone</div>
+                        <div class="primitive-btn" data-primitive="capsule">💊 Capsule</div>
+                        <div class="primitive-btn" data-primitive="torus">🍩 Torus</div>
+                        <div class="primitive-btn" data-primitive="plane">📄 Plane</div>
+                        <div class="primitive-btn" data-primitive="ring">⭕ Ring</div>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Add from Template</h3>
+                    <select id="templateSelect">
+                        <option value="">Select template...</option>
+                    </select>
+                    <button class="btn" id="addTemplateBtn" style="margin-top: 10px; width: 100%;">Add Template</button>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Actions</h3>
+                    <div class="button-group">
+                        <button class="btn btn-secondary" id="cloneBtn">Clone Current</button>
+                        <button class="btn btn-danger" id="clearBtn">Clear All</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="mac-editor.js"></script>
+</body>
+</html>

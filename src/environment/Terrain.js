@@ -19,7 +19,7 @@ export class Terrain {
     }
 
     createTerrain() {
-        // Generate heightmap using Perlin-like noise
+        // Create FLAT terrain (no hills)
         const geometry = new THREE.PlaneGeometry(
             this.size, 
             this.size, 
@@ -27,52 +27,12 @@ export class Terrain {
             this.segments
         );
         
-        // Modify vertices to create hills and valleys
-        const vertices = geometry.attributes.position.array;
-        this.heightData = [];
-        
-        for (let i = 0; i < vertices.length; i += 3) {
-            const x = vertices[i];
-            const z = vertices[i + 1];
-            
-            // Multi-octave noise for terrain variation
-            let height = 0;
-            height += Math.sin(x * 0.1) * Math.cos(z * 0.1) * 2;
-            height += Math.sin(x * 0.3) * Math.cos(z * 0.3) * 0.5;
-            height += Math.sin(x * 0.05 + 10) * Math.cos(z * 0.05 + 10) * 3;
-            height += (Math.random() - 0.5) * 0.3; // Random variation
-            
-            // Store height data for physics
-            this.heightData.push({ x, z, height });
-            vertices[i + 2] = height;
-        }
-        
-        geometry.computeVertexNormals();
+        // Keep terrain completely flat
         geometry.rotateX(-Math.PI / 2); // Rotate to be horizontal
         
-        // Vertex colors based on height
-        const colors = [];
-        for (let i = 0; i < vertices.length; i += 3) {
-            const height = vertices[i + 2];
-            let color;
-            
-            if (height < this.waterLevel - 0.5) {
-                color = new THREE.Color(0x8B7355); // Sandy brown (beach)
-            } else if (height < 1) {
-                color = new THREE.Color(0x6B8E23); // Olive green (grass)
-            } else if (height < 2) {
-                color = new THREE.Color(0x228B22); // Forest green
-            } else {
-                color = new THREE.Color(0x8B8B8B); // Gray (rocky)
-            }
-            
-            colors.push(color.r, color.g, color.b);
-        }
-        
-        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-        
+        // Uniform sandy/dirt color for flat ground
         const material = new THREE.MeshStandardMaterial({
-            vertexColors: true,
+            color: 0x8B7355, // Sandy brown ground
             roughness: 0.9,
             metalness: 0.1
         });
@@ -81,21 +41,16 @@ export class Terrain {
         this.mesh.receiveShadow = true;
         this.scene.add(this.mesh);
         
-        // Create heightfield physics body from terrain data
+        // Create flat physics plane (no heightfield needed)
         const matrix = [];
         const sizeX = this.segments + 1;
         const sizeY = this.segments + 1;
         
-        // Convert height data to 2D matrix for Heightfield
+        // Flat height data for physics
         for (let i = 0; i < sizeY; i++) {
             matrix.push([]);
             for (let j = 0; j < sizeX; j++) {
-                const index = i * sizeX + j;
-                if (index < this.heightData.length) {
-                    matrix[i].push(this.heightData[index].height);
-                } else {
-                    matrix[i].push(0);
-                }
+                matrix[i].push(0); // All heights = 0 (flat)
             }
         }
         

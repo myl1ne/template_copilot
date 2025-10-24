@@ -1,4 +1,4 @@
-import { Creature } from '../creatures/Creature.js';
+import { LimbedCreature } from '../creatures/LimbedCreature.js';
 import { Genome } from '../dna/Genome.js';
 import { FoodManager } from '../environment/Food.js';
 import { ObstacleManager } from '../environment/Obstacles.js';
@@ -74,7 +74,7 @@ export class EvolutionManager {
             };
         }
         
-        const creature = new Creature(genome, position);
+        const creature = new LimbedCreature(genome, position);
         creature.addToScene(this.scene);
         creature.addToWorld(this.world);
         this.creatures.push(creature);
@@ -90,28 +90,21 @@ export class EvolutionManager {
         
         // Update all creatures with full environmental awareness
         this.creatures.forEach(creature => {
-            creature.update(deltaTime, this.foodManager, this.creatures, this.terrain);
-            
-            // Check for food collisions
-            this.foodManager.checkCollisions(creature);
-            
-            // Check for water proximity
-            this.terrain.checkWaterProximity(creature);
+            creature.update(deltaTime, this.foodManager, this.terrain, this.creatures);
             
             // Check bounds
             if (!this.terrain.isInBounds(creature.mainBody.position)) {
                 creature.energy -= deltaTime * 2; // Penalty for being out of bounds
             }
             
-            // Age-based death (NEW: creatures die of old age)
-            if (creature.age > 120) { // 2 minutes max lifespan
-                creature.alive = false;
-            }
-            
-            // Handle mating
-            if (creature.readyToMate && this.creatures.length < this.maxPopulation) {
-                this.createOffspring(creature, creature.readyToMate);
-                creature.readyToMate = null;
+            // EXPLICIT BEHAVIORS: Attempt creature-to-creature interactions
+            const interaction = creature.attemptInteraction(this.creatures);
+            if (interaction) {
+                if (interaction.type === 'mate' && this.creatures.length < this.maxPopulation) {
+                    // Successful mating - create offspring
+                    this.createOffspring(creature, interaction.target);
+                }
+                // Fighting is handled inside the creature's attack() method
             }
         });
         

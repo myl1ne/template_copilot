@@ -173,6 +173,7 @@ class EvoSimulator {
         this.creaturesDisplay = document.getElementById('creatures');
         this.timeDisplay = document.getElementById('time');
         this.fitnessDisplay = document.getElementById('fitness');
+        this.foodCollectedDisplay = document.getElementById('foodCollected');
     }
 
     updateUI() {
@@ -181,6 +182,10 @@ class EvoSimulator {
         this.creaturesDisplay.textContent = stats.creatures;
         this.timeDisplay.textContent = this.time.toFixed(1);
         this.fitnessDisplay.textContent = stats.bestFitness;
+        
+        // Calculate total food collected by all creatures
+        const totalFood = this.evolutionManager.creatures.reduce((sum, creature) => sum + creature.foodCollected, 0);
+        this.foodCollectedDisplay.textContent = totalFood;
     }
 
     onWindowResize() {

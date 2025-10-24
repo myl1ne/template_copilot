@@ -1,5 +1,6 @@
 import { Creature } from '../creatures/Creature.js';
 import { Genome } from '../dna/Genome.js';
+import { FoodManager } from '../environment/Food.js';
 
 /**
  * EvolutionManager - Handles natural selection and evolution
@@ -17,11 +18,17 @@ export class EvolutionManager {
         this.generationTimer = 0;
         this.bestFitness = 0;
         this.bestGenome = null;
+        
+        // Food management
+        this.foodManager = new FoodManager(scene, world);
     }
 
     initialize() {
         // Create initial population in "primal soup"
         this.spawnInitialPopulation();
+        
+        // Initialize food sources
+        this.foodManager.initialize();
     }
 
     spawnInitialPopulation() {
@@ -60,9 +67,15 @@ export class EvolutionManager {
     update(deltaTime) {
         this.generationTimer += deltaTime;
         
+        // Update food
+        this.foodManager.update(deltaTime);
+        
         // Update all creatures
         this.creatures.forEach(creature => {
-            creature.update(deltaTime);
+            creature.update(deltaTime, this.foodManager);
+            
+            // Check for food collisions
+            this.foodManager.checkCollisions(creature);
         });
         
         // Remove dead creatures
@@ -159,6 +172,9 @@ export class EvolutionManager {
         this.generationTimer = 0;
         this.bestFitness = 0;
         this.bestGenome = null;
+        
+        // Reset food
+        this.foodManager.reset();
         
         // Restart with new population
         this.spawnInitialPopulation();

@@ -15,9 +15,10 @@ export class Creature {
         this.fitness = 0;
         this.energy = 100;
         this.alive = true;
+        this.foodCollected = 0;
         
         // Neural network for control (inputs: sensors, outputs: motor commands)
-        const inputSize = 6; // velocity, orientation, sensors
+        const inputSize = 9; // velocity(3), energy(1), food direction(3), time(1), height(1)
         const hiddenSize = this.genome.genes.neuralLayers[0] || 4;
         const outputSize = 3; // force x, y, z
         this.brain = new NeuralNetwork(inputSize, hiddenSize, outputSize);
@@ -29,6 +30,7 @@ export class Creature {
         // Cannon.js physics bodies
         this.bodies = [];
         this.mainBody = null;
+        this.constraints = []; // Physics constraints for joints
         
         // Build the creature from its genome
         this.buildFromGenome(position);
@@ -36,6 +38,9 @@ export class Creature {
         // Track performance
         this.distanceTraveled = 0;
         this.lastPosition = new THREE.Vector3(position.x, position.y, position.z);
+        
+        // Vision/sensing
+        this.nearestFoodDirection = new THREE.Vector3(0, 0, 0);
     }
 
     buildFromGenome(startPosition) {
@@ -109,27 +114,68 @@ export class Creature {
             if (index === 0) {
                 this.mainBody = body;
             }
+            
+            // Create physics constraints to connect segments
+            if (segment.parentIndex !== -1 && segment.parentIndex < this.bodies.length) {
+                const parentBody = this.bodies[segment.parentIndex];
+                const childBody = body;
+                
+                // Point-to-point constraint (joint)
+                const constraint = new CANNON.PointToPointConstraint(
+                    parentBody,
+                    new CANNON.Vec3(segment.offset.x, segment.offset.y, segment.offset.z),
+                    childBody,
+                    new CANNON.Vec3(0, 0, 0),
+                    1000 // maxForce
+                );
+                
+                this.constraints.push(constraint);
+            }
         });
     }
 
-    sense() {
+    sense(foodManager = null) {
         // Gather sensory inputs
         const velocity = this.mainBody.velocity;
         const position = this.mainBody.position;
+        
+        // Vision: detect nearest food
+        let foodDirX = 0, foodDirY = 0, foodDirZ = 0;
+        if (foodManager) {
+            const nearestFood = foodManager.getNearestFoodPosition(position);
+            if (nearestFood) {
+                const dx = nearestFood.x - position.x;
+                const dy = nearestFood.y - position.y;
+                const dz = nearestFood.z - position.z;
+                const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                
+                if (distance > 0) {
+                    // Normalized direction to nearest food
+                    foodDirX = dx / distance;
+                    foodDirY = dy / distance;
+                    foodDirZ = dz / distance;
+                }
+                
+                this.nearestFoodDirection.set(dx, dy, dz);
+            }
+        }
         
         return [
             velocity.x / 10,  // Normalized velocity
             velocity.y / 10,
             velocity.z / 10,
+            foodDirX,  // Direction to nearest food
+            foodDirY,
+            foodDirZ,
             Math.sin(this.age / 10),  // Time-based input
             position.y / 10,  // Height
             this.energy / 100  // Energy level
         ];
     }
 
-    think() {
+    think(foodManager = null) {
         // Use neural network to decide actions
-        const inputs = this.sense();
+        const inputs = this.sense(foodManager);
         const outputs = this.brain.forward(inputs);
         return outputs;
     }
@@ -149,13 +195,13 @@ export class Creature {
         this.energy -= actionMagnitude * 0.01;
     }
 
-    update(deltaTime) {
+    update(deltaTime, foodManager = null) {
         if (!this.alive) return;
         
         this.age += deltaTime;
         
-        // Energy decay over time
-        this.energy -= deltaTime * 0.1;
+        // Energy decay over time (metabolism)
+        this.energy -= deltaTime * 0.5;
         
         if (this.energy <= 0) {
             this.alive = false;
@@ -163,7 +209,7 @@ export class Creature {
         }
         
         // Think and act
-        const actions = this.think();
+        const actions = this.think(foodManager);
         this.act(actions);
         
         // Update visual meshes to match physics bodies
@@ -179,8 +225,8 @@ export class Creature {
         this.distanceTraveled += distance;
         this.lastPosition.copy(currentPosition);
         
-        // Fitness = distance traveled + time alive - energy used
-        this.fitness = this.distanceTraveled * 10 + this.age * 0.5;
+        // Fitness = food collected (primary) + survival time + movement efficiency
+        this.fitness = this.foodCollected * 100 + this.age * 2 + this.distanceTraveled * 5;
         
         // Die if fallen too far
         if (this.mainBody.position.y < -20) {
@@ -200,11 +246,21 @@ export class Creature {
         this.bodies.forEach(body => {
             world.addBody(body);
         });
+        
+        // Add constraints to world
+        this.constraints.forEach(constraint => {
+            world.addConstraint(constraint);
+        });
     }
 
     removeFromWorld(world) {
         this.bodies.forEach(body => {
             world.removeBody(body);
+        });
+        
+        // Remove constraints from world
+        this.constraints.forEach(constraint => {
+            world.removeConstraint(constraint);
         });
     }
 

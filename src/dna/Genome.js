@@ -61,7 +61,11 @@ export class Genome {
             speed: Math.random() * 1.5 + 0.5, // 0.5-2.0
             efficiency: Math.random(),
             // Species marker (used to prevent instant convergence)
-            speciesId: Math.floor(Math.random() * 1000000)
+            speciesId: Math.floor(Math.random() * 1000000),
+            // **LIMB CONFIGURATION** (for proper evolution of body structure)
+            limbCount: Math.floor(Math.random() * 3) + 2, // 2-4 limbs
+            limbLength: Math.random() * 0.5 + 0.5, // 0.5-1.0 length multiplier
+            gaitStyle: Math.random() // 0-1: affects movement pattern
         };
     }
 
@@ -92,6 +96,18 @@ export class Genome {
         }
         if (Math.random() < mutationRate) {
             mutatedGenes.speed = Math.max(0, Math.min(1, mutatedGenes.speed + (Math.random() - 0.5) * 0.2));
+        }
+        
+        // **MUTATE LIMB CONFIGURATION** (for body evolution)
+        if (Math.random() < mutationRate * 0.3) {
+            // Rare mutation: change limb count
+            mutatedGenes.limbCount = Math.max(2, Math.min(4, mutatedGenes.limbCount + (Math.random() > 0.5 ? 1 : -1)));
+        }
+        if (Math.random() < mutationRate) {
+            mutatedGenes.limbLength = Math.max(0.3, Math.min(1.5, mutatedGenes.limbLength + (Math.random() - 0.5) * 0.2));
+        }
+        if (Math.random() < mutationRate) {
+            mutatedGenes.gaitStyle = Math.max(0, Math.min(1, mutatedGenes.gaitStyle + (Math.random() - 0.5) * 0.2));
         }
 
         // Small chance to add/remove segment
@@ -126,6 +142,11 @@ export class Genome {
         childGenes.aggression = (childGenes.aggression + otherGenes.aggression) / 2;
         childGenes.speed = (childGenes.speed + otherGenes.speed) / 2;
         childGenes.efficiency = (childGenes.efficiency + otherGenes.efficiency) / 2;
+        
+        // **MIX LIMB CONFIGURATION** (ensures body structure evolves properly)
+        childGenes.limbCount = Math.random() > 0.5 ? childGenes.limbCount : otherGenes.limbCount;
+        childGenes.limbLength = (childGenes.limbLength + otherGenes.limbLength) / 2;
+        childGenes.gaitStyle = (childGenes.gaitStyle + otherGenes.gaitStyle) / 2;
 
         return new Genome(childGenes);
     }

@@ -111,8 +111,8 @@ export class LimbedCreature {
         this.bodies.push(torsoBody);
         this.mainBody = torsoBody;
         
-        // Determine number of limbs based on genome
-        const numLimbs = Math.min(this.genome.genes.segments.length - 1, 4); // Max 4 limbs
+        // **USE GENOME LIMB CONFIGURATION** for proper evolution
+        const numLimbs = this.genome.genes.limbCount || Math.min(this.genome.genes.segments.length - 1, 4);
         
         // Create limbs (legs/arms)
         for (let i = 0; i < numLimbs; i++) {
@@ -130,8 +130,9 @@ export class LimbedCreature {
         const radius = limbSegment.size.x * 0.5;
         
         // Limb is divided into 2 segments (upper and lower)
-        const upperLimbLength = limbSegment.size.y * 0.5;
-        const lowerLimbLength = limbSegment.size.y * 0.5;
+        const limbLengthMultiplier = this.genome.genes.limbLength || 1.0;
+        const upperLimbLength = limbSegment.size.y * 0.5 * limbLengthMultiplier;
+        const lowerLimbLength = limbSegment.size.y * 0.5 * limbLengthMultiplier;
         const limbWidth = limbSegment.size.x * 0.3;
         
         // Upper limb segment
@@ -171,9 +172,15 @@ export class LimbedCreature {
                 pivotA: new CANNON.Vec3(attachX, -limbSegment.size.y * 0.2, attachZ),
                 axisA: new CANNON.Vec3(0, 0, 1),
                 pivotB: new CANNON.Vec3(0, upperLimbLength / 2, 0),
-                axisB: new CANNON.Vec3(0, 0, 1)
+                axisB: new CANNON.Vec3(0, 0, 1),
+                maxForce: 1000 // Limit force to prevent explosions
             }
         );
+        
+        // Enable motor for neural control
+        hingeConstraint.enableMotor();
+        hingeConstraint.setMotorSpeed(0);
+        hingeConstraint.setMotorMaxForce(50);
         
         this.constraints.push(hingeConstraint);
         
@@ -211,9 +218,15 @@ export class LimbedCreature {
                 pivotA: new CANNON.Vec3(0, -upperLimbLength / 2, 0),
                 axisA: new CANNON.Vec3(1, 0, 0),
                 pivotB: new CANNON.Vec3(0, lowerLimbLength / 2, 0),
-                axisB: new CANNON.Vec3(1, 0, 0)
+                axisB: new CANNON.Vec3(1, 0, 0),
+                maxForce: 1000 // Limit force to prevent explosions
             }
         );
+        
+        // Enable motor for neural control
+        lowerHinge.enableMotor();
+        lowerHinge.setMotorSpeed(0);
+        lowerHinge.setMotorMaxForce(30);
         
         this.constraints.push(lowerHinge);
         
@@ -254,13 +267,13 @@ export class LimbedCreature {
         
         this.bodies.push(headBody);
         
-        // Neck constraint
+        // Neck constraint (with limited force to prevent physics explosions)
         const neckConstraint = new CANNON.PointToPointConstraint(
             torsoBody,
             new CANNON.Vec3(0, this.genome.genes.segments[0].size.y * 0.4, 0),
             headBody,
             new CANNON.Vec3(0, -headRadius, 0),
-            1000
+            500 // Reduced force to prevent instability
         );
         
         this.constraints.push(neckConstraint);
@@ -456,15 +469,31 @@ export class LimbedCreature {
             this.mainBody.position
         );
         
-        // Actuate limbs (simple oscillation based on movement)
-        const time = this.age;
+        // **NEURAL CONTROL OF JOINTS**: Use neural network outputs to control limb movement
+        // We have 5 outputs, use outputs beyond force/signal for limb control
+        const gaitStyle = this.genome.genes.gaitStyle || 0.5; // 0-1 varies gait pattern
+        
         this.limbs.forEach((limb, i) => {
+            // Each limb controlled by a mix of time-based gait and neural signals
             const phase = (i / this.limbs.length) * Math.PI * 2;
-            const oscillation = Math.sin(time * 3 + phase) * 0.5;
             
-            // Apply motor to limb hinges for walking motion
-            if (limb.hinges[0].enableMotor) {
-                limb.hinges[0].setMotorSpeed(oscillation);
+            // Base gait pattern (walking) - affected by gaitStyle gene
+            const timeGait = Math.sin(this.age * (2 + gaitStyle * 2) + phase);
+            
+            // Neural modulation: scale gait by movement outputs
+            const movementMagnitude = Math.sqrt(forceX * forceX + forceZ * forceZ);
+            const gaitSpeed = Math.max(0.1, Math.min(5, movementMagnitude * 2 * this.genome.genes.speed));
+            
+            // Upper joint motor (shoulder/hip) - controlled by neural force direction
+            const upperMotorSpeed = timeGait * gaitSpeed;
+            if (limb.hinges[0]) {
+                limb.hinges[0].setMotorSpeed(upperMotorSpeed);
+            }
+            
+            // Lower joint motor (elbow/knee) - phase-shifted for realistic gait
+            const lowerMotorSpeed = Math.sin(this.age * (2 + gaitStyle * 2) + phase + Math.PI / 2) * gaitSpeed * 0.7;
+            if (limb.hinges[1]) {
+                limb.hinges[1].setMotorSpeed(lowerMotorSpeed);
             }
         });
         

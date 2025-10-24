@@ -92,9 +92,20 @@ export class EvolutionManager {
         this.creatures.forEach(creature => {
             creature.update(deltaTime, this.foodManager, this.terrain, this.creatures);
             
-            // Check bounds
-            if (!this.terrain.isInBounds(creature.mainBody.position)) {
-                creature.energy -= deltaTime * 2; // Penalty for being out of bounds
+            // **STRONG BOUNDARY ENFORCEMENT**: Kill creatures expelled too far
+            const pos = creature.mainBody.position;
+            const distFromCenter = Math.sqrt(pos.x * pos.x + pos.z * pos.z);
+            
+            // Hard boundary at 35 units - kill creatures beyond this
+            if (distFromCenter > 35 || Math.abs(pos.y) > 20) {
+                creature.alive = false;
+                creature.energy = 0;
+                return;
+            }
+            
+            // Soft boundary penalty at 25 units - strong energy drain
+            if (!this.terrain.isInBounds(creature.mainBody.position) || distFromCenter > 25) {
+                creature.energy -= deltaTime * 5; // Heavy penalty for being out of bounds
             }
             
             // EXPLICIT BEHAVIORS: Attempt creature-to-creature interactions

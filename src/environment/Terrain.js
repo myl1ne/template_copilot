@@ -205,7 +205,12 @@ export class Terrain {
             const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
             
             if (distance < 4) { // Within water reach
+                const oldHydration = creature.hydration;
                 creature.hydration = Math.min(100, creature.hydration + nearest.hydrationProvided * 0.016);
+                // Trigger drinking visual indicator if hydration increased
+                if (creature.hydration > oldHydration && creature.onDrink) {
+                    creature.onDrink();
+                }
                 return true;
             }
         }

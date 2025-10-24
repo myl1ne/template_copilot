@@ -17,27 +17,58 @@
             height: 100vh;
         }
         
-        #info {
+        #info, #creatureInfo {
             position: absolute;
             top: 10px;
             left: 10px;
             color: white;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.8);
             padding: 15px;
             border-radius: 5px;
-            font-size: 14px;
+            font-size: 13px;
             max-width: 300px;
             z-index: 100;
         }
         
-        #info h2 {
+        #creatureInfo {
+            left: 330px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        #info h2, #creatureInfo h2 {
             margin: 0 0 10px 0;
             font-size: 18px;
             color: #4CAF50;
         }
         
-        #info .stat {
+        #info .stat, #creatureInfo .stat {
             margin: 5px 0;
+        }
+        
+        .stat-bar {
+            margin: 10px 0;
+        }
+        
+        .bar-label {
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+        
+        .bar-container {
+            width: 200px;
+            height: 18px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        
+        .bar {
+            height: 100%;
+            transition: width 0.3s, background 0.3s;
         }
         
         #controls {
@@ -84,6 +115,39 @@
         <div class="stat">Births: <span id="births">0</span></div>
         <div class="stat">Deaths: <span id="deaths">0</span></div>
         <div class="stat">Species: <span id="species">0</span></div>
+    </div>
+    
+    <div id="creatureInfo" style="display: none;">
+        <h2>Selected Creature</h2>
+        <div class="stat">Age: <span id="creatureAge">0</span>s / 120s</div>
+        <div class="stat-bar">
+            <div class="bar-label">Energy:</div>
+            <div class="bar-container">
+                <div id="energyBar" class="bar" style="width: 100%; background: #4CAF50;"></div>
+            </div>
+            <span id="energyValue">100%</span>
+        </div>
+        <div class="stat-bar">
+            <div class="bar-label">Hydration:</div>
+            <div class="bar-container">
+                <div id="hydrationBar" class="bar" style="width: 100%; background: #00BCD4;"></div>
+            </div>
+            <span id="hydrationValue">100%</span>
+        </div>
+        <h3 style="margin-top: 15px; margin-bottom: 5px; font-size: 14px;">DNA & Traits</h3>
+        <div class="stat">Limbs: <span id="limbCount">0</span></div>
+        <div class="stat">Limb Length: <span id="limbLength">0</span></div>
+        <div class="stat">Gait Style: <span id="gaitStyle">0</span></div>
+        <div class="stat">Speed: <span id="speed">0</span>x</div>
+        <div class="stat">Type: <span id="creatureType">-</span></div>
+        <div class="stat">Neural Net: <span id="neuralArch">-</span></div>
+        <div class="stat">Segments: <span id="segments">0</span></div>
+        <h3 style="margin-top: 15px; margin-bottom: 5px; font-size: 14px;">Performance</h3>
+        <div class="stat">Fitness: <span id="creatureFitness">0</span></div>
+        <div class="stat">Food: <span id="creatureFood">0</span></div>
+        <div class="stat">Distance: <span id="creatureDistance">0</span>u</div>
+        <div class="stat">Kills: <span id="creatureKills">0</span></div>
+        <button id="deselectBtn" style="margin-top: 10px;">Deselect</button>
     </div>
     
     <div id="controls">

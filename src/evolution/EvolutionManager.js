@@ -24,6 +24,7 @@ export class EvolutionManager {
         this.totalBirths = 0;
         this.totalDeaths = 0;
         this.species = new Map(); // Track species diversity
+        this.nextCreatureId = 1; // Track creature IDs for logging
         
         // Continuous evolution (no generation timer)
         this.continuousEvolution = true;
@@ -76,6 +77,7 @@ export class EvolutionManager {
         }
         
         const creature = new LimbedCreature(genome, position);
+        creature.id = this.nextCreatureId++; // Assign unique ID
         creature.addToScene(this.scene);
         creature.addToWorld(this.world);
         this.creatures.push(creature);

@@ -156,6 +156,10 @@ export class FoodManager {
                     if (energy > 0) {
                         creature.energy = Math.min(100, creature.energy + energy);
                         creature.foodCollected++;
+                        // Trigger eating visual indicator
+                        if (creature.onEat) {
+                            creature.onEat();
+                        }
                     }
                 }
             }

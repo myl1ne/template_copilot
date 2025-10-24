@@ -304,11 +304,11 @@ export class LimbedCreature {
             this.group.remove(this.behaviorIndicator);
         }
         
-        // Create visual indicator for fighting/mating
+        // Create visual indicator for behaviors
         let geometry, material;
         
         if (type === 'fighting') {
-            // Red spiky ring for fighting
+            // Red ring for fighting
             geometry = new THREE.TorusGeometry(1.2, 0.1, 8, 16);
             material = new THREE.MeshPhongMaterial({
                 color: 0xff0000,
@@ -318,7 +318,7 @@ export class LimbedCreature {
                 opacity: 0.6
             });
         } else if (type === 'mating') {
-            // Pink heart-like ring for mating
+            // Pink ring for mating
             geometry = new THREE.TorusGeometry(1.2, 0.15, 8, 16);
             material = new THREE.MeshPhongMaterial({
                 color: 0xff69b4,
@@ -327,6 +327,28 @@ export class LimbedCreature {
                 transparent: true,
                 opacity: 0.7
             });
+        } else if (type === 'eating') {
+            // Green ring for eating
+            geometry = new THREE.TorusGeometry(1.2, 0.12, 8, 16);
+            material = new THREE.MeshPhongMaterial({
+                color: 0x00ff00,
+                emissive: 0x00ff00,
+                emissiveIntensity: 0.9,
+                transparent: true,
+                opacity: 0.7
+            });
+        } else if (type === 'drinking') {
+            // Cyan ring for drinking
+            geometry = new THREE.TorusGeometry(1.2, 0.12, 8, 16);
+            material = new THREE.MeshPhongMaterial({
+                color: 0x00ffff,
+                emissive: 0x00ffff,
+                emissiveIntensity: 0.9,
+                transparent: true,
+                opacity: 0.7
+            });
+        } else {
+            return; // Unknown type
         }
         
         this.behaviorIndicator = new THREE.Mesh(geometry, material);
@@ -579,10 +601,10 @@ export class LimbedCreature {
         const intensity = Math.random();
         const damage = intensity * this.genome.genes.aggression * 10;
         
-        // Visual feedback
+        // Visual feedback - 500ms
         this.isFighting = true;
         this.fightingTarget = target;
-        this.behaviorTimer = 2; // 2 seconds
+        this.behaviorTimer = 0.5; // 500ms
         this.createBehaviorIndicator('fighting');
         
         // Apply damage
@@ -595,6 +617,7 @@ export class LimbedCreature {
             this.energy = Math.min(100, this.energy + 20);
             this.kills++;
             this.fitness += 50; // Reward for successful kill
+            console.log(`⚔️ Creature #${this.id || '?'} killed Creature #${target.id || '?'} at age ${this.age.toFixed(1)}s`);
         }
         
         return true;
@@ -603,15 +626,15 @@ export class LimbedCreature {
     mate(partner) {
         if (!this.canMate || !partner.canMate) return null;
         
-        // Visual feedback
+        // Visual feedback - 500ms
         this.isMating = true;
         this.matingTarget = partner;
-        this.behaviorTimer = 3; // 3 seconds
+        this.behaviorTimer = 0.5; // 500ms
         this.createBehaviorIndicator('mating');
         
         partner.isMating = true;
         partner.matingTarget = this;
-        partner.behaviorTimer = 3;
+        partner.behaviorTimer = 0.5; // 500ms
         partner.createBehaviorIndicator('mating');
         
         // Energy cost
@@ -627,6 +650,18 @@ export class LimbedCreature {
             parent1: this,
             parent2: partner
         };
+    }
+    
+    // Called when eating food
+    onEat() {
+        this.createBehaviorIndicator('eating');
+        this.behaviorTimer = 0.5; // 500ms
+    }
+    
+    // Called when drinking water
+    onDrink() {
+        this.createBehaviorIndicator('drinking');
+        this.behaviorTimer = 0.5; // 500ms
     }
 
     update(deltaTime, foodManager = null, terrain = null, otherCreatures = []) {
@@ -664,18 +699,18 @@ export class LimbedCreature {
         // **DEATH CONDITIONS** - creatures MUST eat and drink
         // Death from starvation or dehydration
         if (this.energy <= 0) {
-            console.log(`Creature died from starvation at age ${this.age.toFixed(1)}s`);
+            console.log(`🪦 Creature #${this.id || '?'} died from starvation at age ${this.age.toFixed(1)}s (fitness: ${this.fitness.toFixed(1)})`);
             this.alive = false;
             return;
         }
         if (this.hydration <= 0) {
-            console.log(`Creature died from dehydration at age ${this.age.toFixed(1)}s`);
+            console.log(`🪦 Creature #${this.id || '?'} died from dehydration at age ${this.age.toFixed(1)}s (fitness: ${this.fitness.toFixed(1)})`);
             this.alive = false;
             return;
         }
         // Death from old age
         if (this.age > 120) {
-            console.log(`Creature died from old age at ${this.age.toFixed(1)}s`);
+            console.log(`🪦 Creature #${this.id || '?'} died from old age at ${this.age.toFixed(1)}s (fitness: ${this.fitness.toFixed(1)})`);
             this.alive = false;
             return;
         }

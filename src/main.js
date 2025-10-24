@@ -152,10 +152,13 @@ class EvoSimulator {
         const resetBtn = document.getElementById('resetBtn');
         const spawnBtn = document.getElementById('spawnBtn');
         const pauseBtn = document.getElementById('pauseBtn');
+        const deselectBtn = document.getElementById('deselectBtn');
 
         resetBtn.addEventListener('click', () => {
             this.evolutionManager.reset();
             this.time = 0;
+            this.selectedCreature = null;
+            document.getElementById('creatureInfo').style.display = 'none';
         });
 
         spawnBtn.addEventListener('click', () => {
@@ -165,6 +168,46 @@ class EvoSimulator {
         pauseBtn.addEventListener('click', () => {
             this.isPaused = !this.isPaused;
             pauseBtn.textContent = this.isPaused ? 'Resume' : 'Pause';
+        });
+        
+        deselectBtn.addEventListener('click', () => {
+            this.selectedCreature = null;
+            document.getElementById('creatureInfo').style.display = 'none';
+        });
+        
+        // Click to select creatures
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
+        
+        this.renderer.domElement.addEventListener('click', (event) => {
+            // Calculate mouse position in normalized device coordinates
+            this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            // Update raycaster
+            this.raycaster.setFromCamera(this.mouse, this.camera);
+            
+            // Check for intersections with creature meshes
+            const allMeshes = [];
+            this.evolutionManager.creatures.forEach(creature => {
+                if (creature.alive && creature.meshes) {
+                    creature.meshes.forEach(mesh => {
+                        mesh.userData.creature = creature;
+                        allMeshes.push(mesh);
+                    });
+                }
+            });
+            
+            const intersects = this.raycaster.intersectObjects(allMeshes, false);
+            
+            if (intersects.length > 0) {
+                this.selectedCreature = intersects[0].object.userData.creature;
+                this.updateCreatureInfoPanel();
+                document.getElementById('creatureInfo').style.display = 'block';
+            } else {
+                this.selectedCreature = null;
+                document.getElementById('creatureInfo').style.display = 'none';
+            }
         });
     }
 
@@ -176,6 +219,72 @@ class EvoSimulator {
         this.birthsDisplay = document.getElementById('births');
         this.deathsDisplay = document.getElementById('deaths');
         this.speciesDisplay = document.getElementById('species');
+        this.selectedCreature = null;
+    }
+    
+    updateCreatureInfoPanel() {
+        if (!this.selectedCreature || !this.selectedCreature.alive) {
+            document.getElementById('creatureInfo').style.display = 'none';
+            this.selectedCreature = null;
+            return;
+        }
+        
+        const c = this.selectedCreature;
+        
+        // Age
+        document.getElementById('creatureAge').textContent = c.age.toFixed(1);
+        
+        // Energy bar
+        const energyPercent = Math.max(0, Math.min(100, c.energy));
+        const energyBar = document.getElementById('energyBar');
+        energyBar.style.width = energyPercent + '%';
+        if (energyPercent > 60) {
+            energyBar.style.background = '#4CAF50'; // Green
+        } else if (energyPercent > 30) {
+            energyBar.style.background = '#FFC107'; // Yellow
+        } else {
+            energyBar.style.background = '#F44336'; // Red
+        }
+        document.getElementById('energyValue').textContent = energyPercent.toFixed(0) + '%';
+        
+        // Hydration bar
+        const hydrationPercent = Math.max(0, Math.min(100, c.hydration));
+        const hydrationBar = document.getElementById('hydrationBar');
+        hydrationBar.style.width = hydrationPercent + '%';
+        if (hydrationPercent > 60) {
+            hydrationBar.style.background = '#00BCD4'; // Cyan
+        } else if (hydrationPercent > 30) {
+            hydrationBar.style.background = '#FFC107'; // Yellow
+        } else {
+            hydrationBar.style.background = '#F44336'; // Red
+        }
+        document.getElementById('hydrationValue').textContent = hydrationPercent.toFixed(0) + '%';
+        
+        // DNA & Traits
+        document.getElementById('limbCount').textContent = c.genome.genes.limbCount || 'N/A';
+        document.getElementById('limbLength').textContent = (c.genome.genes.limbLength || 1).toFixed(2);
+        document.getElementById('gaitStyle').textContent = (c.genome.genes.gaitStyle || 0.5).toFixed(2);
+        document.getElementById('speed').textContent = (c.genome.genes.speed || 1).toFixed(2);
+        
+        // Type based on aggression
+        const aggression = c.genome.genes.aggression;
+        let type = 'Omnivore';
+        if (aggression > 0.6) type = 'Predator';
+        else if (aggression < 0.3) type = 'Herbivore';
+        document.getElementById('creatureType').textContent = type + ` (${aggression.toFixed(2)})`;
+        
+        // Neural architecture
+        const layers = c.genome.genes.neuralLayers || [4];
+        document.getElementById('neuralArch').textContent = layers.join('-') + ' neurons';
+        
+        // Segments
+        document.getElementById('segments').textContent = c.genome.genes.segments ? c.genome.genes.segments.length : 'N/A';
+        
+        // Performance
+        document.getElementById('creatureFitness').textContent = c.fitness.toFixed(1);
+        document.getElementById('creatureFood').textContent = c.foodCollected;
+        document.getElementById('creatureDistance').textContent = c.distanceTraveled.toFixed(1);
+        document.getElementById('creatureKills').textContent = c.kills;
     }
 
     updateUI() {
@@ -190,6 +299,11 @@ class EvoSimulator {
         // Calculate total food collected by all creatures
         const totalFood = this.evolutionManager.creatures.reduce((sum, creature) => sum + creature.foodCollected, 0);
         this.foodCollectedDisplay.textContent = totalFood;
+        
+        // Update selected creature info if one is selected
+        if (this.selectedCreature) {
+            this.updateCreatureInfoPanel();
+        }
     }
 
     onWindowResize() {

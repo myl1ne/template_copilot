@@ -13,7 +13,13 @@ export class LimbedCreature {
         this.genome = genome || new Genome();
         this.age = 0;
         this.fitness = 0;
+        this.mass = 0; // Calculated from body parts
+        this.maxEnergy = 100; // Will be updated based on mass
         this.energy = 100;
+        this.maxHealth = 100; // Will be updated based on mass
+        this.health = 100;
+        this.maxStamina = 100;
+        this.stamina = 100;
         this.hydration = 100;
         this.alive = true;
         this.foodCollected = 0;

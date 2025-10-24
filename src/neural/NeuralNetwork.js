@@ -12,10 +12,44 @@ export class NeuralNetwork {
 
         if (parentWeights) {
             // Initialize from parent weights (for inheritance)
-            this.weightsInputHidden = parentWeights.weightsInputHidden.map(row => [...row]);
-            this.weightsHiddenOutput = parentWeights.weightsHiddenOutput.map(row => [...row]);
-            this.biasHidden = [...parentWeights.biasHidden];
-            this.biasOutput = [...parentWeights.biasOutput];
+            // But be defensive: parent weights may have different dimensions (due to
+            // genome/architecture changes). Copy overlapping values and pad/truncate
+            // to match the requested architecture.
+            const pWih = parentWeights.weightsInputHidden || [];
+            const pWho = parentWeights.weightsHiddenOutput || [];
+            const pBh = parentWeights.biasHidden || [];
+            const pBo = parentWeights.biasOutput || [];
+
+            // Build weightsInputHidden as inputSize x hiddenSize
+            this.weightsInputHidden = [];
+            for (let i = 0; i < this.inputSize; i++) {
+                this.weightsInputHidden[i] = [];
+                for (let j = 0; j < this.hiddenSize; j++) {
+                    const v = (pWih[i] && typeof pWih[i][j] === 'number') ? pWih[i][j] : (pWih[0] && typeof pWih[0][j] === 'number' ? pWih[0][j] : 0);
+                    this.weightsInputHidden[i][j] = v;
+                }
+            }
+
+            // Build weightsHiddenOutput as hiddenSize x outputSize
+            this.weightsHiddenOutput = [];
+            for (let i = 0; i < this.hiddenSize; i++) {
+                this.weightsHiddenOutput[i] = [];
+                for (let j = 0; j < this.outputSize; j++) {
+                    const v = (pWho[i] && typeof pWho[i][j] === 'number') ? pWho[i][j] : (pWho[0] && typeof pWho[0][j] === 'number' ? pWho[0][j] : 0);
+                    this.weightsHiddenOutput[i][j] = v;
+                }
+            }
+
+            // Biases
+            this.biasHidden = new Array(this.hiddenSize);
+            for (let i = 0; i < this.hiddenSize; i++) {
+                this.biasHidden[i] = (typeof pBh[i] === 'number') ? pBh[i] : (typeof pBh[0] === 'number' ? pBh[0] : 0);
+            }
+
+            this.biasOutput = new Array(this.outputSize);
+            for (let i = 0; i < this.outputSize; i++) {
+                this.biasOutput[i] = (typeof pBo[i] === 'number') ? pBo[i] : (typeof pBo[0] === 'number' ? pBo[0] : 0);
+            }
         } else {
             // Initialize weights randomly
             this.weightsInputHidden = this.randomMatrix(inputSize, hiddenSize);
@@ -50,6 +84,21 @@ export class NeuralNetwork {
     }
 
     forward(inputs) {
+        // Defensive checks: ensure we have a proper inputs array of the expected length
+        if (!Array.isArray(inputs)) {
+            console.warn('NeuralNetwork.forward: expected inputs array, got', inputs);
+            inputs = new Array(this.inputSize).fill(0);
+        } else if (inputs.length < this.inputSize) {
+            console.warn('NeuralNetwork.forward: inputs length', inputs.length, 'less than inputSize', this.inputSize);
+            // Pad with zeros to avoid undefined access
+            const padded = inputs.slice();
+            while (padded.length < this.inputSize) padded.push(0);
+            inputs = padded;
+        }
+
+        // Coerce all inputs to numbers (fallback to 0)
+        inputs = inputs.map(v => (typeof v === 'number' && !Number.isNaN(v)) ? v : Number(v) || 0);
+
         // Hidden layer
         const hidden = [];
         for (let i = 0; i < this.hiddenSize; i++) {

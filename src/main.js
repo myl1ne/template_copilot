@@ -220,6 +220,8 @@ class EvoSimulator {
         this.deathsDisplay = document.getElementById('deaths');
         this.speciesDisplay = document.getElementById('species');
         this.selectedCreature = null;
+        this.creatureListEl = document.getElementById('creatureListContent');
+        this._lastCreatureCount = -1; // for simple change detection
     }
     
     updateCreatureInfoPanel() {
@@ -303,6 +305,40 @@ class EvoSimulator {
         // Update selected creature info if one is selected
         if (this.selectedCreature) {
             this.updateCreatureInfoPanel();
+        }
+
+        // Update creature list (rebuild when count changes)
+        const count = this.evolutionManager.creatures.length;
+        if (this._lastCreatureCount !== count) {
+            this._lastCreatureCount = count;
+            // Build simple list HTML
+            if (!this.creatureListEl) return;
+            if (count === 0) {
+                this.creatureListEl.innerHTML = '<div>(no creatures)</div>';
+            } else {
+                const items = this.evolutionManager.creatures.map((c, idx) => {
+                    const alive = c.alive ? '' : ' (dead)';
+                    const fitness = c.fitness ? c.fitness.toFixed(1) : '0.0';
+                    return `<div class="creature-list-item" data-idx="${idx}" style="padding:6px 8px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer;">
+                        <strong>#${idx}</strong> ${alive}<br/><small>Fit: ${fitness} | Age: ${c.age.toFixed(1)}s</small>
+                    </div>`;
+                }).join('');
+                this.creatureListEl.innerHTML = items;
+
+                // Attach click listeners
+                const children = this.creatureListEl.querySelectorAll('.creature-list-item');
+                children.forEach(el => {
+                    el.addEventListener('click', (ev) => {
+                        const idx = Number(el.getAttribute('data-idx'));
+                        const creature = this.evolutionManager.creatures[idx];
+                        if (creature && creature.alive) {
+                            this.selectedCreature = creature;
+                            this.updateCreatureInfoPanel();
+                            document.getElementById('creatureInfo').style.display = 'block';
+                        }
+                    });
+                });
+            }
         }
     }
 

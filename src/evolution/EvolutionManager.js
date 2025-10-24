@@ -2,6 +2,7 @@ import { Creature } from '../creatures/Creature.js';
 import { Genome } from '../dna/Genome.js';
 import { FoodManager } from '../environment/Food.js';
 import { ObstacleManager } from '../environment/Obstacles.js';
+import { Terrain } from '../environment/Terrain.js';
 
 /**
  * EvolutionManager - Handles natural selection and evolution
@@ -14,11 +15,15 @@ export class EvolutionManager {
         this.world = world;
         this.creatures = [];
         this.generation = 0;
-        this.populationSize = 10;
-        this.generationDuration = 30; // seconds
+        this.populationSize = 15; // Increased from 10
+        this.generationDuration = 40; // Increased for more evolution time
         this.generationTimer = 0;
         this.bestFitness = 0;
         this.bestGenome = null;
+        this.offspring = []; // Track mating offspring
+        
+        // Terrain with borders and water
+        this.terrain = new Terrain(scene, world);
         
         // Food management
         this.foodManager = new FoodManager(scene, world);
@@ -77,12 +82,26 @@ export class EvolutionManager {
         // Update food
         this.foodManager.update(deltaTime);
         
-        // Update all creatures with social awareness
+        // Update all creatures with full environmental awareness
         this.creatures.forEach(creature => {
-            creature.update(deltaTime, this.foodManager, this.creatures);
+            creature.update(deltaTime, this.foodManager, this.creatures, this.terrain);
             
             // Check for food collisions
             this.foodManager.checkCollisions(creature);
+            
+            // Check for water proximity
+            this.terrain.checkWaterProximity(creature);
+            
+            // Check bounds
+            if (!this.terrain.isInBounds(creature.mainBody.position)) {
+                creature.energy -= deltaTime * 2; // Penalty for being out of bounds
+            }
+            
+            // Handle mating
+            if (creature.readyToMate) {
+                this.createOffspring(creature, creature.readyToMate);
+                creature.readyToMate = null;
+            }
         });
         
         // Remove dead creatures
@@ -108,6 +127,25 @@ export class EvolutionManager {
         if (this.generationTimer >= this.generationDuration || this.creatures.length === 0) {
             this.evolveNextGeneration();
         }
+    }
+
+    createOffspring(parent1, parent2) {
+        // Sexual reproduction - crossover between two parents
+        const childGenome = parent1.genome.crossover(parent2.genome);
+        childGenome.mutate();
+        
+        // Spawn near parents
+        const avgX = (parent1.mainBody.position.x + parent2.mainBody.position.x) / 2;
+        const avgZ = (parent1.mainBody.position.z + parent2.mainBody.position.z) / 2;
+        
+        const position = {
+            x: avgX + (Math.random() - 0.5) * 2,
+            y: 5,
+            z: avgZ + (Math.random() - 0.5) * 2
+        };
+        
+        const offspring = this.spawnCreature(childGenome, position);
+        this.offspring.push(offspring);
     }
 
     evolveNextGeneration() {

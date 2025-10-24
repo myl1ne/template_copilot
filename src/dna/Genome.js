@@ -13,26 +13,26 @@ export class Genome {
     }
 
     randomize() {
-        const numSegments = Math.floor(Math.random() * 3) + 2; // 2-4 body segments
+        const numSegments = Math.floor(Math.random() * 5) + 2; // 2-6 body segments (increased)
         const segments = [];
 
         for (let i = 0; i < numSegments; i++) {
             segments.push({
                 // Shape type: 0=box, 1=sphere, 2=cylinder
                 shape: Math.floor(Math.random() * 3),
-                // Size parameters
+                // Size parameters (increased variation)
                 size: {
-                    x: Math.random() * 0.5 + 0.3,
-                    y: Math.random() * 0.5 + 0.3,
-                    z: Math.random() * 0.5 + 0.3
+                    x: Math.random() * 1.0 + 0.2, // Wider range
+                    y: Math.random() * 1.0 + 0.2,
+                    z: Math.random() * 1.0 + 0.2
                 },
                 // Connection point to parent (-1 for root)
                 parentIndex: i === 0 ? -1 : Math.floor(Math.random() * i),
-                // Connection offset
+                // Connection offset (more variation)
                 offset: {
-                    x: (Math.random() - 0.5) * 0.5,
-                    y: (Math.random() - 0.5) * 0.5,
-                    z: (Math.random() - 0.5) * 0.5
+                    x: (Math.random() - 0.5) * 1.0,
+                    y: (Math.random() - 0.5) * 1.0,
+                    z: (Math.random() - 0.5) * 1.0
                 },
                 // Color genes
                 color: {
@@ -41,23 +41,24 @@ export class Genome {
                     b: Math.random()
                 },
                 // Has sensors?
-                hasSensor: Math.random() > 0.7,
-                // Mass density
-                density: Math.random() * 0.5 + 0.5
+                hasSensor: Math.random() > 0.6, // More sensors
+                // Mass density (wider range)
+                density: Math.random() * 1.5 + 0.3
             });
         }
 
         return {
             segments,
-            // Neural network architecture
+            // Neural network architecture (more variation)
             neuralLayers: [
-                Math.floor(Math.random() * 3) + 2, // Hidden layer size
-            ],
+                Math.floor(Math.random() * 8) + 2, // Hidden layer size: 2-9
+                Math.random() > 0.5 ? Math.floor(Math.random() * 6) + 2 : 0 // Optional 2nd layer
+            ].filter(x => x > 0),
             // Mutation rate
             mutationRate: 0.1,
             // Behavioral traits
             aggression: Math.random(),
-            speed: Math.random(),
+            speed: Math.random() * 1.5 + 0.5, // 0.5-2.0
             efficiency: Math.random()
         };
     }

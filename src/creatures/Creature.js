@@ -14,19 +14,23 @@ export class Creature {
         this.age = 0;
         this.fitness = 0;
         this.energy = 100;
+        this.hydration = 100; // NEW: Water requirement
         this.alive = true;
         this.foodCollected = 0;
+        this.kills = 0; // NEW: Combat tracking
+        this.matingCooldown = 0; // NEW: Mating timer
         
         // Social/higher-level behaviors
         this.signalColor = new THREE.Color(1, 1, 1); // Communication via color
         this.socialBehavior = this.genome.genes.aggression; // 0=cooperative, 1=competitive
         this.nearestCreatureDirection = new THREE.Vector3(0, 0, 0);
         this.nearbyCreatureCount = 0;
+        this.canMate = false; // NEW: Mating readiness
         
-        // Neural network for control (expanded inputs for social sensing)
-        const inputSize = 13; // velocity(3), energy(1), food direction(3), time(1), height(1), creature direction(3), nearby count(1)
+        // NEW: Enhanced neural network with more inputs
+        const inputSize = 16; // velocity(3), energy(1), hydration(1), food dir(3), water dir(3), creature dir(3), nearby count(1), can mate(1)
         const hiddenSize = this.genome.genes.neuralLayers[0] || 4;
-        const outputSize = 4; // force x, y, z, signal intensity
+        const outputSize = 5; // force x, y, z, signal intensity, action (attack/mate)
         this.brain = new NeuralNetwork(inputSize, hiddenSize, outputSize);
         
         // Three.js visual components
@@ -47,6 +51,7 @@ export class Creature {
         
         // Vision/sensing
         this.nearestFoodDirection = new THREE.Vector3(0, 0, 0);
+        this.nearestWaterDirection = new THREE.Vector3(0, 0, 0);
         
         // Communication marker (small sphere above creature)
         this.createSignalMarker();
@@ -167,7 +172,7 @@ export class Creature {
         }
     }
 
-    sense(foodManager = null, otherCreatures = []) {
+    sense(foodManager = null, otherCreatures = [], terrain = null) {
         // Gather sensory inputs
         const velocity = this.mainBody.velocity;
         const position = this.mainBody.position;
@@ -190,6 +195,26 @@ export class Creature {
                 }
                 
                 this.nearestFoodDirection.set(dx, dy, dz);
+            }
+        }
+        
+        // Vision: detect nearest water
+        let waterDirX = 0, waterDirY = 0, waterDirZ = 0;
+        if (terrain) {
+            const nearestWater = terrain.getNearestWaterPoint(position);
+            if (nearestWater) {
+                const dx = nearestWater.position.x - position.x;
+                const dy = nearestWater.position.y - position.y;
+                const dz = nearestWater.position.z - position.z;
+                const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                
+                if (distance > 0) {
+                    waterDirX = dx / distance;
+                    waterDirY = dy / distance;
+                    waterDirZ = dz / distance;
+                }
+                
+                this.nearestWaterDirection.set(dx, dy, dz);
             }
         }
         
@@ -223,6 +248,9 @@ export class Creature {
         this.nearbyCreatureCount = nearbyCount;
         this.nearestCreatureDirection.set(creatureDirX, creatureDirY, creatureDirZ);
         
+        // Update mating readiness
+        this.canMate = this.age > 5 && this.energy > 60 && this.hydration > 60 && this.matingCooldown <= 0;
+        
         return [
             velocity.x / 10,  // Normalized velocity
             velocity.y / 10,
@@ -230,24 +258,27 @@ export class Creature {
             foodDirX,  // Direction to nearest food
             foodDirY,
             foodDirZ,
+            waterDirX,  // Direction to nearest water
+            waterDirY,
+            waterDirZ,
             creatureDirX,  // Direction to nearest creature
             creatureDirY,
             creatureDirZ,
             nearbyCount / 10,  // Normalized nearby creature count
-            Math.sin(this.age / 10),  // Time-based input
-            position.y / 10,  // Height
-            this.energy / 100  // Energy level
+            this.energy / 100,  // Energy level
+            this.hydration / 100,  // Hydration level
+            this.canMate ? 1 : 0  // Mating readiness
         ];
     }
 
-    think(foodManager = null, otherCreatures = []) {
+    think(foodManager = null, otherCreatures = [], terrain = null) {
         // Use neural network to decide actions
-        const inputs = this.sense(foodManager, otherCreatures);
+        const inputs = this.sense(foodManager, otherCreatures, terrain);
         const outputs = this.brain.forward(inputs);
         return outputs;
     }
 
-    act(actions) {
+    act(actions, otherCreatures = []) {
         // Apply forces based on neural network outputs
         const force = new CANNON.Vec3(
             actions[0] * 10 * this.genome.genes.speed,
@@ -275,24 +306,87 @@ export class Creature {
         // Energy cost for actions
         const actionMagnitude = Math.sqrt(actions[0] ** 2 + actions[1] ** 2 + actions[2] ** 2);
         this.energy -= actionMagnitude * 0.01;
+        
+        // Handle 5th output - creature interaction (attack/mate)
+        if (actions.length >= 5 && actions[4] > 0.5) {
+            this.attemptInteraction(otherCreatures, actions[4]);
+        }
     }
 
-    update(deltaTime, foodManager = null, otherCreatures = []) {
+    attemptInteraction(otherCreatures, intensity) {
+        // Find nearest creature within interaction range
+        let nearest = null;
+        let minDistance = Infinity;
+        
+        otherCreatures.forEach(other => {
+            if (other !== this && other.alive) {
+                const dx = other.mainBody.position.x - this.mainBody.position.x;
+                const dy = other.mainBody.position.y - this.mainBody.position.y;
+                const dz = other.mainBody.position.z - this.mainBody.position.z;
+                const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                
+                if (distance < minDistance && distance < 3) { // Within 3 units
+                    minDistance = distance;
+                    nearest = other;
+                }
+            }
+        });
+        
+        if (nearest) {
+            // Decide: attack or mate based on social behavior and conditions
+            if (this.canMate && nearest.canMate && this.socialBehavior < 0.3) {
+                // Cooperative creatures try to mate
+                this.mate(nearest);
+            } else if (this.socialBehavior > 0.6) {
+                // Aggressive creatures attack
+                this.attack(nearest, intensity);
+            }
+        }
+    }
+
+    attack(target, intensity) {
+        // Combat interaction - drain target's energy
+        const damage = intensity * this.genome.genes.aggression * 10;
+        target.energy -= damage;
+        this.energy -= damage * 0.5; // Attacker also uses energy
+        
+        if (target.energy <= 0) {
+            target.alive = false;
+            this.kills++;
+            // Attacker gains some energy from kill (carnivory)
+            this.energy = Math.min(100, this.energy + 20);
+        }
+    }
+
+    mate(partner) {
+        // Mating produces offspring (handled by evolution manager)
+        this.matingCooldown = 10; // Cooldown in seconds
+        partner.matingCooldown = 10;
+        this.energy -= 20; // Energy cost
+        partner.energy -= 20;
+        
+        // Mark for offspring creation
+        this.readyToMate = partner;
+    }
+
+    update(deltaTime, foodManager = null, otherCreatures = [], terrain = null) {
         if (!this.alive) return;
         
         this.age += deltaTime;
+        this.matingCooldown = Math.max(0, this.matingCooldown - deltaTime);
         
-        // Energy decay over time (metabolism)
-        this.energy -= deltaTime * 0.5;
+        // Energy and hydration decay (increased pressure)
+        this.energy -= deltaTime * 0.7; // Increased from 0.5
+        this.hydration -= deltaTime * 0.5; // Thirst
         
-        if (this.energy <= 0) {
+        if (this.energy <= 0 || this.hydration <= 0) {
             this.alive = false;
             return;
         }
         
-        // Think and act with social awareness
-        const actions = this.think(foodManager, otherCreatures);
-        this.act(actions);
+        // Think and act with environmental awareness
+        const actions = this.think(foodManager, otherCreatures, terrain);
+        this.act(actions, otherCreatures);
         
         // Update visual meshes to match physics bodies
         this.meshes.forEach((mesh, index) => {
@@ -310,16 +404,20 @@ export class Creature {
         this.distanceTraveled += distance;
         this.lastPosition.copy(currentPosition);
         
-        // Enhanced fitness with social bonus
-        // Cooperative creatures get bonus for being near others, competitive ones penalized
+        // Enhanced fitness with social bonus and kills
         const socialFactor = this.socialBehavior < 0.5 ? 
             (this.nearbyCreatureCount * 5) :  // Cooperative bonus
             -(this.nearbyCreatureCount * 2);  // Competitive penalty
         
-        // Fitness = food collected (primary) + survival time + movement + social factor
-        this.fitness = this.foodCollected * 100 + this.age * 2 + this.distanceTraveled * 5 + socialFactor;
+        // Fitness = food + hydration + survival + movement + social + combat
+        this.fitness = this.foodCollected * 100 
+                     + this.hydration * 0.5  // Reward staying hydrated
+                     + this.age * 2 
+                     + this.distanceTraveled * 5 
+                     + socialFactor
+                     + this.kills * 50;  // Combat bonus for aggressive creatures
         
-        // Die if fallen too far
+        // Die if fallen too far or out of bounds
         if (this.mainBody.position.y < -20) {
             this.alive = false;
         }

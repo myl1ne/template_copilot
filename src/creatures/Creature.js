@@ -77,8 +77,26 @@ export class Creature {
                     break;
             }
             
+            // Modify color based on aggression (visual distinction)
+            // Predators (high aggression) -> reddish tint
+            // Herbivores (low aggression) -> greenish tint
+            const baseColor = new THREE.Color(segment.color.r, segment.color.g, segment.color.b);
+            const aggression = this.genome.genes.aggression;
+            
+            if (aggression > 0.6) {
+                // Predator: add red tint
+                baseColor.r = Math.min(1, baseColor.r + (aggression - 0.6) * 0.8);
+                baseColor.g *= 0.7;
+                baseColor.b *= 0.7;
+            } else if (aggression < 0.3) {
+                // Herbivore: add green tint
+                baseColor.g = Math.min(1, baseColor.g + (0.3 - aggression) * 0.8);
+                baseColor.r *= 0.7;
+                baseColor.b *= 0.7;
+            }
+            
             const material = new THREE.MeshPhongMaterial({
-                color: new THREE.Color(segment.color.r, segment.color.g, segment.color.b),
+                color: baseColor,
                 shininess: 30
             });
             

@@ -54,12 +54,14 @@ export class Genome {
                 Math.floor(Math.random() * 8) + 2, // Hidden layer size: 2-9
                 Math.random() > 0.5 ? Math.floor(Math.random() * 6) + 2 : 0 // Optional 2nd layer
             ].filter(x => x > 0),
-            // Mutation rate
-            mutationRate: 0.1,
+            // Mutation rate (increased for more diversity)
+            mutationRate: 0.15, // Increased from 0.1
             // Behavioral traits
             aggression: Math.random(),
             speed: Math.random() * 1.5 + 0.5, // 0.5-2.0
-            efficiency: Math.random()
+            efficiency: Math.random(),
+            // Species marker (used to prevent instant convergence)
+            speciesId: Math.floor(Math.random() * 1000000)
         };
     }
 

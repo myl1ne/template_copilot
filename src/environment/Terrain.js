@@ -81,12 +81,39 @@ export class Terrain {
         this.mesh.receiveShadow = true;
         this.scene.add(this.mesh);
         
-        // Physics approximation (flat base with height)
-        const groundShape = new CANNON.Plane();
+        // Create heightfield physics body from terrain data
+        const matrix = [];
+        const sizeX = this.segments + 1;
+        const sizeY = this.segments + 1;
+        
+        // Convert height data to 2D matrix for Heightfield
+        for (let i = 0; i < sizeY; i++) {
+            matrix.push([]);
+            for (let j = 0; j < sizeX; j++) {
+                const index = i * sizeX + j;
+                if (index < this.heightData.length) {
+                    matrix[i].push(this.heightData[index].height);
+                } else {
+                    matrix[i].push(0);
+                }
+            }
+        }
+        
+        const heightfieldShape = new CANNON.Heightfield(matrix, {
+            elementSize: this.size / this.segments
+        });
+        
         this.groundBody = new CANNON.Body({
             mass: 0,
-            shape: groundShape
+            shape: heightfieldShape
         });
+        
+        // Position and rotate the heightfield to match visual terrain
+        this.groundBody.position.set(
+            -this.size / 2,
+            0,
+            this.size / 2
+        );
         this.groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
         this.world.addBody(this.groundBody);
     }

@@ -65,7 +65,9 @@ export class Genome {
             // **LIMB CONFIGURATION** (for proper evolution of body structure)
             limbCount: Math.floor(Math.random() * 3) + 2, // 2-4 limbs
             limbLength: Math.random() * 0.5 + 0.5, // 0.5-1.0 length multiplier
-            gaitStyle: Math.random() // 0-1: affects movement pattern
+            gaitStyle: Math.random(), // 0-1: affects movement pattern
+            // **NEURAL WEIGHTS** (for inheritance of learned behaviors)
+            neuralWeights: null // Will be populated when creature created
         };
     }
 
@@ -147,6 +149,23 @@ export class Genome {
         childGenes.limbCount = Math.random() > 0.5 ? childGenes.limbCount : otherGenes.limbCount;
         childGenes.limbLength = (childGenes.limbLength + otherGenes.limbLength) / 2;
         childGenes.gaitStyle = (childGenes.gaitStyle + otherGenes.gaitStyle) / 2;
+        
+        // **MIX NEURAL ARCHITECTURE** (allow brain structure to evolve)
+        if (Math.random() > 0.7) {
+            // 30% chance to inherit other parent's architecture
+            childGenes.neuralLayers = JSON.parse(JSON.stringify(otherGenes.neuralLayers));
+        } else if (Math.random() > 0.9) {
+            // 10% chance to mutate architecture
+            childGenes.neuralLayers = [
+                Math.floor(Math.random() * 8) + 2,
+                Math.random() > 0.5 ? Math.floor(Math.random() * 6) + 2 : 0
+            ].filter(x => x > 0);
+        }
+        
+        // **NEURAL WEIGHTS INHERITANCE** (inherit learned behaviors)
+        // Will be handled at creature level with NeuralNetwork.crossover()
+        childGenes.neuralWeights = null; // Reset, will be set by creature
+
 
         return new Genome(childGenes);
     }

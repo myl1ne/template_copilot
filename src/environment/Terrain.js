@@ -120,8 +120,8 @@ export class Terrain {
 
     createBorders() {
         this.borders = [];
-        const borderHeight = 5;
-        const borderThickness = 1;
+        const borderHeight = 15; // Much higher for terrarium effect
+        const borderThickness = 0.5; // Thinner
         const halfSize = this.size / 2;
         
         // Four walls
@@ -133,16 +133,20 @@ export class Terrain {
         ];
         
         walls.forEach(wall => {
-            // Visual wall
+            // Visual wall - transparent terrarium-style
             const geometry = new THREE.BoxGeometry(wall.width, borderHeight, wall.depth);
             const material = new THREE.MeshStandardMaterial({
-                color: 0x8B4513,
-                roughness: 0.8
+                color: 0xCCE8F4, // Light blue-white
+                transparent: true,
+                opacity: 0.15, // Very transparent
+                roughness: 0.1,
+                metalness: 0.5,
+                side: THREE.DoubleSide
             });
             
             const mesh = new THREE.Mesh(geometry, material);
             mesh.position.set(wall.x, borderHeight / 2, wall.z);
-            mesh.castShadow = true;
+            mesh.castShadow = false; // Transparent walls don't cast shadows
             mesh.receiveShadow = true;
             this.scene.add(mesh);
             

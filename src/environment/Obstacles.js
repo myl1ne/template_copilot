@@ -104,11 +104,38 @@ export class ObstacleManager {
     }
 
     initialize() {
-        // Create clusters of obstacles
-        this.createObstacleCluster({ x: 10, y: 0.5, z: 10 }, 5, 'rock');
-        this.createObstacleCluster({ x: -10, y: 0.5, z: -10 }, 5, 'rock');
-        this.createObstacleCluster({ x: 15, y: 0.5, z: -15 }, 3, 'crystal');
-        this.createObstacleCluster({ x: -15, y: 1, z: 15 }, 4, 'plant');
+        // Create MORE clusters of obstacles (increased from 4 to 8 clusters)
+        this.createObstacleCluster({ x: 10, y: 0.5, z: 10 }, 7, 'rock'); // More rocks
+        this.createObstacleCluster({ x: -10, y: 0.5, z: -10 }, 6, 'rock');
+        this.createObstacleCluster({ x: 15, y: 0.5, z: -15 }, 5, 'crystal');
+        this.createObstacleCluster({ x: -15, y: 1, z: 15 }, 6, 'plant');
+        this.createObstacleCluster({ x: 0, y: 0.5, z: 20 }, 5, 'rock'); // New cluster
+        this.createObstacleCluster({ x: 0, y: 0.5, z: -20 }, 4, 'crystal'); // New cluster
+        this.createObstacleCluster({ x: 20, y: 1, z: 0 }, 5, 'plant'); // New cluster
+        this.createObstacleCluster({ x: -20, y: 0.5, z: 0 }, 6, 'rock'); // New cluster
+        
+        // Add scattered individual obstacles (inert objects)
+        this.addScatteredObstacles(15, 'rock');
+        this.addScatteredObstacles(10, 'crystal');
+        this.addScatteredObstacles(12, 'plant');
+    }
+    
+    addScatteredObstacles(count, type) {
+        // Scatter obstacles randomly across environment
+        for (let i = 0; i < count; i++) {
+            const position = {
+                x: (Math.random() - 0.5) * 50, // Spread across 50x50 area
+                y: type === 'plant' ? 1 : 0.5,
+                z: (Math.random() - 0.5) * 50
+            };
+            
+            const size = Math.random() * 0.8 + 0.3; // Varied sizes
+            const obstacle = new Obstacle(position, size, type);
+            
+            obstacle.addToScene(this.scene);
+            obstacle.addToWorld(this.world);
+            this.obstacles.push(obstacle);
+        }
     }
 
     createObstacleCluster(center, count, type) {

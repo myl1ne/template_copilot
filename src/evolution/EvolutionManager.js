@@ -3,6 +3,7 @@ import { Genome } from '../dna/Genome.js';
 import { FoodManager } from '../environment/Food.js';
 import { ObstacleManager } from '../environment/Obstacles.js';
 import { Terrain } from '../environment/Terrain.js';
+import { NeuralNetwork } from '../neural/NeuralNetwork.js';
 
 /**
  * EvolutionManager - Handles natural selection and evolution
@@ -180,6 +181,12 @@ export class EvolutionManager {
             return;
         }
         
+        // **HYBRID EVOLUTION BOOST**: Every 10 births, inject elite hybrids
+        if (this.totalBirths > 0 && this.totalBirths % 10 === 0) {
+            this.injectEliteHybrid();
+            return;
+        }
+        
         // Select parent(s) based on fitness
         const totalFitness = this.creatures.reduce((sum, c) => sum + Math.max(0, c.fitness), 0);
         if (totalFitness === 0) {
@@ -203,7 +210,7 @@ export class EvolutionManager {
         }
         
         // 70% sexual reproduction, 30% asexual
-        let genome;
+        let genome, neuralWeights;
         if (Math.random() < 0.7 && this.creatures.length >= 2) {
             // Sexual reproduction - find compatible partner
             const compatible = this.creatures.filter(c => 
@@ -214,15 +221,23 @@ export class EvolutionManager {
             if (compatible.length > 0) {
                 const parent2 = compatible[Math.floor(Math.random() * compatible.length)];
                 genome = parent1.genome.crossover(parent2.genome);
+                
+                // **NEURAL WEIGHT CROSSOVER** (inherit learned behaviors)
+                const childBrain = this.crossoverNeuralNetworks(parent1, parent2, genome);
+                neuralWeights = childBrain ? childBrain.getWeights() : null;
             } else {
                 genome = parent1.genome.clone();
+                neuralWeights = parent1.brain.getWeights(); // Clone parent brain
             }
         } else {
             // Asexual reproduction (cloning)
             genome = parent1.genome.clone();
+            neuralWeights = parent1.brain.getWeights(); // **INHERIT NEURAL WEIGHTS**
         }
         
-        genome.mutate();
+        // **PASS NEURAL WEIGHTS TO OFFSPRING**
+        genome.genes.neuralWeights = neuralWeights;
+        genome = genome.mutate();
         
         // Spawn in random location
         const angle = Math.random() * Math.PI * 2;
@@ -236,6 +251,75 @@ export class EvolutionManager {
         const offspring = this.spawnCreature(genome, position);
         this.totalBirths++;
     }
+    
+    // **HYBRID EVOLUTION SYSTEM** - Inject best hybrids to boost evolution
+    injectEliteHybrid() {
+        console.log("🧬 Injecting elite hybrid creature to accelerate evolution");
+        
+        // Find the oldest and fittest creatures
+        const sortedByAge = [...this.creatures].sort((a, b) => b.age - a.age);
+        const sortedByFitness = [...this.creatures].sort((a, b) => b.fitness - a.fitness);
+        
+        if (sortedByAge.length < 2 || sortedByFitness.length < 2) {
+            this.spawnRandomCreature();
+            return;
+        }
+        
+        // Cross oldest with fittest (experience + success)
+        const oldest = sortedByAge[0];
+        const fittest = sortedByFitness[0];
+        
+        if (oldest === fittest) {
+            // If same creature, use second fittest
+            const secondFittest = sortedByFitness[1];
+            this.createEliteOffspring(oldest, secondFittest);
+        } else {
+            this.createEliteOffspring(oldest, fittest);
+        }
+    }
+    
+    createEliteOffspring(parent1, parent2) {
+        console.log(`Creating elite hybrid from age:${parent1.age.toFixed(1)} fitness:${parent1.fitness.toFixed(0)} × age:${parent2.age.toFixed(1)} fitness:${parent2.fitness.toFixed(0)}`);
+        
+        // Crossover genomes
+        const childGenome = parent1.genome.crossover(parent2.genome);
+        
+        // **NEURAL WEIGHT CROSSOVER** - inherit best learned behaviors
+        const childBrain = this.crossoverNeuralNetworks(parent1, parent2, childGenome);
+        childGenome.genes.neuralWeights = childBrain ? childBrain.getWeights() : null;
+        
+        // Lower mutation for elite (preserve good traits)
+        const mutated = childGenome.mutate();
+        mutated.genes.mutationRate = 0.10; // Reduce from 0.15 for elites
+        
+        // Spawn in center (prime location)
+        const position = {
+            x: (Math.random() - 0.5) * 5,
+            y: 10,
+            z: (Math.random() - 0.5) * 5
+        };
+        
+        const offspring = this.spawnCreature(mutated, position);
+        this.totalBirths++;
+    }
+    
+    // Helper to crossover neural networks properly
+    crossoverNeuralNetworks(parent1, parent2, childGenome) {
+        // Check if architectures match
+        const p1Layers = parent1.genome.genes.neuralLayers;
+        const p2Layers = parent2.genome.genes.neuralLayers;
+        const childLayers = childGenome.genes.neuralLayers;
+        
+        // If architectures compatible, crossover weights
+        if (p1Layers.length === p2Layers.length && 
+            p1Layers.every((val, idx) => val === p2Layers[idx])) {
+            return NeuralNetwork.crossover(parent1.brain, parent2.brain);
+        }
+        
+        // If incompatible, inherit from fitter parent
+        return parent1.fitness > parent2.fitness ? parent1.brain.clone() : parent2.brain.clone();
+    }
+
 
     spawnRandomCreature() {
         // Completely random genome for diversity
@@ -255,6 +339,11 @@ export class EvolutionManager {
     createOffspring(parent1, parent2) {
         // Sexual reproduction - crossover between two parents
         const childGenome = parent1.genome.crossover(parent2.genome);
+        
+        // **NEURAL WEIGHT CROSSOVER** - inherit learned behaviors
+        const childBrain = this.crossoverNeuralNetworks(parent1, parent2, childGenome);
+        childGenome.genes.neuralWeights = childBrain ? childBrain.getWeights() : null;
+        
         childGenome.mutate();
         
         // Spawn near parents

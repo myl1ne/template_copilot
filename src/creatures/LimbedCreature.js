@@ -38,7 +38,13 @@ export class LimbedCreature {
         const inputSize = 16;
         const hiddenSize = this.genome.genes.neuralLayers[0] || 4;
         const outputSize = 5; // force x, y, z, signal intensity, action (attack/mate)
-        this.brain = new NeuralNetwork(inputSize, hiddenSize, outputSize);
+        
+        // **INHERIT NEURAL WEIGHTS if available**
+        if (this.genome.genes.neuralWeights) {
+            this.brain = new NeuralNetwork(inputSize, hiddenSize, outputSize, this.genome.genes.neuralWeights);
+        } else {
+            this.brain = new NeuralNetwork(inputSize, hiddenSize, outputSize);
+        }
         
         // Three.js visual components
         this.meshes = [];
@@ -646,12 +652,30 @@ export class LimbedCreature {
             this.matingCooldown -= deltaTime;
         }
         
-        // Energy and hydration decay
+        // Energy and hydration decay (with STARVATION system)
         this.energy -= 0.7 * deltaTime;
         this.hydration -= 0.5 * deltaTime;
         
-        // Death conditions
-        if (this.energy <= 0 || this.hydration <= 0 || this.age > 120) {
+        // **MOVEMENT ENERGY COST** - moving uses more energy
+        const velocity = this.mainBody.velocity;
+        const movementMagnitude = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+        this.energy -= movementMagnitude * 0.15 * deltaTime; // Significant energy cost for movement
+        
+        // **DEATH CONDITIONS** - creatures MUST eat and drink
+        // Death from starvation or dehydration
+        if (this.energy <= 0) {
+            console.log(`Creature died from starvation at age ${this.age.toFixed(1)}s`);
+            this.alive = false;
+            return;
+        }
+        if (this.hydration <= 0) {
+            console.log(`Creature died from dehydration at age ${this.age.toFixed(1)}s`);
+            this.alive = false;
+            return;
+        }
+        // Death from old age
+        if (this.age > 120) {
+            console.log(`Creature died from old age at ${this.age.toFixed(1)}s`);
             this.alive = false;
             return;
         }

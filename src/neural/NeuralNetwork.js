@@ -1,20 +1,28 @@
 /**
  * Simple Neural Network for creature control
  * Takes sensory inputs and outputs motor commands
+ * Supports weight inheritance and crossover for evolution
  */
 
 export class NeuralNetwork {
-    constructor(inputSize, hiddenSize, outputSize) {
+    constructor(inputSize, hiddenSize, outputSize, parentWeights = null) {
         this.inputSize = inputSize;
         this.hiddenSize = hiddenSize;
         this.outputSize = outputSize;
 
-        // Initialize weights randomly
-        this.weightsInputHidden = this.randomMatrix(inputSize, hiddenSize);
-        this.weightsHiddenOutput = this.randomMatrix(hiddenSize, outputSize);
-        
-        this.biasHidden = this.randomArray(hiddenSize);
-        this.biasOutput = this.randomArray(outputSize);
+        if (parentWeights) {
+            // Initialize from parent weights (for inheritance)
+            this.weightsInputHidden = parentWeights.weightsInputHidden.map(row => [...row]);
+            this.weightsHiddenOutput = parentWeights.weightsHiddenOutput.map(row => [...row]);
+            this.biasHidden = [...parentWeights.biasHidden];
+            this.biasOutput = [...parentWeights.biasOutput];
+        } else {
+            // Initialize weights randomly
+            this.weightsInputHidden = this.randomMatrix(inputSize, hiddenSize);
+            this.weightsHiddenOutput = this.randomMatrix(hiddenSize, outputSize);
+            this.biasHidden = this.randomArray(hiddenSize);
+            this.biasOutput = this.randomArray(outputSize);
+        }
     }
 
     randomMatrix(rows, cols) {
@@ -112,5 +120,56 @@ export class NeuralNetwork {
         cloned.biasOutput = [...this.biasOutput];
         
         return cloned;
+    }
+    
+    // Get weights for inheritance
+    getWeights() {
+        return {
+            weightsInputHidden: this.weightsInputHidden.map(row => [...row]),
+            weightsHiddenOutput: this.weightsHiddenOutput.map(row => [...row]),
+            biasHidden: [...this.biasHidden],
+            biasOutput: [...this.biasOutput]
+        };
+    }
+    
+    // Crossover weights with another network (for sexual reproduction)
+    static crossover(parent1, parent2) {
+        // Ensure same architecture
+        if (parent1.inputSize !== parent2.inputSize ||
+            parent1.hiddenSize !== parent2.hiddenSize ||
+            parent1.outputSize !== parent2.outputSize) {
+            // If different architectures, just clone parent1
+            return parent1.clone();
+        }
+        
+        const child = new NeuralNetwork(parent1.inputSize, parent1.hiddenSize, parent1.outputSize);
+        
+        // Mix weights from both parents
+        for (let i = 0; i < parent1.inputSize; i++) {
+            for (let j = 0; j < parent1.hiddenSize; j++) {
+                child.weightsInputHidden[i][j] = Math.random() < 0.5 ? 
+                    parent1.weightsInputHidden[i][j] : parent2.weightsInputHidden[i][j];
+            }
+        }
+        
+        for (let i = 0; i < parent1.hiddenSize; i++) {
+            for (let j = 0; j < parent1.outputSize; j++) {
+                child.weightsHiddenOutput[i][j] = Math.random() < 0.5 ?
+                    parent1.weightsHiddenOutput[i][j] : parent2.weightsHiddenOutput[i][j];
+            }
+        }
+        
+        // Mix biases
+        for (let i = 0; i < parent1.hiddenSize; i++) {
+            child.biasHidden[i] = Math.random() < 0.5 ? 
+                parent1.biasHidden[i] : parent2.biasHidden[i];
+        }
+        
+        for (let i = 0; i < parent1.outputSize; i++) {
+            child.biasOutput[i] = Math.random() < 0.5 ?
+                parent1.biasOutput[i] : parent2.biasOutput[i];
+        }
+        
+        return child;
     }
 }

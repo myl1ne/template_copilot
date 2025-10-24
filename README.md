@@ -1,8 +1,9 @@
 # Evo - Evolution Simulator
 
-An evolutionary sandbox that grows lifeforms from 3D primitives using digital DNA. Watch creatures evolve, adapt, and compete in a physics-based environment powered by Three.js and neural networks.
+An evolutionary sandbox that grows lifeforms from 3D primitives using digital DNA. Watch creatures evolve, adapt, and forage for food in a physics-based environment powered by Three.js and neural networks.
 
-![Evo Simulator](https://github.com/user-attachments/assets/8160d4ed-d48a-4d7e-83e3-4f1191632b5b)
+![Food Collection Evolution](https://github.com/user-attachments/assets/e2d38552-84de-4261-9ef5-ac4475d6654d)
+*Creatures with vision sensors finding and collecting green food pellets to survive*
 
 ## 🚀 Quick Start
 
@@ -18,16 +19,19 @@ An evolutionary sandbox that grows lifeforms from 3D primitives using digital DN
 
 3. **Open your browser** to `http://localhost:5173`
 
-4. **Watch evolution happen** - creatures will spawn, evolve, and compete for fitness!
+4. **Watch evolution happen** - creatures will spawn, find food, and evolve better foraging strategies!
 
 ## 🧬 Key Features
 
 - **Digital DNA System** - Creatures are defined by genetic code that determines their structure
+- **Food & Energy Mechanics** - 30 auto-respawning food sources; creatures must eat to survive
+- **Vision Sensors** - Creatures can detect and navigate toward food sources
+- **Articulated Bodies** - Body segments connected with physics constraints for realistic movement
 - **3D Primitive Bodies** - Procedurally generated bodies from boxes, spheres, and cylinders
 - **Neural Network Control** - Each creature has a brain that learns to control its body
 - **Physics Simulation** - Realistic physics using cannon-es
-- **Natural Selection** - Creatures compete for fitness, best performers breed
-- **Emergent Behavior** - Complex behaviors emerge from simple rules
+- **Natural Selection** - Creatures compete for fitness, best foragers breed
+- **Emergent Behavior** - Complex foraging strategies emerge from simple rules
 - **Real-time Evolution** - Watch generations evolve before your eyes
 
 ## 📚 Documentation
@@ -43,19 +47,21 @@ An evolutionary sandbox that grows lifeforms from 3D primitives using digital DN
    - Each creature has unique DNA defining its structure and traits
 
 ### 2. **Life Cycle**
-   - Creatures use neural networks to sense and control their bodies
-   - They consume energy as they move and think
-   - Fitness is measured by distance traveled and survival time
+   - Creatures use neural networks with 9 sensory inputs to perceive their environment
+   - Vision sensors detect nearest food source direction
+   - They consume energy as they move, think, and metabolize
+   - Must find and collect green food pellets to survive
+   - Fitness is measured by food collected, survival time, and movement efficiency
 
 ### 3. **Natural Selection**
    - Each generation lasts 30 seconds
-   - Top 20% of performers are selected for breeding
+   - Top 20% of performers (best foragers) are selected for breeding
    - New generation is created through crossover and mutation
 
 ### 4. **Evolution**
-   - Successful traits are passed to offspring
-   - Random mutations introduce variation
-   - Over time, creatures adapt to move more efficiently
+   - Successful foraging strategies are passed to offspring
+   - Random mutations introduce variation in body structure and neural networks
+   - Over time, creatures evolve better vision-guided navigation and food collection
 
 ## 🎨 Inspired By
 

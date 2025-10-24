@@ -1,6 +1,6 @@
 {
   "name": "evo",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Evo - An evolutionary sandbox that grows lifeforms from 3D primitives using digital DNA",
   "type": "module",
   "main": "index.js",

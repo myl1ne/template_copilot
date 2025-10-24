@@ -7,45 +7,48 @@
 ### Not Started
 - **Performance Optimization** - Improve physics and rendering performance for larger populations
   - **Status**: Not Started
-  - **Target**: v0.2.0
+  - **Target**: v0.3.0
   - **Notes**: Need to profile and optimize hot paths, implement spatial partitioning
 
-- **Fitness Function Tuning** - Balance fitness calculations for more interesting evolution
+- **Predator-Prey Dynamics** - Create different creature types with different energy sources
   - **Status**: Not Started
-  - **Target**: v0.1.1
-  - **Notes**: Current fitness may favor certain behaviors too heavily
+  - **Target**: v0.3.0
+  - **Estimated Effort**: Large
 
 ---
 
 ## 📋 Medium Priority
 
 ### Not Started
-- **Vision Sensors** - Add visual perception to creatures
+- **Enhanced Vision** - Multiple raycasts for wider field of view
   - **Status**: Not Started
-  - **Target**: v0.2.0
-  - **Estimated Effort**: Large
-  - **Notes**: Raycasting or simplified visual field
-
-- **Food/Energy Sources** - Add collectible energy in environment
-  - **Status**: Not Started
-  - **Target**: v0.2.0
+  - **Target**: v0.3.0
   - **Estimated Effort**: Medium
 
-- **Advanced Body Joints** - Implement articulated joints between body segments
+- **Auditory System** - Sound emission and detection
   - **Status**: Not Started
-  - **Target**: v0.2.0
+  - **Target**: v0.3.0
+  - **Estimated Effort**: Medium
+
+- **Creature Interactions** - Direct creature-to-creature behaviors
+  - **Status**: Not Started
+  - **Target**: v0.3.0
   - **Estimated Effort**: Large
-  - **Dependencies**: Requires cannon-es constraints
 
 - **Save/Load State** - Ability to save and restore simulation state
   - **Status**: Not Started
-  - **Target**: v0.2.0
+  - **Target**: v0.3.0
   - **Estimated Effort**: Medium
 
 - **Genome Export** - Export successful creature genomes
   - **Status**: Not Started
-  - **Target**: v0.2.0
+  - **Target**: v0.3.0
   - **Estimated Effort**: Small
+
+- **Environmental Obstacles** - Add terrain features and obstacles
+  - **Status**: Not Started
+  - **Target**: v0.3.0
+  - **Estimated Effort**: Medium
 
 ---
 
@@ -96,24 +99,45 @@
 
 ## ✅ Recently Completed
 
+- **Food/Energy System** - 30 auto-respawning food pellets for creature survival ✅
+  - **Completed**: 2025-10-24
+  - **Version**: v0.2.0
+
+- **Vision Sensors** - Creatures detect and navigate toward nearest food ✅
+  - **Completed**: 2025-10-24
+  - **Version**: v0.2.0
+
+- **Articulated Body Joints** - Physics constraints connect body segments ✅
+  - **Completed**: 2025-10-24
+  - **Version**: v0.2.0
+
+- **Enhanced Fitness Function** - Food collection as primary fitness driver ✅
+  - **Completed**: 2025-10-24
+  - **Version**: v0.2.0
+
 - **Core Simulation Engine** - Initial implementation with all major systems ✅
   - **Completed**: 2025-10-24
-  - **Components**: DNA, Neural Networks, Creatures, Evolution, Physics, Rendering
+  - **Version**: v0.1.0
 
 - **Digital DNA System** - Genome encoding with mutation and crossover ✅
   - **Completed**: 2025-10-24
+  - **Version**: v0.1.0
   
 - **Neural Network Brains** - Simple feedforward networks for creature control ✅
   - **Completed**: 2025-10-24
+  - **Version**: v0.1.0
 
 - **Physics Integration** - Cannon-es physics for realistic movement ✅
   - **Completed**: 2025-10-24
+  - **Version**: v0.1.0
 
 - **Evolution System** - Natural selection with fitness-based breeding ✅
   - **Completed**: 2025-10-24
+  - **Version**: v0.1.0
 
 - **3D Visualization** - Three.js rendering with camera controls ✅
   - **Completed**: 2025-10-24
+  - **Version**: v0.1.0
 
 ---
 
@@ -121,11 +145,11 @@
 
 | Priority | Not Started | In Progress | Under Review | Completed |
 |----------|-------------|-------------|--------------|-----------|
-| High     | 2           | 0           | 0            | 6         |
-| Medium   | 5           | 0           | 0            | 0         |
+| High     | 2           | 0           | 0            | 10        |
+| Medium   | 6           | 0           | 0            | 0         |
 | Low      | 5           | 0           | 0            | 0         |
 | Bugs     | 2           | 0           | 0            | 0         |
-| **Total**| **14**      | **0**       | **0**        | **6**     |
+| **Total**| **15**      | **0**       | **0**        | **10**    |
 
 ---
 

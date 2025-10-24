@@ -3,46 +3,51 @@
 ## Current Status
 
 ### 🎯 Current Version
-- **Version**: 0.1.0
+- **Version**: 0.2.0
 - **Release Date**: 2025-10-24
-- **Status**: Alpha - Core features functional
+- **Status**: Alpha - Enhanced features functional
 
 ### ✅ What's Working Now
 - **Digital DNA System** - Genome encoding for creature structure and traits
 - **3D Procedural Generation** - Bodies built from primitives (box, sphere, cylinder)
-- **Neural Network Control** - Simple feedforward networks controlling creatures
-- **Physics Simulation** - Realistic physics using cannon-es
+- **Neural Network Control** - Feedforward networks with 9 sensory inputs
+- **Physics Simulation** - Realistic physics using cannon-es with articulated joints
 - **Evolution System** - Fitness-based selection with mutation and crossover
 - **Real-time Visualization** - Three.js 3D rendering with camera controls
 - **Generation Management** - Automatic cycling through generations
 - **UI Controls** - Reset, spawn, and pause functionality
+- **Food/Energy System** - 30 auto-respawning food pellets for survival
+- **Vision Sensors** - Creatures can detect and navigate toward food
+- **Articulated Joints** - Physics constraints connect body segments
+- **Enhanced Fitness** - Food collection drives natural selection
 
 ### 🔧 Current Focus
-- Stabilizing core simulation mechanics
-- Balancing fitness functions for interesting evolution
-- Optimizing performance for larger populations
+- Monitoring food-based evolution dynamics
+- Balancing energy consumption rates
+- Observing emergent foraging behaviors
 
 ---
 
 ## Long Term Roadmap
 
-### 🚀 Next Release (v0.2.0) - Q1 2026
-**Theme**: Enhanced Sensory Systems & Interactions
+### 🚀 Next Release (v0.3.0) - Q1 2026
+**Theme**: Advanced Sensory Systems & Social Behavior
 
 **Planned Features**:
-- [ ] Vision sensors - Creatures can see other creatures and food
+- [ ] Enhanced vision with multiple ray casts
 - [ ] Auditory system - Creatures can emit and hear sounds
-- [ ] Food/energy sources in environment
 - [ ] Creature-to-creature interactions (cooperation/competition)
-- [ ] Advanced body joints and articulation
+- [ ] Predator-prey dynamics
 - [ ] Improved neural network architectures (LSTM, recurrent networks)
+- [ ] Environmental diversity (obstacles, terrain variations)
 
 **Technical Improvements**:
 - [ ] Performance optimization for 50+ creatures
 - [ ] WebGL shader optimizations
-- [ ] Better physics collision detection
+- [ ] Better spatial partitioning for collision detection
 - [ ] Save/load simulation state
 - [ ] Export creature genomes
+- [ ] Replay system for interesting evolutions
 
 ### 🔮 Future Releases (6-12 months)
 
@@ -74,6 +79,14 @@
 ---
 
 ## Recently Completed
+
+### ✅ v0.2.0 - 2025-10-24
+- ✅ Food/energy system with auto-respawning pellets
+- ✅ Vision sensors for food detection
+- ✅ Articulated body joints with physics constraints
+- ✅ Enhanced fitness function based on food collection
+- ✅ 9-input neural network (up from 6)
+- ✅ Energy metabolism and survival mechanics
 
 ### ✅ v0.1.0 - 2025-10-24
 - ✅ Core simulation engine implemented

@@ -1,4 +1,5 @@
 import { Life } from './Life.js';
+import { AnimalGenetics } from './AnimalGenetics.js';
 
 /**
  * AnimalLife - Base class for animal life with movement and interactions
@@ -9,27 +10,58 @@ export class AnimalLife extends Life {
         DECOMPOSER: 'decomposer'
     };
 
-    constructor(x, y, z, animalType = AnimalLife.ANIMAL_TYPES.HERBIVORE) {
+    constructor(x, y, z, animalType = AnimalLife.ANIMAL_TYPES.HERBIVORE, generation = 1, parent1Genetics = null, parent2Genetics = null) {
         super(x, y, z, 'animal');
         
         this.animalType = animalType;
-        this.speed = 0.5;
+        this.generation = generation;
+        
+        // Initialize genetics
+        if (parent1Genetics && parent2Genetics) {
+            // Sexual reproduction
+            this.genetics = new AnimalGenetics(parent1Genetics.genes, parent2Genetics.genes);
+        } else if (parent1Genetics) {
+            // Asexual reproduction
+            this.genetics = new AnimalGenetics(parent1Genetics.genes, null);
+        } else {
+            // First generation
+            this.genetics = new AnimalGenetics();
+        }
+        
+        // Apply genetic traits
+        const speedGene = this.genetics.getGene('speedGene');
+        const sizeGene = this.genetics.getGene('sizeGene');
+        const hungerGene = this.genetics.getGene('hungerResistanceGene');
+        const vigorGene = this.genetics.getGene('vigorGene');
+        
+        this.speed = 0.5 * speedGene;
+        this.size = 0.4 * sizeGene;
+        this.maxHunger = 100 * hungerGene;
+        this.maxAge = 150 * vigorGene;
+        
         this.targetX = x;
         this.targetZ = z;
         this.hunger = 50;
-        this.maxHunger = 100;
         
         // Movement state
         this.isMoving = false;
         this.movementCooldown = 0;
         
-        // Size and appearance
-        this.size = 0.4;
+        // Reproduction
+        this.reproductionCooldown = 0;
+        this.canReproduce = false;
+        
+        // Appearance
         this.color = this.getAnimalColor();
     }
 
     update(deltaTime, vivarium) {
         super.update(deltaTime, vivarium);
+        
+        // Become mature and able to reproduce
+        if (this.age > 30 && !this.canReproduce) {
+            this.canReproduce = true;
+        }
         
         // Hunger increases over time
         this.hunger = Math.min(this.maxHunger, this.hunger + deltaTime * 2);
@@ -49,8 +81,17 @@ export class AnimalLife extends Life {
             this.decomposerBehavior(deltaTime, vivarium);
         }
         
+        // Reproduction
+        if (this.reproductionCooldown > 0) {
+            this.reproductionCooldown -= deltaTime;
+        }
+        
+        if (this.canReproduce && this.reproductionCooldown <= 0 && this.energy > 70) {
+            this.tryReproduce(vivarium);
+        }
+        
         // Natural aging
-        if (this.age > 150) {
+        if (this.age > this.maxAge) {
             this.energy -= deltaTime * 2;
         }
     }
@@ -164,18 +205,103 @@ export class AnimalLife extends Life {
 
     eatPlant(plant, vivarium) {
         // Eat plant biomass
+        const efficiencyGene = this.genetics.getGene('efficiencyGene');
         const amountEaten = Math.min(plant.biomass * 0.3, 5);
         plant.biomass -= amountEaten;
         plant.energy -= amountEaten * 5;
         
-        // Gain energy and reduce hunger
-        this.energy = Math.min(100, this.energy + amountEaten * 2);
+        // Gain energy and reduce hunger (efficiency affects this)
+        this.energy = Math.min(100, this.energy + amountEaten * 2 * efficiencyGene);
         this.hunger = Math.max(0, this.hunger - amountEaten * 10);
         
         // Small chance to spread plant seeds (animal dispersal)
         if (Math.random() < 0.1 && plant.species) {
             this.spreadSeed(plant, vivarium);
         }
+    }
+
+    tryReproduce(vivarium) {
+        // Try to find a mate for sexual reproduction
+        const mate = this.findMate(vivarium);
+        
+        if (mate) {
+            // Sexual reproduction
+            this.reproduce(vivarium, mate.genetics);
+        } else if (Math.random() < 0.3) {
+            // Asexual reproduction (30% chance if no mate)
+            this.reproduce(vivarium, null);
+        }
+    }
+
+    findMate(vivarium) {
+        const searchRadius = 5;
+        
+        for (const lifeform of vivarium.lifeforms) {
+            if (lifeform !== this && 
+                lifeform.type === 'animal' && 
+                lifeform.animalType === this.animalType &&
+                lifeform.canReproduce &&
+                lifeform.energy > 70) {
+                
+                const dx = lifeform.x - this.x;
+                const dz = lifeform.z - this.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+                
+                if (distance <= searchRadius) {
+                    return lifeform;
+                }
+            }
+        }
+        
+        return null;
+    }
+
+    reproduce(vivarium, mateGenetics) {
+        // Spawn 1-2 offspring
+        const fertilityGene = this.genetics.getGene('fertilityGene');
+        const offspringCount = Math.floor(Math.random() * 2 * fertilityGene) + 1;
+        
+        for (let i = 0; i < offspringCount; i++) {
+            // Find nearby spot
+            const spot = this.findNearbySpot(vivarium);
+            if (spot) {
+                const offspring = new AnimalLife(
+                    spot.x,
+                    spot.y,
+                    spot.z,
+                    this.animalType,
+                    this.generation + 1,
+                    this.genetics,
+                    mateGenetics
+                );
+                
+                vivarium.addLifeform(offspring);
+            }
+        }
+        
+        // Reproduction costs energy
+        this.energy -= 20;
+        this.reproductionCooldown = 40;
+    }
+
+    findNearbySpot(vivarium) {
+        const attempts = 15;
+        const range = 3;
+        
+        for (let i = 0; i < attempts; i++) {
+            const dx = Math.floor((Math.random() - 0.5) * range * 2);
+            const dz = Math.floor((Math.random() - 0.5) * range * 2);
+            
+            const x = Math.max(0, Math.min(vivarium.sizeX - 1, this.x + dx));
+            const z = Math.max(0, Math.min(vivarium.sizeZ - 1, this.z + dz));
+            
+            const y = this.findGroundLevel(vivarium, x, z);
+            if (y !== null) {
+                return { x, y, z };
+            }
+        }
+        
+        return null;
     }
 
     spreadSeed(plant, vivarium) {

@@ -366,7 +366,10 @@ export class PlantLife extends Life {
         return null;
     }
 
-    onDeath(cube) {
+    onDeath(vivarium) {
+        // Get the cube at plant position
+        const cube = vivarium.getCube(this.x, this.y, this.z);
+        
         // Return biomass to soil as organic matter
         if (cube && cube.isSoil()) {
             cube.addOrganicMatter(this.biomass);

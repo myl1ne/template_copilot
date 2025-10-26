@@ -20,6 +20,7 @@ class VivariumApp {
         this.animalObjects = new Map(); // Map animals to THREE.Mesh
         
         this.isPaused = false;
+        this.simulationSpeed = 2; // Default 2x speed
         this.clock = new THREE.Clock();
         
         this.init();
@@ -40,8 +41,8 @@ class VivariumApp {
         // Add initial plants
         this.seedInitialPlants(10);
         
-        // Add initial animals
-        this.addInitialAnimals(3);
+        // Add initial animals (more animals for better dynamics)
+        this.addInitialAnimals(8);
 
         // Start animation loop
         this.animate();
@@ -118,6 +119,16 @@ class VivariumApp {
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
                 this.isPaused = !this.isPaused;
+                e.preventDefault();
+            } else if (e.code === 'Equal' || e.code === 'NumpadAdd') {
+                // Increase speed (max 10x)
+                this.simulationSpeed = Math.min(10, this.simulationSpeed + 1);
+                document.getElementById('speed-display').textContent = this.simulationSpeed + 'x';
+                e.preventDefault();
+            } else if (e.code === 'Minus' || e.code === 'NumpadSubtract') {
+                // Decrease speed (min 0.5x)
+                this.simulationSpeed = Math.max(0.5, this.simulationSpeed - 0.5);
+                document.getElementById('speed-display').textContent = this.simulationSpeed + 'x';
                 e.preventDefault();
             }
         });
@@ -319,8 +330,8 @@ class VivariumApp {
         const deltaTime = this.clock.getDelta();
 
         if (!this.isPaused) {
-            // Update vivarium simulation (speed up time by 2x)
-            this.vivarium.update(deltaTime * 2);
+            // Update vivarium simulation with adjustable speed
+            this.vivarium.update(deltaTime * this.simulationSpeed);
             
             // Update visual representation
             this.updatePlants();

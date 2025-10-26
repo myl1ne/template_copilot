@@ -16,10 +16,14 @@ This project is designed for:
 
 - **Cube-Based World**: 20x20x20 grid of cubes representing soil, water, and air with realistic properties
 - **Plant Life Cycles**: Complete lifecycle from seed to death, including growth stages (seed, sprout, growing, mature, flowering, dying)
-- **Dual Reproduction**: Both sexual reproduction (fewer, robust seeds) and parthenogenesis (more seeds, faster spread)
+- **Genetics & Evo-Devo**: 11 genes controlling plant traits (height, growth, photosynthesis, efficiency, color) with inheritance and mutations
+- **Photosynthesis & Sunlight**: Light-based energy production with height advantage and shadowing effects
+- **Dual Reproduction**: Both sexual reproduction (genetic crossover) and parthenogenesis (clonal with mutations)
+- **Natural Selection**: Population fitness improves over generations through survival of the fittest
 - **Resource Management**: Dynamic water distribution and nutrient cycling with organic matter decomposition
-- **Self-Sustaining Ecosystem**: Population naturally balances based on available resources
+- **Self-Sustaining Ecosystem**: Population naturally balances based on available resources and environmental pressures
 - **Interactive 3D View**: Full orbit controls to explore and observe the vivarium from any angle
+- **Genetic Diversity**: Visible color variation in mature plants based on genetic makeup
 
 ## Quick Start
 
@@ -49,9 +53,10 @@ npm preview
 
 ## Core Benefits
 
-1. **Educational Value**: Demonstrates ecosystem dynamics, resource management, and emergent behavior in an accessible visual format
-2. **Interactive Learning**: Real-time observation of population dynamics, generational evolution, and survival strategies
-3. **Extensible Architecture**: Clean, modular codebase ready for adding new life forms, behaviors, and environmental factors
+1. **Educational Value**: Demonstrates ecosystem dynamics, evolution, genetic inheritance, and emergent behavior in an accessible visual format
+2. **Interactive Learning**: Real-time observation of population dynamics, natural selection, generational evolution, and survival strategies
+3. **Evo-Devo Simulation**: Shows how developmental genes (growth, maturity, size) interact with environmental pressures (light, resources) to drive evolution
+4. **Extensible Architecture**: Clean, modular codebase ready for adding new life forms, behaviors, and environmental factors
 
 ## Links & Resources
 

@@ -12,12 +12,16 @@
 - Plant life cycle with 6 growth stages - Fully functional
 - Dual reproduction systems (sexual/parthenogenesis) - Fully functional
 - Resource management (water, nutrients, organic matter) - Fully functional
+- **Genetics system with 11 evo-devo genes** - Fully functional
+- **Photosynthesis and sunlight mechanics** - Fully functional
+- **Natural selection and fitness tracking** - Fully functional
+- **Genetic color variation in plants** - Fully functional
 - Three.js 3D visualization with orbit controls - Operational
-- Real-time ecosystem statistics - Operational
+- Real-time ecosystem statistics including fitness - Operational
 
 ### 🔧 Current Focus
-- System is feature-complete for initial release
-- Monitoring ecosystem balance and sustainability
+- System is feature-complete with genetics and photosynthesis
+- Observing long-term evolution and fitness improvements
 - Gathering feedback for future enhancements
 
 ---
@@ -25,17 +29,19 @@
 ## Long Term Roadmap
 
 ### 🚀 Next Release (v1.1.0) - TBD
-**Theme**: Enhanced Plant Diversity
+**Theme**: Advanced Genetics & Environmental Dynamics
 
 **Planned Features**:
-- [ ] Multiple plant species with different characteristics
-- [ ] Plant mutations and genetic variation
-- [ ] Species competition for resources
-- [ ] Visual variety in plant appearances
+- [ ] Recessive/dominant alleles and gene regulation
+- [ ] Phylogenetic tree visualization
+- [ ] Day/night cycles affecting photosynthesis rates
+- [ ] Multiple plant species with different strategies
+- [ ] Co-evolution tracking
 
 **Technical Improvements**:
 - [ ] Performance optimizations for larger grids
 - [ ] Instanced rendering for better FPS
+- [ ] WebWorker for simulation calculations
 
 ### 🔮 Future Releases (6-12 months)
 
@@ -47,11 +53,11 @@
 - Animal reproduction and movement
 
 #### v2.5.0 - Environmental Systems
-- Day/night cycles
-- Weather system (rain, drought)
-- Seasonal changes
+- Weather system (rain, drought, seasons)
 - Temperature and climate zones
-- Light simulation for photosynthesis
+- Advanced day/night cycles
+- Soil erosion and formation
+- Climate change simulation
 
 ### 🎯 Long Term Vision (1+ years)
 - **Massive Scale**: Support for grids up to 100x100x100 with optimized rendering
@@ -62,6 +68,16 @@
 ---
 
 ## Recently Completed
+
+### ✅ v1.0.1 - 2025-10-26
+- ✅ Genetics system with 11 evo-devo genes - Released
+- ✅ Photosynthesis and sunlight mechanics - Released
+- ✅ Natural selection and fitness tracking - Released
+- ✅ Genetic inheritance (sexual crossover, asexual mutations) - Released
+- ✅ Mate-finding system for sexual reproduction - Released
+- ✅ Genetic color variation in mature plants - Released
+- ✅ Shadowing effects on light intensity - Released
+- ✅ Vertical competition for sunlight - Released
 
 ### ✅ v1.0.0 - 2025-10-26
 - ✅ Cube-based world architecture - Released

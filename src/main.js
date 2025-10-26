@@ -168,9 +168,9 @@ class VivariumApp {
         // Remove plant meshes for dead plants
         const currentPlants = new Set(this.vivarium.lifeforms.filter(lf => lf.type === 'plant'));
         
-        for (const [plant, mesh] of this.plantObjects.entries()) {
+        for (const [plant, meshGroup] of this.plantObjects.entries()) {
             if (!currentPlants.has(plant)) {
-                this.scene.remove(mesh);
+                this.scene.remove(meshGroup);
                 this.plantObjects.delete(plant);
             }
         }
@@ -178,24 +178,69 @@ class VivariumApp {
         // Update or create plant meshes
         for (const plant of currentPlants) {
             if (!this.plantObjects.has(plant)) {
-                // Create new plant mesh
-                const geometry = new THREE.SphereGeometry(0.3, 8, 8);
-                const material = new THREE.MeshLambertMaterial({ color: plant.getColor() });
-                const mesh = new THREE.Mesh(geometry, material);
-                
-                this.scene.add(mesh);
-                this.plantObjects.set(plant, mesh);
+                // Create new plant mesh based on species shape
+                const meshGroup = this.createPlantMesh(plant);
+                this.scene.add(meshGroup);
+                this.plantObjects.set(plant, meshGroup);
             }
             
             // Update plant mesh
-            const mesh = this.plantObjects.get(plant);
-            mesh.position.set(plant.x, plant.y + 0.5 + plant.height / 2, plant.z);
-            mesh.material.color.setHex(plant.getColor());
+            const meshGroup = this.plantObjects.get(plant);
+            const foliage = meshGroup.children[0];
+            const stem = meshGroup.children[1];
             
-            // Update size based on growth
-            const size = plant.getSize();
-            mesh.scale.set(size, size + plant.height, size);
+            meshGroup.position.set(plant.x, plant.y + 0.5, plant.z);
+            
+            // Update colors
+            foliage.material.color.setHex(plant.getColor());
+            
+            // Update size based on growth and species
+            const foliageSize = plant.foliageSize;
+            const heightScale = Math.max(0.5, plant.height);
+            
+            foliage.scale.set(foliageSize, foliageSize, foliageSize);
+            foliage.position.y = heightScale;
+            
+            stem.scale.set(0.1, heightScale, 0.1);
+            stem.position.y = heightScale / 2;
         }
+    }
+
+    createPlantMesh(plant) {
+        const group = new THREE.Group();
+        
+        // Create foliage based on species shape
+        let foliageGeometry;
+        switch (plant.species.shape) {
+            case 'cone':
+                foliageGeometry = new THREE.ConeGeometry(0.5, 1, 8);
+                break;
+            case 'sphere':
+                foliageGeometry = new THREE.SphereGeometry(0.5, 8, 8);
+                break;
+            case 'cylinder':
+                foliageGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.8, 8);
+                break;
+            default:
+                foliageGeometry = new THREE.SphereGeometry(0.5, 8, 8);
+        }
+        
+        const foliageMaterial = new THREE.MeshLambertMaterial({ color: plant.getColor() });
+        const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+        foliage.castShadow = true;
+        foliage.receiveShadow = true;
+        
+        // Create stem/trunk
+        const stemGeometry = new THREE.CylinderGeometry(0.1, 0.15, 1, 6);
+        const stemMaterial = new THREE.MeshLambertMaterial({ color: 0x8B4513 });
+        const stem = new THREE.Mesh(stemGeometry, stemMaterial);
+        stem.castShadow = true;
+        stem.receiveShadow = true;
+        
+        group.add(foliage);
+        group.add(stem);
+        
+        return group;
     }
 
     updateUI() {

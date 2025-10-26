@@ -75,8 +75,8 @@ export class Cube {
      */
     addOrganicMatter(amount) {
         this.organicMatter += amount;
-        // Organic matter slowly converts to nutrients
-        const converted = Math.min(this.organicMatter, 0.1);
+        // Organic matter slowly converts to nutrients (increased rate for sustainability)
+        const converted = Math.min(this.organicMatter, 0.5);
         this.organicMatter -= converted;
         this.nutrients += converted;
     }
@@ -88,13 +88,17 @@ export class Cube {
         // Water naturally spreads to neighboring soil
         if (this.isSoil() && this.moisture < 100) {
             for (const neighbor of neighbors) {
-                if (neighbor.isWater() && Math.random() < 0.05) {
-                    this.moisture = Math.min(100, this.moisture + 5);
+                if (neighbor.isWater() && Math.random() < 0.1) {
+                    this.moisture = Math.min(100, this.moisture + 10);
                 }
             }
         }
 
         // Nutrients slowly regenerate from organic matter (handled in addOrganicMatter)
+        // Also add slow passive nutrient regeneration
+        if (this.isSoil() && this.nutrients < 100) {
+            this.nutrients = Math.min(100, this.nutrients + 0.05);
+        }
     }
 
     getColor() {

@@ -1,0 +1,25 @@
+{
+  "name": "evo",
+  "version": "0.2.0",
+  "description": "Evo - An evolutionary sandbox that grows lifeforms from 3D primitives using digital DNA",
+  "type": "module",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["evolution", "threejs", "simulation", "emergence", "artificial-life"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cannon-es": "^0.20.0",
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.12"
+  }
+}

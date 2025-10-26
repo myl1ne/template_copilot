@@ -1,96 +1,143 @@
-# [Project Name] - Current Backlog
+# Evo - Current Backlog
 
-> **Note**: This is a template file. Replace all placeholder content with actual project information.
-> 
-> This document is automatically maintained by GitHub Copilot and synced with GitHub Issues.
+> This document tracks development tasks and features for the Evo evolution simulator.
 
 ## 🔥 High Priority
 
-### In Progress
-- **[Task Name]** - [Brief description] 
-  - **Status**: In Progress
-  - **Assignee**: [GitHub username]
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **Target**: [Date or milestone]
-
-- **[Task Name]** - [Brief description]
-  - **Status**: Under Review
-  - **Assignee**: [GitHub username]
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **PR**: [#XX](link-to-pr)
-
 ### Not Started
-- **[Task Name]** - [Brief description]
+- **Performance Optimization** - Improve physics and rendering performance for larger populations
   - **Status**: Not Started
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **Dependencies**: [List any blockers]
+  - **Target**: v0.3.0
+  - **Notes**: Need to profile and optimize hot paths, implement spatial partitioning
+
+- **Predator-Prey Dynamics** - Create different creature types with different energy sources
+  - **Status**: Not Started
+  - **Target**: v0.3.0
+  - **Estimated Effort**: Large
 
 ---
 
 ## 📋 Medium Priority
 
-### In Progress
-- **[Task Name]** - [Brief description]
-  - **Status**: In Progress
-  - **Assignee**: [GitHub username]
-  - **GitHub Issue**: [#XX](link-to-issue)
-
 ### Not Started
-- **[Task Name]** - [Brief description]
+- **Enhanced Vision** - Multiple raycasts for wider field of view
   - **Status**: Not Started
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **Estimated Effort**: [Small/Medium/Large]
+  - **Target**: v0.3.0
+  - **Estimated Effort**: Medium
 
-- **[Task Name]** - [Brief description]
+- **Auditory System** - Sound emission and detection
   - **Status**: Not Started
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **Notes**: [Any additional context]
+  - **Target**: v0.3.0
+  - **Estimated Effort**: Medium
+
+- **Creature Interactions** - Direct creature-to-creature behaviors
+  - **Status**: Not Started
+  - **Target**: v0.3.0
+  - **Estimated Effort**: Large
+
+- **Save/Load State** - Ability to save and restore simulation state
+  - **Status**: Not Started
+  - **Target**: v0.3.0
+  - **Estimated Effort**: Medium
+
+- **Genome Export** - Export successful creature genomes
+  - **Status**: Not Started
+  - **Target**: v0.3.0
+  - **Estimated Effort**: Small
+
+- **Environmental Obstacles** - Add terrain features and obstacles
+  - **Status**: Not Started
+  - **Target**: v0.3.0
+  - **Estimated Effort**: Medium
 
 ---
 
 ## 📝 Low Priority
 
 ### Not Started
-- **[Task Name]** - [Brief description]
+- **Camera Follow Mode** - Camera that tracks best performing creature
   - **Status**: Not Started
-  - **GitHub Issue**: [#XX](link-to-issue)
   - **Type**: Enhancement
+  - **Estimated Effort**: Small
 
-- **[Task Name]** - [Brief description]
+- **Statistics Dashboard** - Enhanced UI with graphs and charts
   - **Status**: Not Started
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **Type**: Documentation
+  - **Type**: Enhancement
+  - **Estimated Effort**: Medium
+
+- **Creature Inspector** - UI to view individual creature details
+  - **Status**: Not Started
+  - **Type**: Enhancement
+  - **Estimated Effort**: Medium
+
+- **Sound Effects** - Audio feedback for evolution events
+  - **Status**: Not Started
+  - **Type**: Enhancement
+  - **Estimated Effort**: Small
+
+- **Multiple Environments** - Different biomes with varied challenges
+  - **Status**: Not Started
+  - **Type**: Feature
+  - **Estimated Effort**: Large
 
 ---
 
 ## 🐛 Bug Fixes
 
-### Critical
-- **[Bug Description]** - [Impact description]
-  - **Status**: [Status]
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **Severity**: Critical
-
-### Important
-- **[Bug Description]** - [Impact description]
-  - **Status**: [Status]
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **Severity**: Important
-
-### Minor
-- **[Bug Description]** - [Impact description]
-  - **Status**: [Status]
-  - **GitHub Issue**: [#XX](link-to-issue)
+### Known Issues
+- **Physics Instability** - Creatures occasionally get "stuck" in physics simulation
+  - **Status**: Not Started
   - **Severity**: Minor
+  - **Notes**: Increase solver iterations or add recovery mechanism
+
+- **Memory Leak** - Long-running simulations may accumulate memory
+  - **Status**: Not Started
+  - **Severity**: Important
+  - **Notes**: Need to ensure proper disposal of Three.js resources
 
 ---
 
 ## ✅ Recently Completed
 
-- **[Completed Task]** - [Brief description] ✅
-  - **Completed**: [Date]
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **PR**: [#XX](link-to-pr)
+- **Food/Energy System** - 30 auto-respawning food pellets for creature survival ✅
+  - **Completed**: 2025-10-24
+  - **Version**: v0.2.0
+
+- **Vision Sensors** - Creatures detect and navigate toward nearest food ✅
+  - **Completed**: 2025-10-24
+  - **Version**: v0.2.0
+
+- **Articulated Body Joints** - Physics constraints connect body segments ✅
+  - **Completed**: 2025-10-24
+  - **Version**: v0.2.0
+
+- **Enhanced Fitness Function** - Food collection as primary fitness driver ✅
+  - **Completed**: 2025-10-24
+  - **Version**: v0.2.0
+
+- **Core Simulation Engine** - Initial implementation with all major systems ✅
+  - **Completed**: 2025-10-24
+  - **Version**: v0.1.0
+
+- **Digital DNA System** - Genome encoding with mutation and crossover ✅
+  - **Completed**: 2025-10-24
+  - **Version**: v0.1.0
+  
+- **Neural Network Brains** - Simple feedforward networks for creature control ✅
+  - **Completed**: 2025-10-24
+  - **Version**: v0.1.0
+
+- **Physics Integration** - Cannon-es physics for realistic movement ✅
+  - **Completed**: 2025-10-24
+  - **Version**: v0.1.0
+
+- **Evolution System** - Natural selection with fitness-based breeding ✅
+  - **Completed**: 2025-10-24
+  - **Version**: v0.1.0
+
+- **3D Visualization** - Three.js rendering with camera controls ✅
+  - **Completed**: 2025-10-24
+  - **Version**: v0.1.0
 
 ---
 
@@ -98,16 +145,17 @@
 
 | Priority | Not Started | In Progress | Under Review | Completed |
 |----------|-------------|-------------|--------------|-----------|
-| High     | [count]     | [count]     | [count]      | [count]   |
-| Medium   | [count]     | [count]     | [count]      | [count]   |
-| Low      | [count]     | [count]     | [count]      | [count]   |
-| **Total**| **[count]** | **[count]** | **[count]**  | **[count]**|
+| High     | 2           | 0           | 0            | 10        |
+| Medium   | 6           | 0           | 0            | 0         |
+| Low      | 5           | 0           | 0            | 0         |
+| Bugs     | 2           | 0           | 0            | 0         |
+| **Total**| **15**      | **0**       | **0**        | **10**    |
 
 ---
 
 ## 🏷️ Issue Labels Guide
 
-When creating new GitHub issues, use these labels to automatically sync with this backlog:
+When creating new GitHub issues, use these labels for organization:
 
 - `priority: high` - High priority items
 - `priority: medium` - Medium priority items  
@@ -116,10 +164,10 @@ When creating new GitHub issues, use these labels to automatically sync with thi
 - `type: feature` - New features
 - `type: enhancement` - Improvements to existing features
 - `type: documentation` - Documentation updates
+- `milestone: v0.2.0` - Target for next release
 
 ---
 
-*Last updated: [Auto-updated timestamp]*
-*Next sync: [Next scheduled sync time]*
+*Last updated: 2025-10-24*
 
-*This backlog is automatically maintained based on GitHub Issues. Manual edits may be overwritten.*
+*This backlog tracks development priorities. Items may shift based on community feedback and technical constraints.*

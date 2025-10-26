@@ -5,7 +5,10 @@ const state = {
     selectedMaterial: 'water',
     heldMaterial: { type: null, amount: 0 },
     timeSpeed: 1.0,
-    isPaused: false
+    isPaused: false,
+    isGathering: false,
+    isReleasing: false,
+    currentIntersection: null
 };
 
 // Scene setup
@@ -54,6 +57,30 @@ planet.castShadow = true;
 planet.receiveShadow = true;
 scene.add(planet);
 
+// Create atmosphere/clouds layer
+const atmosphereGeometry = new THREE.SphereGeometry(planetRadius * 1.15, 32, 32);
+const atmosphereMaterial = new THREE.MeshPhongMaterial({
+    color: 0xadd8e6,
+    transparent: true,
+    opacity: 0.15,
+    side: THREE.DoubleSide,
+    depthWrite: false
+});
+const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+scene.add(atmosphere);
+
+// Create cloud layer with better visibility
+const cloudGeometry = new THREE.SphereGeometry(planetRadius * 1.08, 32, 32);
+const cloudMaterial = new THREE.MeshPhongMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.3,
+    side: THREE.DoubleSide,
+    depthWrite: false
+});
+const clouds = new THREE.Mesh(cloudGeometry, cloudMaterial);
+scene.add(clouds);
+
 // Vertex height data for terrain deformation
 const positionAttribute = planetGeometry.getAttribute('position');
 const vertexHeights = new Float32Array(positionAttribute.count);
@@ -85,7 +112,7 @@ for (let i = 0; i < 3; i++) {
     waterSources.push({
         theta,
         phi,
-        rate: 0.5,
+        rate: 2.0, // Increased for better visibility
         active: true
     });
 }
@@ -118,16 +145,40 @@ renderer.domElement.addEventListener('mousedown', (event) => {
     if (event.button === 0 || event.button === 2) {
         isDragging = false;
         previousMousePosition = { x: event.clientX, y: event.clientY };
+        
+        // Start gathering/releasing
+        if (event.button === 0) {
+            state.isGathering = true;
+        } else if (event.button === 2) {
+            state.isReleasing = true;
+        }
     }
 });
 
 renderer.domElement.addEventListener('mousemove', (event) => {
+    // Update current intersection for continuous gather/release
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObject(planet);
+    
+    if (intersects.length > 0) {
+        state.currentIntersection = intersects[0].point;
+    } else {
+        state.currentIntersection = null;
+    }
+    
     if (event.buttons === 1 || event.buttons === 2) {
         const deltaX = event.clientX - previousMousePosition.x;
         const deltaY = event.clientY - previousMousePosition.y;
         
         if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
             isDragging = true;
+            
+            // Stop gathering/releasing when dragging
+            state.isGathering = false;
+            state.isReleasing = false;
             
             // Rotate planet
             planet.rotation.y += deltaX * 0.01;
@@ -142,9 +193,8 @@ renderer.domElement.addEventListener('mousemove', (event) => {
 });
 
 renderer.domElement.addEventListener('mouseup', (event) => {
-    if (!isDragging) {
-        handleTerrainClick(event);
-    }
+    state.isGathering = false;
+    state.isReleasing = false;
     isDragging = false;
 });
 
@@ -160,32 +210,10 @@ renderer.domElement.addEventListener('wheel', (event) => {
     camera.position.set(0, 0, cameraDistance);
 });
 
-// Handle terrain interaction
-function handleTerrainClick(event) {
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObject(planet);
-    
-    if (intersects.length > 0) {
-        const point = intersects[0].point;
-        const faceIndex = intersects[0].faceIndex;
-        
-        if (event.button === 0) {
-            // Left click - gather material
-            gatherMaterial(point, faceIndex);
-        } else if (event.button === 2) {
-            // Right click - release material
-            releaseMaterial(point, faceIndex);
-        }
-    }
-}
-
-// Gather material from terrain
-function gatherMaterial(point, faceIndex) {
+// Gather material from terrain (modified for continuous operation)
+function gatherMaterial(point) {
     const radius = 0.3;
-    const amount = 5;
+    const amount = 0.5; // Reduced for continuous gather
     
     // Find nearby vertices
     for (let i = 0; i < positionAttribute.count; i++) {
@@ -228,12 +256,12 @@ function gatherMaterial(point, faceIndex) {
     updateUI();
 }
 
-// Release material onto terrain
-function releaseMaterial(point, faceIndex) {
+// Release material onto terrain (modified for continuous operation)
+function releaseMaterial(point) {
     if (state.heldMaterial.amount <= 0) return;
     
     const radius = 0.3;
-    const amount = Math.min(state.heldMaterial.amount, 5);
+    const amount = Math.min(state.heldMaterial.amount, 0.5); // Reduced for continuous release
     
     // Find nearby vertices
     for (let i = 0; i < positionAttribute.count; i++) {
@@ -297,11 +325,11 @@ function simulateMaterials(deltaTime) {
     
     const dt = deltaTime * state.timeSpeed;
     
-    // Water flow simulation (simple gravity-based)
+    // Water flow simulation (improved for better pooling)
     const waterFlow = new Float32Array(positionAttribute.count).fill(0);
     
     for (let i = 0; i < positionAttribute.count; i++) {
-        if (vertexWater[i] <= 0) continue;
+        if (vertexWater[i] <= 0.1) continue;
         
         const ix = positionAttribute.getX(i);
         const iy = positionAttribute.getY(i);
@@ -325,12 +353,16 @@ function simulateMaterials(deltaTime) {
             
             // Only consider nearby vertices
             if (dist < 0.2) {
-                const heightDiff = iHeight + vertexWater[i] * 0.001 - (jHeight + vertexWater[j] * 0.001);
+                // Improved height calculation including water depth
+                const iWaterHeight = iHeight + vertexWater[i] * 0.002;
+                const jWaterHeight = jHeight + vertexWater[j] * 0.002;
+                const heightDiff = iWaterHeight - jWaterHeight;
                 
-                if (heightDiff > 0) {
-                    const flow = Math.min(vertexWater[i] * 0.3 * dt, heightDiff * 10);
-                    waterFlow[i] -= flow;
-                    waterFlow[j] += flow;
+                if (heightDiff > 0.001) {
+                    // Increased flow rate for more visible water movement
+                    const flowRate = Math.min(vertexWater[i] * 0.5 * dt, heightDiff * 15);
+                    waterFlow[i] -= flowRate;
+                    waterFlow[j] += flowRate;
                 }
             }
         }
@@ -429,22 +461,34 @@ function updateMaterialColors() {
     for (let i = 0; i < positionAttribute.count; i++) {
         let r = 0.545, g = 0.451, b = 0.333; // Default soil color
         
-        if (vertexWater[i] > 5) {
-            // Water
-            r = 0.1;
-            g = 0.3 + Math.min(vertexWater[i] * 0.01, 0.4);
-            b = 0.8;
+        // Improved water rendering with better visibility
+        if (vertexWater[i] > 1) {
+            // Water - more vibrant blue with depth indication
+            const depth = Math.min(vertexWater[i] / 50, 1.0);
+            r = 0.05 + (1 - depth) * 0.15;
+            g = 0.4 + depth * 0.3;
+            b = 0.7 + depth * 0.25;
+            
+            // Add slight green tint for shallow water
+            if (vertexWater[i] < 10) {
+                g += 0.1;
+            }
+        } else if (vertexWater[i] > 0.1) {
+            // Wet soil - darker, more saturated
+            r = 0.35;
+            g = 0.30;
+            b = 0.25;
         } else if (vertexMaterials[i] === 'lava') {
             // Lava - color based on temperature
             const temp = vertexTemperatures[i];
             r = 1.0;
             g = Math.max(0, (temp - 600) / 600);
-            b = 0.0;
+            b = Math.max(0, (temp - 900) / 300) * 0.2;
         } else if (vertexMaterials[i] === 'rock') {
-            // Cooled lava
-            r = 0.2;
-            g = 0.2;
-            b = 0.2;
+            // Cooled lava - dark volcanic rock
+            r = 0.15;
+            g = 0.15;
+            b = 0.15;
         }
         
         colors[i * 3] = r;
@@ -507,6 +551,21 @@ function animate(currentTime) {
     const deltaTime = (currentTime - lastTime) * 0.001;
     lastTime = currentTime;
     
+    // Rotate clouds slowly for atmosphere effect
+    clouds.rotation.y += 0.0002;
+    atmosphere.rotation.y -= 0.0001;
+    
+    // Handle continuous gather/release
+    if (state.currentIntersection) {
+        if (state.isGathering && !isDragging) {
+            gatherMaterial(state.currentIntersection);
+            updateUI();
+        } else if (state.isReleasing && !isDragging) {
+            releaseMaterial(state.currentIntersection);
+            updateUI();
+        }
+    }
+    
     // Simulate materials only when not paused
     if (!state.isPaused && deltaTime < 0.1) { // Avoid huge jumps
         simulateMaterials(deltaTime);
@@ -517,7 +576,7 @@ function animate(currentTime) {
     if (needsUpdate) {
         updateTerrainGeometry();
         updateMaterialColors();
-        needsUpdate = state.timeSpeed > 0; // Keep updating if simulation is running
+        needsUpdate = state.timeSpeed > 0 || state.isGathering || state.isReleasing; // Keep updating if simulation is running or user is interacting
     }
     
     // Render

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 // Game state
 const state = {
     selectedMaterial: 'water',
-    heldMaterial: { type: null, amount: 0 },
+    heldMaterial: { type: 'soil', amount: 500 }, // Start with some soil to build with
     timeSpeed: 1.0,
     isPaused: false,
     isGathering: false,
@@ -258,7 +258,20 @@ function gatherMaterial(point) {
 
 // Release material onto terrain (modified for continuous operation)
 function releaseMaterial(point) {
-    if (state.heldMaterial.amount <= 0) return;
+    // Allow placing selected material type, auto-switching if needed
+    if (state.heldMaterial.type !== state.selectedMaterial) {
+        // Switch to placing the selected material, give some free material if needed
+        if (state.heldMaterial.amount < 10) {
+            state.heldMaterial = { type: state.selectedMaterial, amount: 500 };
+        } else {
+            state.heldMaterial.type = state.selectedMaterial;
+        }
+    }
+    
+    if (state.heldMaterial.amount <= 0) {
+        // Give more material to place
+        state.heldMaterial.amount = 500;
+    }
     
     const radius = 0.3;
     const amount = Math.min(state.heldMaterial.amount, 0.5); // Reduced for continuous release

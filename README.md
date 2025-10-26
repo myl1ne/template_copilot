@@ -25,13 +25,16 @@ An evolutionary sandbox that grows lifeforms from 3D primitives using digital DN
 
 - **Digital DNA System** - Creatures are defined by genetic code that determines their structure
 - **Food & Energy Mechanics** - 30 auto-respawning food sources; creatures must eat to survive
-- **Vision Sensors** - Creatures can detect and navigate toward food sources
+- **Predator-Prey Ecosystem** - Herbivores (green) eat plants, carnivores (red) hunt prey
+- **Pack Behavior** - Cooperative herbivores form packs and share food
+- **Enhanced Multi-Directional Vision** - Creatures detect food in center, left, and right peripherals
 - **Articulated Bodies** - Body segments connected with physics constraints for realistic movement
 - **3D Primitive Bodies** - Procedurally generated bodies from boxes, spheres, and cylinders
-- **Neural Network Control** - Each creature has a brain that learns to control its body
+- **Neural Network Control** - Each creature has a brain with 22 inputs that learns to control its body
 - **Physics Simulation** - Realistic physics using cannon-es
-- **Natural Selection** - Creatures compete for fitness, best foragers breed
-- **Emergent Behavior** - Complex foraging strategies emerge from simple rules
+- **Natural Selection** - Creatures compete for fitness, best foragers and hunters breed
+- **Environmental Events** - Dynamic challenges: abundance, scarcity, drought, food migration
+- **Emergent Behavior** - Complex pack coordination and hunting strategies emerge from simple rules
 - **Real-time Evolution** - Watch generations evolve before your eyes
 
 ## 📚 Documentation
@@ -45,23 +48,39 @@ An evolutionary sandbox that grows lifeforms from 3D primitives using digital DN
 ### 1. **Genesis (Primal Soup)**
    - Simulation starts with random creatures spawned in a "primal soup"
    - Each creature has unique DNA defining its structure and traits
+   - Creatures are either herbivores (green) or carnivores (red)
 
 ### 2. **Life Cycle**
-   - Creatures use neural networks with 9 sensory inputs to perceive their environment
-   - Vision sensors detect nearest food source direction
-   - They consume energy as they move, think, and metabolize
-   - Must find and collect green food pellets to survive
-   - Fitness is measured by food collected, survival time, and movement efficiency
+   - Creatures use neural networks with 22 sensory inputs to perceive their environment
+   - Multi-directional vision detects food in center, left, and right peripherals
+   - Herbivores consume energy finding and eating plants
+   - Carnivores hunt and eat herbivores for substantial energy
+   - Must find water to maintain hydration
+   - Fitness is measured by food collected, kills, survival time, and movement efficiency
 
-### 3. **Natural Selection**
-   - Each generation lasts 30 seconds
-   - Top 20% of performers (best foragers) are selected for breeding
-   - New generation is created through crossover and mutation
+### 3. **Social Dynamics**
+   - Herbivores form cooperative packs for better survival
+   - Pack members share food with nearby allies
+   - Carnivores hunt alone and compete for prey
+   - Creatures can mate with compatible partners
 
-### 4. **Evolution**
-   - Successful foraging strategies are passed to offspring
-   - Random mutations introduce variation in body structure and neural networks
-   - Over time, creatures evolve better vision-guided navigation and food collection
+### 4. **Environmental Events**
+   - Periodic challenges test the ecosystem:
+     - **Abundance**: Extra food appears
+     - **Scarcity**: Food becomes scarce
+     - **Drought**: Environmental stress
+     - **Migration**: Food relocates
+   - Creatures must adapt to survive
+
+### 5. **Natural Selection**
+   - Continuous evolution - population maintained automatically
+   - Fitness-based selection for breeding
+   - New generation created through crossover and mutation
+
+### 6. **Evolution**
+   - Successful strategies pass to offspring
+   - Mutations introduce variation
+   - Over time, creatures evolve better hunting, foraging, and pack coordination
 
 ## 🎨 Inspired By
 
@@ -102,5 +121,5 @@ src/
 
 MIT License - Feel free to use and modify!
 
-**Version**: 0.1.0  
-**Last Updated**: 2025-10-24
+**Version**: 0.3.0  
+**Last Updated**: 2025-10-26

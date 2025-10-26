@@ -40,9 +40,25 @@ export class LimbedCreature {
         this.nearbyCreatureCount = 0;
         this.canMate = false;
         
+        // **PACK BEHAVIOR** - Cooperative creatures form packs
+        this.pack = null; // Reference to pack if part of one
+        this.packLeader = false; // Is this creature the pack leader?
+        this.packMates = []; // Other creatures in the pack
+        this.lastFoodShareTime = 0; // When pack last shared food
+        
+        // **DIET TYPE** - Herbivore vs Carnivore (based on aggression)
+        // Low aggression (<0.4) = Herbivore (green), High aggression (>0.6) = Carnivore (red)
+        this.dietType = this.genome.genes.aggression > 0.6 ? 'carnivore' : 'herbivore';
+        this.isHerbivore = this.dietType === 'herbivore';
+        this.isCarnivore = this.dietType === 'carnivore';
+        
         // Enhanced neural network with more inputs
-        const inputSize = 16;
-        const hiddenSize = this.genome.genes.neuralLayers[0] || 4;
+        // NEW: Enhanced vision with peripheral sensors (3 directions: center, left 30°, right 30°)
+        // Inputs: velocity(3), energy(1), hydration(1), 
+        //         center food(3), left food(3), right food(3), 
+        //         water(3), creature(3), nearby count(1), can mate(1)
+        const inputSize = 22; // Expanded from 16 for multi-directional vision
+        const hiddenSize = this.genome.genes.neuralLayers[0] || 6;
         const outputSize = 5; // force x, y, z, signal intensity, action (attack/mate)
         
         // **INHERIT NEURAL WEIGHTS if available**
@@ -389,8 +405,17 @@ export class LimbedCreature {
         const velocity = this.mainBody.velocity;
         const position = this.mainBody.position;
         
-        // Vision: detect nearest food
-        let foodDirX = 0, foodDirY = 0, foodDirZ = 0;
+        // **ENHANCED VISION**: Multi-directional food detection (center, left 30°, right 30°)
+        // Get current heading from velocity
+        const headingAngle = Math.atan2(velocity.z, velocity.x) || 0;
+        const leftAngle = headingAngle + Math.PI / 6; // 30° left
+        const rightAngle = headingAngle - Math.PI / 6; // 30° right
+        
+        // Center vision: detect nearest food
+        let foodCenterX = 0, foodCenterY = 0, foodCenterZ = 0;
+        let foodLeftX = 0, foodLeftY = 0, foodLeftZ = 0;
+        let foodRightX = 0, foodRightY = 0, foodRightZ = 0;
+        
         if (foodManager) {
             const nearestFood = foodManager.getNearestFoodPosition(position);
             if (nearestFood) {
@@ -400,13 +425,44 @@ export class LimbedCreature {
                 const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
                 
                 if (distance > 0) {
-                    foodDirX = dx / distance;
-                    foodDirY = dy / distance;
-                    foodDirZ = dz / distance;
+                    foodCenterX = dx / distance;
+                    foodCenterY = dy / distance;
+                    foodCenterZ = dz / distance;
                 }
                 
                 this.nearestFoodDirection.set(dx, dy, dz);
             }
+            
+            // Peripheral vision: check left and right sectors
+            const allFood = foodManager.getAllFoodPositions();
+            let leftMinDist = Infinity, rightMinDist = Infinity;
+            
+            allFood.forEach(food => {
+                const dx = food.x - position.x;
+                const dz = food.z - position.z;
+                const dy = food.y - position.y;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+                
+                if (distance > 0) {
+                    const foodAngle = Math.atan2(dz, dx);
+                    const angleDiff = this.normalizeAngle(foodAngle - headingAngle);
+                    
+                    // Left peripheral (20° to 60° left)
+                    if (angleDiff > Math.PI / 9 && angleDiff < Math.PI / 3 && distance < leftMinDist) {
+                        leftMinDist = distance;
+                        foodLeftX = dx / distance;
+                        foodLeftY = dy / distance;
+                        foodLeftZ = dz / distance;
+                    }
+                    // Right peripheral (-60° to -20° right)
+                    else if (angleDiff < -Math.PI / 9 && angleDiff > -Math.PI / 3 && distance < rightMinDist) {
+                        rightMinDist = distance;
+                        foodRightX = dx / distance;
+                        foodRightY = dy / distance;
+                        foodRightZ = dz / distance;
+                    }
+                }
+            });
         }
         
         // Vision: detect nearest water
@@ -460,16 +516,16 @@ export class LimbedCreature {
         // Check mating readiness
         this.canMate = this.age > 5 && this.energy > 60 && this.hydration > 60 && this.matingCooldown <= 0;
         
-        // Return sensor inputs
+        // Return enhanced sensor inputs (22 total)
         return [
             velocity.x / 10,
             velocity.y / 10,
             velocity.z / 10,
             this.energy / 100,
             this.hydration / 100,
-            foodDirX,
-            foodDirY,
-            foodDirZ,
+            foodCenterX, foodCenterY, foodCenterZ,  // Center vision
+            foodLeftX, foodLeftY, foodLeftZ,        // Left peripheral
+            foodRightX, foodRightY, foodRightZ,     // Right peripheral
             waterDirX,
             waterDirY,
             waterDirZ,
@@ -479,6 +535,13 @@ export class LimbedCreature {
             nearbyCount / 10,
             this.canMate ? 1 : 0
         ];
+    }
+    
+    normalizeAngle(angle) {
+        // Normalize angle to [-π, π]
+        while (angle > Math.PI) angle -= 2 * Math.PI;
+        while (angle < -Math.PI) angle += 2 * Math.PI;
+        return angle;
     }
 
     think() {
@@ -604,8 +667,14 @@ export class LimbedCreature {
     attack(target) {
         if (!this.alive || !target.alive) return false;
         
+        // **PREDATOR-PREY DYNAMICS**
+        // Carnivores can hunt herbivores for food
+        // Herbivores can fight each other (rare)
+        const isPredatorPrey = this.isCarnivore && target.isHerbivore;
+        
         const intensity = Math.random();
-        const damage = intensity * this.genome.genes.aggression * 10;
+        const baseDamage = intensity * this.genome.genes.aggression * 10;
+        const damage = isPredatorPrey ? baseDamage * 1.5 : baseDamage; // 50% bonus for predation
         
         // Visual feedback - 500ms
         this.isFighting = true;
@@ -615,15 +684,22 @@ export class LimbedCreature {
         
         // Apply damage
         target.energy -= damage;
-        this.energy -= damage * 0.5; // Attacker loses some energy
+        this.energy -= damage * 0.3; // Attacker loses some energy (reduced for predators)
         
         // If target dies, gain energy
         if (target.energy <= 0 && target.alive) {
             target.alive = false;
-            this.energy = Math.min(100, this.energy + 20);
+            
+            // **PREDATION ENERGY GAIN** - Carnivores gain substantial energy from kills
+            const energyGain = isPredatorPrey ? 40 : 20; // Double energy from successful hunt
+            this.energy = Math.min(this.maxEnergy, this.energy + energyGain);
+            this.hydration = Math.min(100, this.hydration + 10); // Also gain some hydration
+            
             this.kills++;
-            this.fitness += 50; // Reward for successful kill
-            console.log(`⚔️ Creature #${this.id || '?'} killed Creature #${target.id || '?'} at age ${this.age.toFixed(1)}s`);
+            this.fitness += isPredatorPrey ? 100 : 50; // Higher reward for successful predation
+            
+            const killType = isPredatorPrey ? '🦁 PREDATION' : '⚔️';
+            console.log(`${killType} Creature #${this.id || '?'} killed Creature #${target.id || '?'} at age ${this.age.toFixed(1)}s`);
         }
         
         return true;
@@ -761,6 +837,9 @@ export class LimbedCreature {
         // Hydration fitness bonus
         this.fitness += (this.hydration / 100) * deltaTime;
         
+        // **PACK BEHAVIOR UPDATE** - Herbivores form packs
+        this.updatePackBehavior(otherCreatures);
+        
         // Sync visual meshes with physics bodies
         this.syncMeshes();
         
@@ -802,5 +881,106 @@ export class LimbedCreature {
             mesh.geometry.dispose();
             mesh.material.dispose();
         });
+    }
+    
+    // **PACK BEHAVIOR METHODS**
+    
+    joinPack(leader) {
+        // Join a pack led by another creature
+        this.pack = leader.pack || { leader: leader, members: [leader] };
+        this.packLeader = false;
+        
+        if (!this.pack.members.includes(this)) {
+            this.pack.members.push(this);
+        }
+        
+        leader.packMates = this.pack.members.filter(m => m !== leader);
+        this.packMates = this.pack.members.filter(m => m !== this);
+    }
+    
+    formPack() {
+        // Become a pack leader
+        if (!this.pack) {
+            this.pack = { leader: this, members: [this] };
+            this.packLeader = true;
+        }
+    }
+    
+    leavePack() {
+        if (this.pack) {
+            this.pack.members = this.pack.members.filter(m => m !== this);
+            if (this.packLeader && this.pack.members.length > 0) {
+                // Transfer leadership
+                this.pack.leader = this.pack.members[0];
+                this.pack.leader.packLeader = true;
+            }
+            this.pack = null;
+            this.packLeader = false;
+            this.packMates = [];
+        }
+    }
+    
+    shareFoodWithPack(energyGained) {
+        // Cooperative creatures share food with pack members
+        if (!this.pack || this.pack.members.length <= 1 || !this.isHerbivore) return;
+        
+        const now = this.age;
+        if (now - this.lastFoodShareTime < 2) return; // Share cooldown
+        
+        this.lastFoodShareTime = now;
+        const shareAmount = energyGained * 0.3; // Share 30% of food found
+        
+        this.pack.members.forEach(member => {
+            if (member !== this && member.alive) {
+                const distance = Math.sqrt(
+                    Math.pow(member.mainBody.position.x - this.mainBody.position.x, 2) +
+                    Math.pow(member.mainBody.position.z - this.mainBody.position.z, 2)
+                );
+                
+                // Only share if pack member is nearby (within 5 units)
+                if (distance < 5) {
+                    member.energy = Math.min(member.maxEnergy, member.energy + shareAmount);
+                    member.fitness += shareAmount * 0.5; // Reward for receiving shared food
+                }
+            }
+        });
+    }
+    
+    updatePackBehavior(otherCreatures) {
+        // Herbivores form packs, carnivores hunt alone
+        if (!this.isHerbivore) {
+            if (this.pack) this.leavePack();
+            return;
+        }
+        
+        // Look for nearby herbivores to form pack with
+        const nearbyHerbivores = otherCreatures.filter(other => 
+            other !== this && 
+            other.alive && 
+            other.isHerbivore &&
+            Math.sqrt(
+                Math.pow(other.mainBody.position.x - this.mainBody.position.x, 2) +
+                Math.pow(other.mainBody.position.z - this.mainBody.position.z, 2)
+            ) < 8
+        );
+        
+        if (nearbyHerbivores.length > 0 && !this.pack) {
+            // Try to join existing pack or form new one
+            const withPack = nearbyHerbivores.find(h => h.pack);
+            if (withPack) {
+                this.joinPack(withPack.pack.leader);
+            } else if (nearbyHerbivores.length >= 2) {
+                // Form new pack if enough nearby herbivores
+                this.formPack();
+                nearbyHerbivores.forEach(h => {
+                    if (!h.pack) h.joinPack(this);
+                });
+            }
+        }
+        
+        // Leave pack if alone for too long
+        if (this.pack && this.pack.members.length <= 1) {
+            this.leavePack();
+        }
     }
 }

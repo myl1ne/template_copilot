@@ -219,6 +219,10 @@ class EvoSimulator {
         this.birthsDisplay = document.getElementById('births');
         this.deathsDisplay = document.getElementById('deaths');
         this.speciesDisplay = document.getElementById('species');
+        this.herbivoresDisplay = document.getElementById('herbivores');
+        this.carnivoresDisplay = document.getElementById('carnivores');
+        this.packsDisplay = document.getElementById('packs');
+        this.eventDisplay = document.getElementById('event');
         this.selectedCreature = null;
         this.creatureListEl = document.getElementById('creatureListContent');
         this._lastCreatureCount = -1; // for simple change detection
@@ -297,6 +301,10 @@ class EvoSimulator {
         this.birthsDisplay.textContent = stats.births;
         this.deathsDisplay.textContent = stats.deaths;
         this.speciesDisplay.textContent = stats.species;
+        this.herbivoresDisplay.textContent = stats.herbivores;
+        this.carnivoresDisplay.textContent = stats.carnivores;
+        this.packsDisplay.textContent = stats.packs;
+        this.eventDisplay.textContent = stats.event;
         
         // Calculate total food collected by all creatures
         const totalFood = this.evolutionManager.creatures.reduce((sum, creature) => sum + creature.foodCollected, 0);

@@ -3,6 +3,7 @@ import { Genome } from '../dna/Genome.js';
 import { FoodManager } from '../environment/Food.js';
 import { ObstacleManager } from '../environment/Obstacles.js';
 import { Terrain } from '../environment/Terrain.js';
+import { EnvironmentalEventManager } from '../environment/EnvironmentalEvents.js';
 import { NeuralNetwork } from '../neural/NeuralNetwork.js';
 
 /**
@@ -38,6 +39,9 @@ export class EvolutionManager {
         
         // Obstacle management for environmental complexity
         this.obstacleManager = new ObstacleManager(scene, world);
+        
+        // **ENVIRONMENTAL EVENTS** - Dynamic challenges inspired by From Dust
+        this.eventManager = new EnvironmentalEventManager(scene, this.foodManager);
     }
 
     initialize() {
@@ -87,6 +91,9 @@ export class EvolutionManager {
 
     update(deltaTime) {
         this.birthCooldown = Math.max(0, this.birthCooldown - deltaTime);
+        
+        // **UPDATE ENVIRONMENTAL EVENTS**
+        this.eventManager.update(deltaTime);
         
         // Update food
         this.foodManager.update(deltaTime);
@@ -388,13 +395,21 @@ export class EvolutionManager {
     }
 
     getStats() {
+        const herbivoreCount = this.creatures.filter(c => c.alive && c.isHerbivore).length;
+        const carnivoreCount = this.creatures.filter(c => c.alive && c.isCarnivore).length;
+        const packCount = new Set(this.creatures.filter(c => c.pack).map(c => c.pack)).size;
+        
         return {
             creatures: this.creatures.length,
             bestFitness: this.bestFitness.toFixed(2),
             aliveCreatures: this.creatures.filter(c => c.alive).length,
             births: this.totalBirths,
             deaths: this.totalDeaths,
-            species: this.species.size
+            species: this.species.size,
+            herbivores: herbivoreCount,
+            carnivores: carnivoreCount,
+            packs: packCount,
+            event: this.eventManager.getCurrentEvent() || 'none'
         };
     }
 }

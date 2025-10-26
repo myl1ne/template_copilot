@@ -156,6 +156,12 @@ export class FoodManager {
                     if (energy > 0) {
                         creature.energy = Math.min(100, creature.energy + energy);
                         creature.foodCollected++;
+                        
+                        // **PACK FOOD SHARING** - Herbivores share with pack
+                        if (creature.shareFoodWithPack) {
+                            creature.shareFoodWithPack(energy);
+                        }
+                        
                         // Trigger eating visual indicator
                         if (creature.onEat) {
                             creature.onEat();
@@ -185,6 +191,13 @@ export class FoodManager {
         });
         
         return nearest;
+    }
+    
+    getAllFoodPositions() {
+        // Return all available (non-consumed) food positions for enhanced vision
+        return this.foods
+            .filter(food => !food.consumed)
+            .map(food => food.position);
     }
 
     reset() {

@@ -1,89 +1,97 @@
-# [Project Name] - Status & Long Term Roadmap
-
-> **Note**: This is a template file. Replace all placeholder content with actual project information.
+# To Dust - Status & Long Term Roadmap
 
 ## Current Status
 
 ### 🎯 Current Version
-- **Version**: [Current version number]
-- **Release Date**: [Date of current release]
-- **Status**: [Alpha/Beta/Stable/Production]
+- **Version**: 0.1.0
+- **Release Date**: 2025-10-26
+- **Status**: Alpha - Core mechanics functional
 
 ### ✅ What's Working Now
-- [Core feature 1] - Fully functional
-- [Core feature 2] - Fully functional
-- [Core feature 3] - Fully functional
-- [Infrastructure/tooling item] - Operational
+- Spherical planet rendering with Three.js
+- Camera navigation (zoom, rotation)
+- Terrain deformation (gather/release materials)
+- Three material types: Water, Soil, Lava
+- Gravity-based fluid dynamics for water
+- Temperature system with lava cooling and water evaporation
+- Time control (pause, 0.5x, 1x, 2x, 5x speed)
+- Material sources (water springs, lava vents)
+- Real-time visual feedback with vertex coloring
 
 ### 🔧 Current Focus
-- [What the team is currently working on]
-- [Any ongoing improvements or bug fixes]
-- [Performance optimizations or refactoring in progress]
+- Core mechanics are implemented and functional
+- Basic physics simulation working
+- Interactive UI with material selection and time controls
 
 ---
 
 ## Long Term Roadmap
 
-### 🚀 Next Release (v[X.Y.Z]) - [Target Date]
-**Theme**: [Brief description of the release theme]
+### 🚀 Next Release (v0.2.0) - Q1 2026
+**Theme**: Enhanced Physics and Visuals
 
 **Planned Features**:
-- [ ] [Feature 1] - [Brief description] ([GitHub Issue #XX])
-- [ ] [Feature 2] - [Brief description] ([GitHub Issue #XX])
-- [ ] [Feature 3] - [Brief description] ([GitHub Issue #XX])
+- [ ] Improved water flow algorithm with better pressure simulation
+- [ ] Enhanced lava behavior with viscosity modeling
+- [ ] Particle effects for material transitions (steam, smoke)
+- [ ] Better terrain erosion mechanics
+- [ ] Sound effects for material interactions
+- [ ] Save/load terrain states
 
 **Technical Improvements**:
-- [ ] [Technical item 1] - [Brief description]
-- [ ] [Technical item 2] - [Brief description]
+- [ ] Optimize vertex calculations for better performance
+- [ ] Implement spatial indexing for faster neighbor lookups
+- [ ] Add level of detail (LOD) system for larger planets
 
 ### 🔮 Future Releases (6-12 months)
 
-#### v[X.Y.Z] - [Tentative Date]
-- [Major feature or capability]
-- [Significant architectural changes]
-- [New integrations or platforms]
+#### v0.3.0 - Enhanced Gameplay
+- Multiple biomes with different material behaviors
+- Vegetation system that grows based on water availability
+- Advanced material sources (geysers, volcanoes)
+- Mission objectives and challenges
 
-#### v[X.Y.Z] - [Tentative Date]
-- [Advanced features]
-- [Performance enhancements]
-- [Extended platform support]
+#### v0.4.0 - Multiplayer and Sharing
+- Collaborative planet editing
+- Share saved planets with others
+- Planet gallery and community features
 
 ### 🎯 Long Term Vision (1+ years)
-- **[Vision Item 1]**: [Description of long-term goal]
-- **[Vision Item 2]**: [Description of long-term goal]
-- **[Vision Item 3]**: [Description of long-term goal]
+- **Full Ecosystem Simulation**: Complex food chains, weather patterns, and geological cycles
+- **VR Support**: Immersive planet manipulation in virtual reality
+- **Procedural Generation**: Random planet generation with realistic geological features
 
 ---
 
 ## Recently Completed
 
-### ✅ v[Previous Version] - [Release Date]
-- ✅ [Completed feature 1] - Released
-- ✅ [Completed feature 2] - Released
-- ✅ [Bug fix or improvement] - Resolved
-
-### ✅ v[Earlier Version] - [Release Date]
-- ✅ [Earlier completed feature] - Released
-- ✅ [Earlier improvement] - Completed
+### ✅ v0.1.0 - 2025-10-26
+- ✅ Initial Three.js project setup
+- ✅ Spherical planet with dynamic terrain
+- ✅ Material manipulation system (water, soil, lava)
+- ✅ Basic physics simulation
+- ✅ Temperature and pressure mechanics
+- ✅ Time control system
+- ✅ Material sources implementation
 
 ---
 
 ## Considerations & Dependencies
 
 ### External Dependencies
-- [Dependency 1]: [How it affects the roadmap]
-- [Dependency 2]: [How it affects the roadmap]
+- Three.js: Core 3D rendering engine
+- Vite: Build tool and development server
 
 ### Resource Constraints
-- [Constraint 1]: [Impact on timeline]
-- [Constraint 2]: [Impact on scope]
+- Performance optimization needed for larger planets
+- Complex fluid dynamics calculations can be computationally expensive
 
 ### Community Feedback Integration
-- [How community input influences the roadmap]
-- [Process for submitting feature requests]
+- Open to feature requests via GitHub issues
+- Community can contribute improvements and new material types
 
 ---
 
-*Last updated: [Date] | Next review: [Date]*
+*Last updated: 2025-10-26 | Next review: 2025-11-26*
 
 *This roadmap is subject to change based on priorities, resources, and community feedback.*

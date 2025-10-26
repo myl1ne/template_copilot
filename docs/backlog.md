@@ -1,96 +1,104 @@
-# [Project Name] - Current Backlog
+# To Dust - Current Backlog
 
-> **Note**: This is a template file. Replace all placeholder content with actual project information.
-> 
-> This document is automatically maintained by GitHub Copilot and synced with GitHub Issues.
+> This document tracks the current development tasks for the To Dust project.
 
 ## 🔥 High Priority
 
-### In Progress
-- **[Task Name]** - [Brief description] 
-  - **Status**: In Progress
-  - **Assignee**: [GitHub username]
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **Target**: [Date or milestone]
+### Completed
+- **Core Three.js Setup** - Initialize project with Vite and Three.js ✅
+  - **Status**: Completed
+  - **Completed**: 2025-10-26
+  
+- **Spherical Planet Rendering** - Render planet as sphere with camera controls ✅
+  - **Status**: Completed
+  - **Completed**: 2025-10-26
+  
+- **Terrain Manipulation** - Implement gather/release mechanics ✅
+  - **Status**: Completed
+  - **Completed**: 2025-10-26
 
-- **[Task Name]** - [Brief description]
-  - **Status**: Under Review
-  - **Assignee**: [GitHub username]
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **PR**: [#XX](link-to-pr)
+- **Material System** - Support water, soil, and lava materials ✅
+  - **Status**: Completed
+  - **Completed**: 2025-10-26
 
-### Not Started
-- **[Task Name]** - [Brief description]
-  - **Status**: Not Started
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **Dependencies**: [List any blockers]
+- **Physics Simulation** - Implement gravity-based fluid dynamics ✅
+  - **Status**: Completed
+  - **Completed**: 2025-10-26
+
+- **Temperature System** - Add temperature and material interactions ✅
+  - **Status**: Completed
+  - **Completed**: 2025-10-26
+
+- **Time Control** - Implement pause and time acceleration ✅
+  - **Status**: Completed
+  - **Completed**: 2025-10-26
+
+- **Material Sources** - Add water springs and lava vents ✅
+  - **Status**: Completed
+  - **Completed**: 2025-10-26
 
 ---
 
 ## 📋 Medium Priority
 
-### In Progress
-- **[Task Name]** - [Brief description]
-  - **Status**: In Progress
-  - **Assignee**: [GitHub username]
-  - **GitHub Issue**: [#XX](link-to-issue)
-
 ### Not Started
-- **[Task Name]** - [Brief description]
+- **Performance Optimization** - Optimize vertex calculations for larger planets
   - **Status**: Not Started
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **Estimated Effort**: [Small/Medium/Large]
+  - **Estimated Effort**: Large
+  - **Notes**: Current implementation works well for 64x64 sphere, but needs optimization for higher detail
 
-- **[Task Name]** - [Brief description]
+- **Enhanced Water Physics** - Improve water flow algorithm with pressure simulation
   - **Status**: Not Started
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **Notes**: [Any additional context]
+  - **Estimated Effort**: Medium
+  - **Notes**: Current flow is basic; could benefit from proper pressure-based simulation
+
+- **Visual Effects** - Add particle effects for steam, smoke, and material transitions
+  - **Status**: Not Started
+  - **Estimated Effort**: Medium
+
+- **Sound Effects** - Add audio feedback for material interactions
+  - **Status**: Not Started
+  - **Estimated Effort**: Small
 
 ---
 
 ## 📝 Low Priority
 
 ### Not Started
-- **[Task Name]** - [Brief description]
+- **Save/Load System** - Ability to save and load terrain states
   - **Status**: Not Started
-  - **GitHub Issue**: [#XX](link-to-issue)
+  - **Estimated Effort**: Medium
   - **Type**: Enhancement
 
-- **[Task Name]** - [Brief description]
+- **Multiple Biomes** - Different terrain types with unique behaviors
   - **Status**: Not Started
-  - **GitHub Issue**: [#XX](link-to-issue)
+  - **Estimated Effort**: Large
+  - **Type**: Feature
+
+- **Vegetation System** - Plants that grow based on water and temperature
+  - **Status**: Not Started
+  - **Estimated Effort**: Large
+  - **Type**: Feature
+
+- **Documentation** - Add inline code documentation and developer guide
+  - **Status**: Not Started
+  - **Estimated Effort**: Small
   - **Type**: Documentation
 
 ---
 
 ## 🐛 Bug Fixes
 
-### Critical
-- **[Bug Description]** - [Impact description]
-  - **Status**: [Status]
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **Severity**: Critical
-
-### Important
-- **[Bug Description]** - [Impact description]
-  - **Status**: [Status]
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **Severity**: Important
-
-### Minor
-- **[Bug Description]** - [Impact description]
-  - **Status**: [Status]
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **Severity**: Minor
+### None Currently
+No bugs reported at this time.
 
 ---
 
 ## ✅ Recently Completed
 
-- **[Completed Task]** - [Brief description] ✅
-  - **Completed**: [Date]
-  - **GitHub Issue**: [#XX](link-to-issue)
-  - **PR**: [#XX](link-to-pr)
+- **Complete Core Implementation** - All fundamental mechanics implemented ✅
+  - **Completed**: 2025-10-26
+  - **Description**: Spherical planet, terrain manipulation, materials, physics, temperature, time control, and sources all working
 
 ---
 
@@ -98,16 +106,16 @@
 
 | Priority | Not Started | In Progress | Under Review | Completed |
 |----------|-------------|-------------|--------------|-----------|
-| High     | [count]     | [count]     | [count]      | [count]   |
-| Medium   | [count]     | [count]     | [count]      | [count]   |
-| Low      | [count]     | [count]     | [count]      | [count]   |
-| **Total**| **[count]** | **[count]** | **[count]**  | **[count]**|
+| High     | 0           | 0           | 0            | 8         |
+| Medium   | 4           | 0           | 0            | 0         |
+| Low      | 4           | 0           | 0            | 0         |
+| **Total**| **8**       | **0**       | **0**        | **8**     |
 
 ---
 
 ## 🏷️ Issue Labels Guide
 
-When creating new GitHub issues, use these labels to automatically sync with this backlog:
+When creating new GitHub issues, use these labels:
 
 - `priority: high` - High priority items
 - `priority: medium` - Medium priority items  
@@ -119,7 +127,6 @@ When creating new GitHub issues, use these labels to automatically sync with thi
 
 ---
 
-*Last updated: [Auto-updated timestamp]*
-*Next sync: [Next scheduled sync time]*
+*Last updated: 2025-10-26*
 
-*This backlog is automatically maintained based on GitHub Issues. Manual edits may be overwritten.*
+*This backlog reflects the current state of the To Dust project development.*

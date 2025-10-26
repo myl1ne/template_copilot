@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAC Framework Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 100vh;
+        }
+
+        .viewport {
+            background: #0a0a0a;
+            position: relative;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .info-panel {
+            background: #202020;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        h1 {
+            color: #4a9eff;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+
+        h2 {
+            color: #4a9eff;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #b0b0b0;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #d4d4d4;
+            overflow-x: auto;
+            margin: 20px 0;
+            white-space: pre;
+        }
+
+        .highlight {
+            color: #4a9eff;
+            font-weight: bold;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px 10px 10px 0;
+            background: #4a9eff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background: #357abd;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .feature-list li:before {
+            content: "✓ ";
+            color: #4a9eff;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .stats {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .stats strong {
+            color: #4a9eff;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(32, 32, 32, 0.9);
+            padding: 15px;
+            border-radius: 4px;
+            color: #e0e0e0;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #404040;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="viewport">
+            <canvas id="canvas"></canvas>
+            <div class="controls">
+                <strong>Controls:</strong><br>
+                • Drag to rotate<br>
+                • Scroll to zoom<br>
+                • <span id="currentMesh">Loading...</span>
+            </div>
+        </div>
+
+        <div class="info-panel">
+            <h1>🎨 MAC Framework</h1>
+            <p class="highlight">MeshAsCode - A recursive framework for creating complex 3D meshes using only code</p>
+
+            <h2>Key Features</h2>
+            <ul class="feature-list">
+                <li><strong>Code as Data:</strong> Mesh definitions stored as editable code strings</li>
+                <li><strong>Recursive Composition:</strong> MACs can contain other MACs</li>
+                <li><strong>Save/Load/Edit:</strong> Full persistence with JSON and JavaScript export</li>
+                <li><strong>Visual Editor:</strong> Interactive UI for creating and editing MACs</li>
+                <li><strong>Template Library:</strong> Pre-built components ready to use</li>
+                <li><strong>Transform System:</strong> Easy positioning, rotation, and scaling</li>
+            </ul>
+
+            <div class="stats">
+                <strong>Available Templates:</strong> <span id="templateCount">Loading...</span><br>
+                <strong>Primitive Types:</strong> 9 (box, sphere, cylinder, cone, capsule, torus, plane, ring, group)<br>
+                <strong>Current Display:</strong> <span id="displayInfo">Loading...</span>
+            </div>
+
+            <h2>Quick Example</h2>
+            <div class="code-block">const tree = new MAC('group')
+    .add('cylinder', { 
+        radiusTop: 0.2, 
+        radiusBottom: 0.3, 
+        height: 2,
+        material: { color: 0x4a2511 }
+    })
+    .position(0, 1, 0)
+    .add('cone', {
+        radius: 1, 
+        height: 2,
+        material: { color: 0x2d5016 }
+    })
+    .position(0, 3, 0);
+
+const mesh = tree.build();
+scene.add(mesh);</div>
+
+            <h2>Try It Out</h2>
+            <a href="mac-editor.html" class="btn">Open MAC Editor</a>
+            <button class="btn" id="nextBtn">Next Example →</button>
+
+            <h2>Documentation</h2>
+            <p>For complete documentation, see <a href="#" style="color: #4a9eff;">docs/MAC_FRAMEWORK.md</a></p>
+
+            <h2>Use Cases</h2>
+            <p>
+                • <strong>Procedural Generation:</strong> Create variations programmatically<br>
+                • <strong>Asset Libraries:</strong> Build reusable component collections<br>
+                • <strong>Level Design:</strong> Compose complex scenes from simple parts<br>
+                • <strong>Rapid Prototyping:</strong> Quickly iterate on 3D designs<br>
+                • <strong>Educational:</strong> Learn 3D modeling through code
+            </p>
+
+            <h2>Integration</h2>
+            <p>The MAC framework integrates seamlessly with existing Three.js code and can be used alongside the traditional MeshLibrary system.</p>
+        </div>
+    </div>
+
+    <script type="module" src="mac-demo.js"></script>
+</body>
+</html>

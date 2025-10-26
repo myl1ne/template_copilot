@@ -1,5 +1,6 @@
 import { Life } from './Life.js';
 import { AnimalGenetics } from './AnimalGenetics.js';
+import { PlantLife } from './PlantLife.js';
 
 /**
  * AnimalLife - Base class for animal life with movement and interactions
@@ -64,11 +65,17 @@ export class AnimalLife extends Life {
         }
         
         // Hunger increases over time
+        // Hunger increases over time (capped by maxHunger)
         this.hunger = Math.min(this.maxHunger, this.hunger + deltaTime * 2);
-        
-        // Energy decreases with hunger
-        if (this.hunger > 80) {
-            this.energy -= deltaTime * 1.5;
+
+        // Energy decreases when hunger becomes critical. Use relative threshold so
+        // animals with lower maxHunger still experience starvation.
+        const hungerCriticalRatio = 0.8; // when hunger exceeds 80% of maxHunger
+        const criticalThreshold = this.maxHunger * hungerCriticalRatio;
+        if (this.hunger > criticalThreshold) {
+            // scale energy drain by how hungry the animal is (0..1)
+            const hungerRatio = Math.min(1, this.hunger / this.maxHunger);
+            this.energy -= deltaTime * 1.5 * hungerRatio;
         }
         
         // Movement
@@ -115,19 +122,37 @@ export class AnimalLife extends Life {
         }
         
         // Move towards target
+        // continuous movement (no rounding) so small speeds work smoothly
         const moveSpeed = this.speed * deltaTime;
-        const moveX = (dx / distance) * moveSpeed;
-        const moveZ = (dz / distance) * moveSpeed;
-        
-        const newX = Math.round(this.x + moveX);
-        const newZ = Math.round(this.z + moveZ);
-        
-        // Find ground level at new position
-        const newY = this.findGroundLevel(vivarium, newX, newZ);
-        
+        // protect against divide by zero
+        const nx = distance > 0 ? dx / distance : 0;
+        const nz = distance > 0 ? dz / distance : 0;
+
+        const moveX = nx * moveSpeed;
+        const moveZ = nz * moveSpeed;
+
+        const tentativeX = this.x + moveX;
+        const tentativeZ = this.z + moveZ;
+
+        // Find ground level at the rounded tile we'll occupy
+        const tileX = Math.floor(tentativeX);
+        const tileZ = Math.floor(tentativeZ);
+        const newY = this.findGroundLevel(vivarium, tileX, tileZ);
+
         if (newY !== null) {
-            this.x = newX;
-            this.z = newZ;
+            // commit continuous position, keep y aligned to ground
+            const clampedX = Math.max(0, Math.min(vivarium.sizeX - 1, tentativeX));
+            const clampedZ = Math.max(0, Math.min(vivarium.sizeZ - 1, tentativeZ));
+
+            // energy cost for movement (proportional to distance and size)
+            const actualDx = clampedX - this.x;
+            const actualDz = clampedZ - this.z;
+            const movedDist = Math.sqrt(actualDx * actualDx + actualDz * actualDz);
+            const movementEnergyCost = movedDist * (0.5 + this.size * 0.5);
+            this.energy = Math.max(0, this.energy - movementEnergyCost);
+
+            this.x = clampedX;
+            this.z = clampedZ;
             this.y = newY;
         } else {
             // Can't move there, pick new target
@@ -160,7 +185,19 @@ export class AnimalLife extends Life {
         if (this.hunger > 60) {
             const nearbyPlant = this.findNearbyPlant(vivarium);
             if (nearbyPlant) {
-                this.eatPlant(nearbyPlant, vivarium);
+                // If plant is not within immediate eating distance, move towards it
+                const dx = nearbyPlant.x - this.x;
+                const dz = nearbyPlant.z - this.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+
+                if (distance > 1.0) {
+                    // set plant as target to approach
+                    this.targetX = nearbyPlant.x;
+                    this.targetZ = nearbyPlant.z;
+                } else {
+                    // close enough to eat
+                    this.eatPlant(nearbyPlant, vivarium);
+                }
             }
         }
         
@@ -186,36 +223,57 @@ export class AnimalLife extends Life {
     }
 
     findNearbyPlant(vivarium) {
-        const searchRadius = 2;
-        
+        const searchRadius = 4; // slightly larger so animals can find plants a bit further away
+        let closest = null;
+        let closestDist = Infinity;
+
         for (const lifeform of vivarium.lifeforms) {
-            if (lifeform.type === 'plant') {
+            if (lifeform.type === 'plant' && lifeform.stage !== PlantLife.GROWTH_STAGES.DYING && lifeform.biomass > 0) {
                 const dx = lifeform.x - this.x;
                 const dz = lifeform.z - this.z;
                 const distance = Math.sqrt(dx * dx + dz * dz);
-                
-                if (distance <= searchRadius) {
-                    return lifeform;
+
+                if (distance <= searchRadius && distance < closestDist) {
+                    closest = lifeform;
+                    closestDist = distance;
                 }
             }
         }
-        
-        return null;
+
+        return closest;
     }
 
     eatPlant(plant, vivarium) {
         // Eat plant biomass
+        if (!plant || plant.isDead && plant.isDead()) return;
+
         const efficiencyGene = this.genetics.getGene('efficiencyGene');
-        const amountEaten = Math.min(plant.biomass * 0.3, 5);
-        plant.biomass -= amountEaten;
-        plant.energy -= amountEaten * 5;
-        
+        // Eat a fraction of biomass scaled by efficiency
+        const baseAmount = Math.min(plant.biomass * 0.4, 6);
+        const amountEaten = Math.max(0.1, baseAmount * efficiencyGene);
+
+        plant.biomass = Math.max(0, plant.biomass - amountEaten);
+        plant.energy = Math.max(0, (plant.energy || 0) - amountEaten * 6);
+
         // Gain energy and reduce hunger (efficiency affects this)
-        this.energy = Math.min(100, this.energy + amountEaten * 2 * efficiencyGene);
-        this.hunger = Math.max(0, this.hunger - amountEaten * 10);
-        
+        this.energy = Math.min(100, this.energy + amountEaten * 5 * efficiencyGene);
+        this.hunger = Math.max(0, this.hunger - amountEaten * 12);
+
+        // If plant is exhausted, trigger its death immediately so the cube is freed
+        if (plant.biomass <= 0 || plant.energy <= 0) {
+            try {
+                if (plant.onDeath) {
+                    plant.onDeath(vivarium);
+                }
+            } catch (e) {
+                // ignore
+            }
+            // ensure it's removed from vivarium list
+            vivarium.removeLifeform(plant);
+        }
+
         // Small chance to spread plant seeds (animal dispersal)
-        if (Math.random() < 0.1 && plant.species) {
+        if (Math.random() < 0.08 && plant.species) {
             this.spreadSeed(plant, vivarium);
         }
     }
@@ -227,7 +285,11 @@ export class AnimalLife extends Life {
         if (mate) {
             // Sexual reproduction
             this.reproduce(vivarium, mate.genetics);
-        } else if (Math.random() < 0.3) {
+            // Ensure the mate also pays energy cost and gets a cooldown
+            const mateEnergyCost = 15;
+            mate.energy = Math.max(0, mate.energy - mateEnergyCost);
+            mate.reproductionCooldown = Math.max(mate.reproductionCooldown, 60);
+        } else if (Math.random() < 0.08) {
             // Asexual reproduction (30% chance if no mate)
             this.reproduce(vivarium, null);
         }
@@ -279,9 +341,11 @@ export class AnimalLife extends Life {
             }
         }
         
-        // Reproduction costs energy
-        this.energy -= 20;
-        this.reproductionCooldown = 40;
+        // Reproduction costs energy (scale with number of offspring) and impose longer cooldown
+        const perOffspringCost = 18; // cost per child
+        const totalCost = Math.min(60, perOffspringCost * offspringCount);
+        this.energy = Math.max(0, this.energy - totalCost);
+        this.reproductionCooldown = Math.max(this.reproductionCooldown, 120); // longer cooldown
     }
 
     findNearbySpot(vivarium) {

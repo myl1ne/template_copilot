@@ -157,9 +157,9 @@ export class PlantLife extends Life {
             this.reproductionCooldown -= deltaTime;
         }
 
-        // Death handling
+        // Death handling - pass vivarium so onDeath can access getCube and vivarium APIs
         if (this.isDead()) {
-            this.onDeath(cube);
+            this.onDeath(vivarium);
         }
     }
 

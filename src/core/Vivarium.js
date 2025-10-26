@@ -70,10 +70,19 @@ export class Vivarium {
      * Get a cube at specific coordinates
      */
     getCube(x, y, z) {
-        if (x < 0 || x >= this.sizeX || y < 0 || y >= this.sizeY || z < 0 || z >= this.sizeZ) {
+        // Accept non-integer coordinates (from lifeforms) by mapping to tile indices
+        const ix = Math.floor(x);
+        const iy = Math.floor(y);
+        const iz = Math.floor(z);
+
+        if (Number.isNaN(ix) || Number.isNaN(iy) || Number.isNaN(iz)) return null;
+
+        if (ix < 0 || ix >= this.sizeX || iy < 0 || iy >= this.sizeY || iz < 0 || iz >= this.sizeZ) {
             return null;
         }
-        return this.grid[x][y][z];
+
+        // Safe access now that indices are integers and within bounds
+        return this.grid[ix][iy][iz];
     }
 
     /**

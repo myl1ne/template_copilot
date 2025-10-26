@@ -16,6 +16,10 @@ export class Vivarium {
         // Life forms in the vivarium
         this.lifeforms = [];
         this.time = 0;
+        
+        // Sunlight system
+        this.sunIntensity = 1.0; // Maximum sunlight intensity
+        this.sunAngle = Math.PI / 4; // Sun angle (45 degrees)
     }
 
     initializeGrid() {
@@ -186,18 +190,50 @@ export class Vivarium {
     }
 
     /**
+     * Calculate sunlight intensity at a given position
+     * Light decreases with depth and is affected by shadowing
+     */
+    getLightIntensity(x, y, z) {
+        // Base light intensity decreases with depth from top
+        const heightFactor = y / this.sizeY;
+        let lightIntensity = this.sunIntensity * Math.pow(heightFactor, 0.5);
+        
+        // Check for shadowing by checking if there are non-air cubes above
+        let shadowFactor = 1.0;
+        for (let checkY = y + 1; checkY < this.sizeY; checkY++) {
+            const cubeAbove = this.getCube(x, checkY, z);
+            if (cubeAbove && !cubeAbove.isAir()) {
+                // Each non-air cube above reduces light
+                shadowFactor *= 0.7;
+            }
+        }
+        
+        lightIntensity *= shadowFactor;
+        
+        return Math.max(0.1, Math.min(1.0, lightIntensity)); // Clamp between 0.1 and 1.0
+    }
+
+    /**
      * Get statistics about the vivarium
      */
     getStats() {
         let plantCount = 0;
         let totalBiomass = 0;
         let maxGeneration = 1;
+        let totalFitness = 0;
+        let fitnessCount = 0;
 
         for (const lifeform of this.lifeforms) {
             if (lifeform.type === 'plant') {
                 plantCount++;
                 totalBiomass += lifeform.biomass || 0;
                 maxGeneration = Math.max(maxGeneration, lifeform.generation || 1);
+                
+                // Track genetic fitness
+                if (lifeform.genetics) {
+                    totalFitness += lifeform.genetics.getFitness();
+                    fitnessCount++;
+                }
             }
         }
 
@@ -205,7 +241,8 @@ export class Vivarium {
             plantCount,
             totalBiomass: Math.round(totalBiomass),
             maxGeneration,
-            time: Math.round(this.time)
+            time: Math.round(this.time),
+            avgFitness: fitnessCount > 0 ? (totalFitness / fitnessCount).toFixed(2) : 0
         };
     }
 }

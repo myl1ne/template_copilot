@@ -204,6 +204,7 @@ class VivariumApp {
         document.getElementById('plant-count').textContent = stats.plantCount;
         document.getElementById('biomass').textContent = stats.totalBiomass;
         document.getElementById('generation').textContent = stats.maxGeneration;
+        document.getElementById('fitness').textContent = stats.avgFitness;
         document.getElementById('time').textContent = stats.time + 's';
     }
 

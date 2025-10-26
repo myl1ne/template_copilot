@@ -161,6 +161,10 @@ export class Vivarium {
             
             // Remove dead life forms
             if (lifeform.isDead && lifeform.isDead()) {
+                // Call death handler if it exists
+                if (lifeform.onDeath) {
+                    lifeform.onDeath(this);
+                }
                 toRemove.push(lifeform);
             }
         }
@@ -218,6 +222,7 @@ export class Vivarium {
      */
     getStats() {
         let plantCount = 0;
+        let animalCount = 0;
         let totalBiomass = 0;
         let maxGeneration = 1;
         let totalFitness = 0;
@@ -234,11 +239,14 @@ export class Vivarium {
                     totalFitness += lifeform.genetics.getFitness();
                     fitnessCount++;
                 }
+            } else if (lifeform.type === 'animal') {
+                animalCount++;
             }
         }
 
         return {
             plantCount,
+            animalCount,
             totalBiomass: Math.round(totalBiomass),
             maxGeneration,
             time: Math.round(this.time),

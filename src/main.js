@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Vivarium } from './core/Vivarium.js';
 import { PlantLife } from './life/PlantLife.js';
+import { AnimalLife } from './life/AnimalLife.js';
 
 /**
  * Main application class
@@ -16,6 +17,7 @@ class VivariumApp {
         
         this.cubeObjects = new Map(); // Map cube coords to THREE.Mesh
         this.plantObjects = new Map(); // Map plants to THREE.Mesh
+        this.animalObjects = new Map(); // Map animals to THREE.Mesh
         
         this.isPaused = false;
         this.clock = new THREE.Clock();
@@ -37,6 +39,9 @@ class VivariumApp {
 
         // Add initial plants
         this.seedInitialPlants(10);
+        
+        // Add initial animals
+        this.addInitialAnimals(3);
 
         // Start animation loop
         this.animate();
@@ -164,6 +169,29 @@ class VivariumApp {
         }
     }
 
+    addInitialAnimals(count) {
+        for (let i = 0; i < count; i++) {
+            // Find a random position on the surface
+            const x = Math.floor(Math.random() * this.vivarium.sizeX);
+            const z = Math.floor(Math.random() * this.vivarium.sizeZ);
+            
+            // Find ground level
+            for (let y = this.vivarium.sizeY - 1; y >= 0; y--) {
+                const cube = this.vivarium.getCube(x, y, z);
+                if (cube && (cube.isSoil() || cube.isWater())) {
+                    // Alternate between herbivores and decomposers
+                    const animalType = i % 2 === 0 ? 
+                        AnimalLife.ANIMAL_TYPES.HERBIVORE : 
+                        AnimalLife.ANIMAL_TYPES.DECOMPOSER;
+                    
+                    const animal = new AnimalLife(x, y + 1, z, animalType);
+                    this.vivarium.addLifeform(animal);
+                    break;
+                }
+            }
+        }
+    }
+
     updatePlants() {
         // Remove plant meshes for dead plants
         const currentPlants = new Set(this.vivarium.lifeforms.filter(lf => lf.type === 'plant'));
@@ -243,10 +271,42 @@ class VivariumApp {
         return group;
     }
 
+    updateAnimals() {
+        // Remove animal meshes for dead animals
+        const currentAnimals = new Set(this.vivarium.lifeforms.filter(lf => lf.type === 'animal'));
+        
+        for (const [animal, mesh] of this.animalObjects.entries()) {
+            if (!currentAnimals.has(animal)) {
+                this.scene.remove(mesh);
+                this.animalObjects.delete(animal);
+            }
+        }
+
+        // Update or create animal meshes
+        for (const animal of currentAnimals) {
+            if (!this.animalObjects.has(animal)) {
+                // Create new animal mesh
+                const geometry = new THREE.SphereGeometry(animal.size, 8, 8);
+                const material = new THREE.MeshLambertMaterial({ color: animal.color });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                
+                this.scene.add(mesh);
+                this.animalObjects.set(animal, mesh);
+            }
+            
+            // Update animal mesh position
+            const mesh = this.animalObjects.get(animal);
+            mesh.position.set(animal.x, animal.y, animal.z);
+        }
+    }
+
     updateUI() {
         const stats = this.vivarium.getStats();
         
         document.getElementById('plant-count').textContent = stats.plantCount;
+        document.getElementById('animal-count').textContent = stats.animalCount;
         document.getElementById('biomass').textContent = stats.totalBiomass;
         document.getElementById('generation').textContent = stats.maxGeneration;
         document.getElementById('fitness').textContent = stats.avgFitness;
@@ -264,6 +324,7 @@ class VivariumApp {
             
             // Update visual representation
             this.updatePlants();
+            this.updateAnimals();
             this.renderVivarium();
             this.updateUI();
         }

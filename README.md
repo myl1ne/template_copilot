@@ -1,81 +1,117 @@
-# [Project Name] Template
+# Vivarium - Eternal Garden Simulation
 
-> **Note**: This is a meta-template repository. Replace `[Project Name]` and all placeholder content with your actual project information.
-
-Template for kickstarting new projects with GitHub Copilot-managed documentation.
+A Three.js-based interactive 3D ecosystem simulation featuring a dynamic vivarium with plant life cycles, resource management, and natural evolution.
 
 ## 🚀 Quick Start
 
-1. **Use this template** to create a new repository
-2. **Replace placeholders** in all documentation files with your project information
-3. **Configure GitHub Copilot** to automatically maintain your documentation
-4. **Set up issue labels** for automatic backlog synchronization
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-## 📚 Documentation Structure
+2. **Run development server**
+   ```bash
+   npm run dev
+   ```
 
-This template provides a complete documentation ecosystem that GitHub Copilot will maintain:
+3. **Build for production**
+   ```bash
+   npm run build
+   ```
 
-### Core Documents
-- **[Project Overview](docs/project-overview.md)** - One-page summary of your project
-- **[Status & Roadmap](docs/roadmap.md)** - Current status and long-term planning
-- **[Current Backlog](docs/backlog.md)** - Task tracking synchronized with GitHub Issues
+4. **Open your browser** and navigate to `http://localhost:5173`
 
-### Copilot Configuration
-- **[Copilot Instructions](.github/copilot-instructions.md)** - Instructions for maintaining documentation
+## 🌱 Features
 
-## 🤖 How It Works
+### Cube-of-Cubes Architecture
+- **3D Grid System**: 20x20x20 grid of cubes representing different materials
+- **Material Types**: 
+  - Soil with nutrients and organic matter
+  - Water pockets for moisture distribution
+  - Air spaces for plant growth
 
-This template includes:
+### Plant Life Cycle
+- **Growth Stages**: Seed → Sprout → Growing → Mature → Flowering → Dying
+- **Reproduction**: Both sexual reproduction and parthenogenesis
+- **Resource Management**: Plants consume water and nutrients from soil
+- **Generational Evolution**: Track multiple generations of plants
 
-1. **GitHub Copilot Instructions** - Automated documentation maintenance rules
-2. **Structured Templates** - Consistent format for all project documentation  
-3. **GitHub Integration** - Automatic synchronization with issues and project boards
-4. **Living Documentation** - Documents that evolve with your project
+### Dynamic Ecosystem
+- **Water Distribution**: Water naturally spreads through soil
+- **Nutrient Cycling**: Dead plants return biomass to soil as organic matter
+- **Population Dynamics**: Self-sustaining ecosystem with births and deaths
+- **Visual Feedback**: Color-coded plant stages and resource levels
 
-## 🛠️ Customization
+### Interactive Navigation
+- **Orbit Controls**: Rotate, pan, and zoom the camera
+- **Real-time Statistics**: Monitor plant count, biomass, and generation
+- **Pause/Resume**: Space bar to pause the simulation
 
-After using this template:
+## 🎮 Controls
 
-1. **Update Project Information**:
-   - Replace `[Project Name]` throughout all files
-   - Add your actual project description and details
-   - Configure repository-specific information
+- **Left Click + Drag**: Rotate the view
+- **Right Click + Drag**: Pan the view
+- **Scroll Wheel**: Zoom in/out
+- **Space Bar**: Pause/Resume simulation
 
-2. **Customize Documentation**:
-   - Modify templates to match your project needs
-   - Add project-specific sections or remove unused ones
-   - Update the roadmap with your actual goals
+## 🏗️ Architecture
 
-3. **Configure GitHub Integration**:
-   - Set up issue labels for automatic backlog updates
-   - Configure project boards if needed
-   - Enable GitHub Copilot for your repository
+### Core Components
 
-## 📖 Usage Guide
+- **`src/core/Cube.js`**: Individual cube with material properties (soil, water, air)
+- **`src/core/Vivarium.js`**: 3D grid manager and ecosystem controller
+- **`src/life/Life.js`**: Base class for all living organisms
+- **`src/life/PlantLife.js`**: Plant implementation with full life cycle
+- **`src/main.js`**: Three.js scene setup and main application loop
 
-### For Project Maintainers
-- The documentation will be automatically updated by GitHub Copilot
-- Review and approve Copilot's suggested changes
-- Manually update when major project changes occur
+### How It Works
 
-### For Contributors
-- Check the [backlog](docs/backlog.md) for current tasks
-- Refer to the [roadmap](docs/roadmap.md) for project direction
-- Read the [project overview](docs/project-overview.md) for context
+1. **Grid Initialization**: Creates a 20x20x20 cube grid with soil, water, and air
+2. **Plant Seeding**: Places initial plants on soil surfaces
+3. **Simulation Loop**:
+   - Plants consume resources (water, nutrients)
+   - Plants grow through life stages
+   - Mature plants reproduce (sexual or parthenogenesis)
+   - Dead plants return biomass to soil
+   - Water naturally distributes through soil
+4. **Visual Update**: Three.js renders the scene with dynamic colors based on state
 
-## 🎯 Benefits
+## 🔬 Ecosystem Mechanics
 
-- **Consistent Documentation** - Standardized format across all projects
-- **Automated Maintenance** - Reduced manual documentation overhead  
-- **GitHub Integration** - Seamless connection with development workflow
-- **Living Documents** - Documentation that stays current with development
+### Resource System
+- **Soil Nutrients**: Consumed by plants, regenerated from organic matter
+- **Water/Moisture**: Consumed by plants, spreads through soil from water sources
+- **Organic Matter**: Added when plants die, slowly converts to nutrients
 
----
+### Plant Reproduction
+- **Sexual Reproduction**: 1-3 seeds per cycle, more robust offspring
+- **Parthenogenesis**: 2-6 seeds per cycle, faster population growth
+- **Seed Dispersal**: Seeds planted in nearby suitable locations
+- **Generational Tracking**: Each generation numbered for tracking evolution
 
-## Template Information
+## 🛠️ Technologies
 
-This is the `template_copilot` repository - a meta-template for creating copilot-managed documentation systems.
+- **Three.js**: 3D rendering and visualization
+- **Vite**: Fast development build tool
+- **JavaScript (ES6+)**: Modern modular JavaScript
 
-**Template Version**: 1.0.0  
-**Last Updated**: 2024-09-27  
-**License**: MIT
+## 📸 Screenshots
+
+Initial state with 10 plants:
+![Vivarium Initial](https://github.com/user-attachments/assets/719faf86-785f-415a-befa-50cf8b931bb4)
+
+After 90 seconds - ecosystem evolved to 51 plants across 2 generations:
+![Vivarium Evolved](https://github.com/user-attachments/assets/c3a3face-bab4-47eb-832d-3756e35ff033)
+
+## 🚀 Future Enhancements
+
+- Animal life forms
+- More plant varieties
+- Weather/climate system
+- Day/night cycles
+- Save/load ecosystem states
+- Performance optimizations for larger grids
+
+## 📄 License
+
+MIT

@@ -1,81 +1,95 @@
-# [Project Name] Template
+# To Dust - Spherical Terrain Manipulation
 
-> **Note**: This is a meta-template repository. Replace `[Project Name]` and all placeholder content with your actual project information.
+A Three.js-based implementation of terrain manipulation mechanics inspired by the game "From Dust", featuring dynamic material interaction on a spherical planet.
 
-Template for kickstarting new projects with GitHub Copilot-managed documentation.
+![To Dust Demo](https://github.com/user-attachments/assets/45ebdc08-0f1c-45c6-bea8-60217644894c)
 
 ## 🚀 Quick Start
 
-1. **Use this template** to create a new repository
-2. **Replace placeholders** in all documentation files with your project information
-3. **Configure GitHub Copilot** to automatically maintain your documentation
-4. **Set up issue labels** for automatic backlog synchronization
+```bash
+# Install dependencies
+npm install
 
-## 📚 Documentation Structure
+# Run development server
+npm run dev
 
-This template provides a complete documentation ecosystem that GitHub Copilot will maintain:
+# Build for production
+npm run build
+```
 
-### Core Documents
-- **[Project Overview](docs/project-overview.md)** - One-page summary of your project
-- **[Status & Roadmap](docs/roadmap.md)** - Current status and long-term planning
-- **[Current Backlog](docs/backlog.md)** - Task tracking synchronized with GitHub Issues
+Then open your browser to `http://localhost:5173`
 
-### Copilot Configuration
-- **[Copilot Instructions](.github/copilot-instructions.md)** - Instructions for maintaining documentation
+## 🎮 Controls
 
-## 🤖 How It Works
+- **Left Click**: Gather material from terrain
+- **Right Click**: Release material onto terrain
+- **Mouse Drag**: Rotate the planet
+- **Mouse Wheel**: Zoom in/out
+- **Material Selection**: Choose between Water, Soil, or Lava
+- **Time Control**: Pause or accelerate simulation (0x to 5x speed)
 
-This template includes:
+## ✨ Features
 
-1. **GitHub Copilot Instructions** - Automated documentation maintenance rules
-2. **Structured Templates** - Consistent format for all project documentation  
-3. **GitHub Integration** - Automatic synchronization with issues and project boards
-4. **Living Documentation** - Documents that evolve with your project
+### Core Mechanics
+- **Spherical Planet**: Fully 3D planet with realistic camera navigation
+- **Dynamic Terrain**: Real-time terrain deformation based on user actions
+- **Three Materials**: Water (fluid), Soil (terrain base), and Lava (hot fluid)
+- **Material Gathering**: Click to gather materials from the planet surface
+- **Material Placement**: Right-click to place gathered materials
 
-## 🛠️ Customization
+### Physics & Simulation
+- **Gravity-Based Flow**: Water and lava flow downhill naturally
+- **Temperature System**: Materials have temperature that affects behavior
+- **Evaporation**: Water evaporates when temperature is too high
+- **Solidification**: Lava cools and solidifies into rock over time
+- **Material Sources**: Active water springs and lava vents
 
-After using this template:
+### User Interface
+- **Material Selection**: Easy switching between material types
+- **Time Control**: Pause, slow down, or speed up time
+- **Visual Feedback**: Real-time display of held materials and temperature
+- **Color Coding**: Visual indicators for different materials and states
 
-1. **Update Project Information**:
-   - Replace `[Project Name]` throughout all files
-   - Add your actual project description and details
-   - Configure repository-specific information
+## 🎯 Inspired by From Dust
 
-2. **Customize Documentation**:
-   - Modify templates to match your project needs
-   - Add project-specific sections or remove unused ones
-   - Update the roadmap with your actual goals
+This project recreates the core terrain manipulation mechanics from the acclaimed game "From Dust":
+- Planetary-scale environment
+- Fluid-like material behavior
+- Emergent environmental systems
+- Temperature and pressure interactions
+- Natural material cycles
 
-3. **Configure GitHub Integration**:
-   - Set up issue labels for automatic backlog updates
-   - Configure project boards if needed
-   - Enable GitHub Copilot for your repository
+## 📚 Documentation
 
-## 📖 Usage Guide
+- **[Project Overview](docs/project-overview.md)** - Detailed project information
+- **[Status & Roadmap](docs/roadmap.md)** - Current status and future plans
+- **[Current Backlog](docs/backlog.md)** - Development task tracking
 
-### For Project Maintainers
-- The documentation will be automatically updated by GitHub Copilot
-- Review and approve Copilot's suggested changes
-- Manually update when major project changes occur
+## 🛠️ Technical Details
 
-### For Contributors
-- Check the [backlog](docs/backlog.md) for current tasks
-- Refer to the [roadmap](docs/roadmap.md) for project direction
-- Read the [project overview](docs/project-overview.md) for context
+- **Engine**: Three.js for 3D rendering
+- **Build Tool**: Vite for fast development and optimized builds
+- **Language**: JavaScript (ES6+)
+- **Architecture**: Real-time vertex manipulation with physics simulation
 
-## 🎯 Benefits
+## 🎨 Screenshots
 
-- **Consistent Documentation** - Standardized format across all projects
-- **Automated Maintenance** - Reduced manual documentation overhead  
-- **GitHub Integration** - Seamless connection with development workflow
-- **Living Documents** - Documentation that stays current with development
+### Initial View
+![Initial planet view](https://github.com/user-attachments/assets/45ebdc08-0f1c-45c6-bea8-60217644894c)
+
+### After Interaction
+![After gathering material](https://github.com/user-attachments/assets/cbec952e-0fa7-433c-a960-f0d4d071b25a)
+
+## 🤝 Contributing
+
+This is an educational project demonstrating terrain manipulation mechanics. Feel free to fork and experiment!
+
+## 📄 License
+
+MIT License - See LICENSE file for details
 
 ---
 
-## Template Information
-
-This is the `template_copilot` repository - a meta-template for creating copilot-managed documentation systems.
-
-**Template Version**: 1.0.0  
-**Last Updated**: 2024-09-27  
-**License**: MIT
+**Version**: 0.1.0  
+**Last Updated**: 2025-10-26  
+**Status**: Alpha - Core mechanics functional

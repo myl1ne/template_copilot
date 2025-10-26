@@ -1,58 +1,63 @@
-# [Project Name] - Project Overview
+# To Dust - Project Overview
 
-> **Note**: This is a template file. Replace all placeholder content with actual project information.
+## What is To Dust?
 
-## What is [Project Name]?
-
-[Project Name] is a [brief description of what the project does in one sentence].
+To Dust is a Three.js-based implementation of terrain manipulation mechanics inspired by the game "From Dust", featuring dynamic material interaction on a spherical planet.
 
 ## Target Audience
 
 This project is designed for:
-- [Primary user group]
-- [Secondary user group]
-- [Any other relevant stakeholders]
+- Game developers interested in terrain manipulation mechanics
+- Three.js enthusiasts exploring physics simulations
+- Students learning about fluid dynamics and emergent systems
+- Anyone fascinated by planetary-scale environmental simulation
 
 ## Key Features
 
-- **[Feature 1]**: [Brief description of the feature and its benefit]
-- **[Feature 2]**: [Brief description of the feature and its benefit]
-- **[Feature 3]**: [Brief description of the feature and its benefit]
+- **Spherical Terrain**: Fully 3D spherical planet with dynamic terrain deformation
+- **Material Manipulation**: Gather and release water, soil, and lava with intuitive mouse controls
+- **Physics Simulation**: Realistic gravity-based fluid dynamics with material flow
+- **Temperature System**: Materials interact based on temperature (water evaporates, lava solidifies)
+- **Time Control**: Pause or accelerate time to observe emergent behaviors
+- **Material Sources**: Active water springs and lava vents continuously generate materials
+- **Dynamic Colors**: Visual feedback showing water depth, lava temperature, and material types
 
 ## Quick Start
 
 ### Prerequisites
-- [List any required software, versions, or system requirements]
+- Node.js 16+ and npm
+- A modern web browser with WebGL support
 
 ### Installation
 ```bash
-# Replace with actual installation commands
-npm install [project-name]
-# or
-pip install [project-name]
-# or
-git clone [repository-url]
+git clone https://github.com/myl1ne/template_copilot.git
+cd template_copilot
+npm install
 ```
 
 ### Basic Usage
 ```bash
-# Replace with actual usage examples
-[project-name] --help
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
 ```
 
 ## Core Benefits
 
-1. **[Primary Benefit]**: [Explain how this solves a key problem]
-2. **[Secondary Benefit]**: [Explain additional value provided]
-3. **[Tertiary Benefit]**: [Explain any other significant advantages]
+1. **Educational**: Learn about fluid dynamics, terrain manipulation, and physics simulations in an interactive environment
+2. **Extensible**: Built on Three.js with clean, modular code that's easy to extend with new features
+3. **Interactive**: Real-time manipulation provides immediate visual feedback and emergent behaviors
 
 ## Links & Resources
 
-- **Repository**: [GitHub repository URL]
-- **Documentation**: [Link to full documentation]
-- **Issues & Support**: [Link to issue tracker]
-- **License**: [License type and link]
+- **Repository**: https://github.com/myl1ne/template_copilot
+- **License**: MIT
 
 ---
 
-*Last updated: [Date] | Version: [Current version]*
+*Last updated: 2025-10-26 | Version: 0.1.0*

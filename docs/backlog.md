@@ -7,48 +7,49 @@
 ### Not Started
 - **Performance Optimization** - Improve physics and rendering performance for larger populations
   - **Status**: Not Started
-  - **Target**: v0.3.0
+  - **Target**: v0.4.0
   - **Notes**: Need to profile and optimize hot paths, implement spatial partitioning
 
-- **Predator-Prey Dynamics** - Create different creature types with different energy sources
+- **Auditory System** - Sound emission and detection for advanced communication
   - **Status**: Not Started
-  - **Target**: v0.3.0
-  - **Estimated Effort**: Large
+  - **Target**: v0.4.0
+  - **Estimated Effort**: Medium
 
 ---
 
 ## 📋 Medium Priority
 
 ### Not Started
-- **Enhanced Vision** - Multiple raycasts for wider field of view
+- **Learning Systems** - Creatures that can learn within their lifetime
   - **Status**: Not Started
-  - **Target**: v0.3.0
-  - **Estimated Effort**: Medium
-
-- **Auditory System** - Sound emission and detection
-  - **Status**: Not Started
-  - **Target**: v0.3.0
-  - **Estimated Effort**: Medium
-
-- **Creature Interactions** - Direct creature-to-creature behaviors
-  - **Status**: Not Started
-  - **Target**: v0.3.0
+  - **Target**: v0.4.0
   - **Estimated Effort**: Large
+  - **Notes**: Neural plasticity, reinforcement learning
+
+- **Enhanced Communication** - Signal-based coordination between pack members
+  - **Status**: Not Started
+  - **Target**: v0.4.0
+  - **Estimated Effort**: Medium
 
 - **Save/Load State** - Ability to save and restore simulation state
   - **Status**: Not Started
-  - **Target**: v0.3.0
+  - **Target**: v0.4.0
   - **Estimated Effort**: Medium
 
 - **Genome Export** - Export successful creature genomes
   - **Status**: Not Started
-  - **Target**: v0.3.0
+  - **Target**: v0.4.0
   - **Estimated Effort**: Small
 
-- **Environmental Obstacles** - Add terrain features and obstacles
+- **Improved Neural Architectures** - LSTM or recurrent networks
   - **Status**: Not Started
-  - **Target**: v0.3.0
-  - **Estimated Effort**: Medium
+  - **Target**: v0.4.0
+  - **Estimated Effort**: Large
+
+- **Multiple Biomes** - Different environments with varied selection pressures
+  - **Status**: Not Started
+  - **Target**: v0.5.0
+  - **Estimated Effort**: Large
 
 ---
 
@@ -99,6 +100,26 @@
 
 ## ✅ Recently Completed
 
+- **Enhanced Vision System** - Multi-directional food detection with peripheral sensors ✅
+  - **Completed**: 2025-10-26
+  - **Version**: v0.3.0
+
+- **Pack Behavior** - Cooperative herbivore packs with food sharing ✅
+  - **Completed**: 2025-10-26
+  - **Version**: v0.3.0
+
+- **Predator-Prey Dynamics** - Carnivores hunt herbivores for energy ✅
+  - **Completed**: 2025-10-26
+  - **Version**: v0.3.0
+
+- **Environmental Events** - Dynamic challenges (abundance, scarcity, drought, migration) ✅
+  - **Completed**: 2025-10-26
+  - **Version**: v0.3.0
+
+- **Diet Types & Color Coding** - Visual distinction between herbivores and carnivores ✅
+  - **Completed**: 2025-10-26
+  - **Version**: v0.3.0
+
 - **Food/Energy System** - 30 auto-respawning food pellets for creature survival ✅
   - **Completed**: 2025-10-24
   - **Version**: v0.2.0
@@ -145,11 +166,11 @@
 
 | Priority | Not Started | In Progress | Under Review | Completed |
 |----------|-------------|-------------|--------------|-----------|
-| High     | 2           | 0           | 0            | 10        |
-| Medium   | 6           | 0           | 0            | 0         |
+| High     | 2           | 0           | 0            | 15        |
+| Medium   | 4           | 0           | 0            | 0         |
 | Low      | 5           | 0           | 0            | 0         |
 | Bugs     | 2           | 0           | 0            | 0         |
-| **Total**| **15**      | **0**       | **0**        | **10**    |
+| **Total**| **13**      | **0**       | **0**        | **15**    |
 
 ---
 
@@ -164,10 +185,10 @@ When creating new GitHub issues, use these labels for organization:
 - `type: feature` - New features
 - `type: enhancement` - Improvements to existing features
 - `type: documentation` - Documentation updates
-- `milestone: v0.2.0` - Target for next release
+- `milestone: v0.4.0` - Target for next release
 
 ---
 
-*Last updated: 2025-10-24*
+*Last updated: 2025-10-26*
 
 *This backlog tracks development priorities. Items may shift based on community feedback and technical constraints.*

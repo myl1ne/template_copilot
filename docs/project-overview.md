@@ -19,11 +19,15 @@ This project is designed for:
 
 - **Digital DNA System**: Creatures are encoded as genetic blueprints defining structure, color, mass, and behavioral traits
 - **3D Procedural Bodies**: Bodies are generated from primitive shapes (boxes, spheres, cylinders) arranged according to genetic instructions
-- **Neural Network Brains**: Each creature has a simple neural network that processes sensory inputs and generates motor outputs
+- **Enhanced Neural Network Brains**: Each creature has a neural network with 22 sensory inputs including multi-directional vision
 - **Physics Simulation**: Realistic physics using cannon-es creates natural movement constraints and interactions
 - **Natural Selection**: Fitness-based selection ensures successful traits propagate to future generations
 - **Genetic Operations**: Mutation and crossover create variation while preserving successful adaptations
 - **Real-time Visualization**: Watch evolution happen in 3D with Three.js rendering
+- **Predator-Prey Ecosystem**: Herbivores (green) eat plants, carnivores (red) hunt other creatures
+- **Pack Behavior**: Cooperative herbivores form packs and share food
+- **Environmental Events**: Dynamic challenges like food scarcity, abundance, drought, and migration
+- **Multi-Directional Vision**: Creatures detect food in center, left, and right peripheral vision
 
 ## Quick Start
 
@@ -48,9 +52,11 @@ npm run dev
 ### Basic Usage
 1. Open http://localhost:5173 in your browser
 2. Watch the initial "primal soup" generation spawn
-3. Observe creatures attempting to move using their neural networks
-4. See fitness scores increase as evolution optimizes movement
-5. Use controls to reset, spawn creatures, or pause simulation
+3. Observe herbivores (green) foraging for food and forming packs
+4. See carnivores (red) hunting other creatures
+5. Experience dynamic environmental events that challenge the ecosystem
+6. Click on creatures to inspect their stats and DNA
+7. Use controls to reset, spawn creatures, or pause simulation
 
 ## Core Benefits
 
@@ -70,33 +76,37 @@ npm run dev
    - Defines behavioral traits (aggression, speed, efficiency)
 
 2. **Neural Network** (`src/neural/NeuralNetwork.js`)
-   - Simple feedforward network with one hidden layer
-   - Processes sensory inputs (velocity, position, energy)
-   - Outputs motor commands (force vectors)
+   - Feedforward network with one hidden layer
+   - Processes 22 sensory inputs (velocity, energy, hydration, multi-directional vision, social awareness)
+   - Outputs motor commands (force vectors) and behavioral signals
 
-3. **Creature Entity** (`src/creatures/Creature.js`)
-   - Builds 3D body from genome blueprint
+3. **Creature Entity** (`src/creatures/LimbedCreature.js`)
+   - Builds articulated 3D body with limbs from genome blueprint
    - Integrates physics bodies with visual meshes
-   - Manages life cycle and fitness tracking
+   - Manages life cycle, fitness tracking, pack behavior, and predation
+   - Implements diet types (herbivore vs carnivore)
 
 4. **Evolution Manager** (`src/evolution/EvolutionManager.js`)
-   - Handles population management
+   - Handles continuous population management
    - Implements fitness-based selection
-   - Orchestrates breeding and mutation
+   - Orchestrates breeding, mutation, and neural weight inheritance
+   - Manages environmental events
+
+5. **Environmental Systems**
+   - **Food Manager**: Auto-respawning food pellets
+   - **Terrain**: Water points and boundaries
+   - **Environmental Events**: Dynamic challenges (abundance, scarcity, drought, migration)
 
 ## Concepts Demonstrated
 
-- **Emergence**: Complex movement patterns emerge from simple neural networks
-- **Selection Pressure**: Fitness-based selection drives adaptation
-- **Organization**: Creatures self-organize into body structures from genome data
-- **Composability**: Bodies are composed of modular primitive shapes
-
-## Links & Resources
-
-- **Repository**: https://github.com/myl1ne/template_copilot
-- **Issues & Support**: https://github.com/myl1ne/template_copilot/issues
-- **License**: MIT
+- **Emergence**: Complex movement patterns, pack behaviors, and hunting strategies emerge from simple neural networks
+- **Selection Pressure**: Fitness-based selection drives adaptation to environmental challenges
+- **Predator-Prey Dynamics**: Balance between herbivore and carnivore populations
+- **Cooperation**: Herbivores self-organize into packs and share resources
+- **Niche Specialization**: Creatures evolve different strategies based on diet type
+- **Environmental Adaptation**: Creatures must adapt to dynamic events like food scarcity and migration
+- **Composability**: Bodies are composed of modular primitive shapes with articulated joints
 
 ---
 
-*Last updated: 2025-10-24 | Version: 0.1.0*
+*Last updated: 2025-10-26 | Version: 0.3.0*

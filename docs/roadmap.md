@@ -3,69 +3,73 @@
 ## Current Status
 
 ### 🎯 Current Version
-- **Version**: 0.2.0
-- **Release Date**: 2025-10-24
-- **Status**: Alpha - Enhanced features functional
+- **Version**: 0.3.0
+- **Release Date**: 2025-10-26
+- **Status**: Beta - Advanced ecosystem features functional
 
 ### ✅ What's Working Now
 - **Digital DNA System** - Genome encoding for creature structure and traits
 - **3D Procedural Generation** - Bodies built from primitives (box, sphere, cylinder)
-- **Neural Network Control** - Feedforward networks with 9 sensory inputs
+- **Neural Network Control** - Enhanced feedforward networks with 22 sensory inputs
 - **Physics Simulation** - Realistic physics using cannon-es with articulated joints
 - **Evolution System** - Fitness-based selection with mutation and crossover
 - **Real-time Visualization** - Three.js 3D rendering with camera controls
-- **Generation Management** - Automatic cycling through generations
-- **UI Controls** - Reset, spawn, and pause functionality
+- **Generation Management** - Continuous evolution with dynamic population
+- **UI Controls** - Reset, spawn, pause, and creature inspection
 - **Food/Energy System** - 30 auto-respawning food pellets for survival
-- **Vision Sensors** - Creatures can detect and navigate toward food
+- **Water/Hydration System** - 5 water points for hydration
+- **Enhanced Vision** - Multi-directional food detection (center, left, right peripheral)
 - **Articulated Joints** - Physics constraints connect body segments
-- **Enhanced Fitness** - Food collection drives natural selection
+- **Pack Behavior** - Herbivores form cooperative packs and share food
+- **Predator-Prey Dynamics** - Carnivores hunt herbivores for energy
+- **Environmental Events** - Dynamic challenges: abundance, scarcity, drought, migration
+- **Diet Types** - Visual color coding: herbivores (green) vs carnivores (red)
 
 ### 🔧 Current Focus
-- Monitoring food-based evolution dynamics
-- Balancing energy consumption rates
-- Observing emergent foraging behaviors
+- Observing predator-prey population dynamics
+- Monitoring pack formation and cooperative behaviors
+- Analyzing impact of environmental events on evolution
 
 ---
 
 ## Long Term Roadmap
 
-### 🚀 Next Release (v0.3.0) - Q1 2026
-**Theme**: Advanced Sensory Systems & Social Behavior
+### 🚀 Next Release (v0.4.0) - Q2 2026
+**Theme**: Advanced Learning & Communication
 
 **Planned Features**:
-- [ ] Enhanced vision with multiple ray casts
 - [ ] Auditory system - Creatures can emit and hear sounds
-- [ ] Creature-to-creature interactions (cooperation/competition)
-- [ ] Predator-prey dynamics
+- [ ] Enhanced communication - Signal-based coordination between pack members
+- [ ] Learning systems - Creatures that can learn within their lifetime
 - [ ] Improved neural network architectures (LSTM, recurrent networks)
-- [ ] Environmental diversity (obstacles, terrain variations)
-
-**Technical Improvements**:
-- [ ] Performance optimization for 50+ creatures
-- [ ] WebGL shader optimizations
-- [ ] Better spatial partitioning for collision detection
+- [ ] Better spatial partitioning for 50+ creatures
 - [ ] Save/load simulation state
 - [ ] Export creature genomes
 - [ ] Replay system for interesting evolutions
 
+**Technical Improvements**:
+- [ ] WebGL shader optimizations
+- [ ] Better collision detection algorithms
+- [ ] Memory optimization for long-running simulations
+
 ### 🔮 Future Releases (6-12 months)
 
-#### v0.3.0 - Q2 2026
-**Theme**: Ecological Systems
-- Environmental diversity (water, land, obstacles)
-- Food chains and predator-prey dynamics
-- Territorial behavior
-- Energy cycles (day/night)
+#### v0.5.0 - Q3 2026
+**Theme**: Ecological Complexity
+- Multiple biomes with different selection pressures
+- Seasonal cycles and day/night energy dynamics
+- Advanced territorial behavior
 - Population dynamics controls
+- Species migration patterns
 
-#### v0.4.0 - Q3 2026
+#### v0.6.0 - Q4 2026
 **Theme**: Advanced Evolution
 - Speciation and separate gene pools
-- Sexual selection and mating behaviors
+- Sexual selection and mating rituals
 - Genetic diversity tracking
 - Evolution history visualization
 - Phylogenetic trees
+- Co-evolution mechanics
 
 ### 🎯 Long Term Vision (1+ years)
 - **Multi-environment Worlds**: Multiple biomes with different selection pressures
@@ -79,6 +83,16 @@
 ---
 
 ## Recently Completed
+
+### ✅ v0.3.0 - 2025-10-26
+- ✅ Enhanced vision with multi-directional food detection (center, left 30°, right 30°)
+- ✅ Pack behavior system - herbivores form cooperative groups
+- ✅ Food sharing mechanics for pack members
+- ✅ Predator-prey dynamics - carnivores hunt herbivores
+- ✅ Diet-based color coding (green herbivores, red carnivores)
+- ✅ Environmental events system (abundance, scarcity, drought, migration)
+- ✅ Enhanced UI with ecosystem statistics
+- ✅ Neural network expanded to 22 inputs for better awareness
 
 ### ✅ v0.2.0 - 2025-10-24
 - ✅ Food/energy system with auto-respawning pellets
@@ -123,6 +137,6 @@
 
 ---
 
-*Last updated: 2025-10-24 | Next review: 2026-01-24*
+*Last updated: 2025-10-26 | Next review: 2026-04-26*
 
 *This roadmap is subject to change based on priorities, resources, and community feedback.*

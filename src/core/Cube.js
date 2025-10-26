@@ -94,10 +94,7 @@ export class Cube {
             }
         }
 
-        // Nutrients slowly regenerate from organic matter
-        if (this.isSoil() && this.organicMatter > 0) {
-            this.addOrganicMatter(0);
-        }
+        // Nutrients slowly regenerate from organic matter (handled in addOrganicMatter)
     }
 
     getColor() {

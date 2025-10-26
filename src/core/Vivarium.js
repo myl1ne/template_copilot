@@ -168,14 +168,17 @@ export class Vivarium {
     }
 
     /**
-     * Get all cubes (for rendering)
+     * Get all renderable cubes (excluding air)
      */
-    getAllCubes() {
+    getRenderableCubes() {
         const cubes = [];
         for (let x = 0; x < this.sizeX; x++) {
             for (let y = 0; y < this.sizeY; y++) {
                 for (let z = 0; z < this.sizeZ; z++) {
-                    cubes.push(this.grid[x][y][z]);
+                    const cube = this.grid[x][y][z];
+                    if (!cube.isAir()) {
+                        cubes.push(cube);
+                    }
                 }
             }
         }

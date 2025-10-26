@@ -192,8 +192,8 @@ export class PlantLife extends Life {
         const attempts = 20;
 
         for (let i = 0; i < attempts; i++) {
-            const dx = Math.floor((Math.random() - 0.5) * searchRadius * 2);
-            const dz = Math.floor((Math.random() - 0.5) * searchRadius * 2);
+            const dx = Math.floor(Math.random() * searchRadius * 2) - searchRadius;
+            const dz = Math.floor(Math.random() * searchRadius * 2) - searchRadius;
             
             const x = this.x + dx;
             const z = this.z + dz;

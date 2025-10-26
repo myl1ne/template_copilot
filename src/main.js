@@ -119,12 +119,10 @@ class VivariumApp {
     }
 
     renderVivarium() {
-        // Render all cubes in the vivarium
-        const cubes = this.vivarium.getAllCubes();
+        // Render all cubes in the vivarium (excluding air)
+        const cubes = this.vivarium.getRenderableCubes();
         
         for (const cube of cubes) {
-            if (cube.isAir()) continue; // Don't render air
-            
             const key = `${cube.x},${cube.y},${cube.z}`;
             
             if (!this.cubeObjects.has(key)) {

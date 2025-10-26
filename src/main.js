@@ -222,7 +222,9 @@ function gatherMaterial(point, faceIndex) {
         }
     }
     
+    needsUpdate = true;
     updateTerrainGeometry();
+    updateMaterialColors();
     updateUI();
 }
 
@@ -265,7 +267,9 @@ function releaseMaterial(point, faceIndex) {
         }
     }
     
+    needsUpdate = true;
     updateTerrainGeometry();
+    updateMaterialColors();
     updateUI();
 }
 
@@ -495,17 +499,25 @@ function updateUI() {
 
 // Animation loop
 let lastTime = 0;
+let needsUpdate = true;
+
 function animate(currentTime) {
     requestAnimationFrame(animate);
     
     const deltaTime = (currentTime - lastTime) * 0.001;
     lastTime = currentTime;
     
-    // Simulate materials
-    if (deltaTime < 0.1) { // Avoid huge jumps
+    // Simulate materials only when not paused
+    if (!state.isPaused && deltaTime < 0.1) { // Avoid huge jumps
         simulateMaterials(deltaTime);
+        needsUpdate = true;
+    }
+    
+    // Update geometry and colors only when changes occur
+    if (needsUpdate) {
         updateTerrainGeometry();
         updateMaterialColors();
+        needsUpdate = state.timeSpeed > 0; // Keep updating if simulation is running
     }
     
     // Render

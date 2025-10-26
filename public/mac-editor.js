@@ -1,17 +1,21 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import { MAC, MACLibrary, MACBuilder } from './modules/mac/MACCore.js';
 import { MACPersistence } from './modules/mac/MACPersistence.js';
 import './modules/mac/MACExamples.js'; // Load example templates
 import './modules/mac/MACAnimations.js'; // Load animated templates
 
 // Scene setup
-let scene, camera, renderer, controls;
+let scene, camera, renderer, controls, transformControls;
 let currentMAC = null;
 let currentMesh = null;
 let gridHelper = null;
 let selectedNode = null;  // Currently selected node in hierarchy
+let selectedMesh = null;  // Currently selected 3D mesh in viewport
 let gizmoMode = 'translate';  // translate, rotate, or scale
+let raycaster, mouse;
+let outlinePass = null;  // For highlighting selected objects
 
 function initScene() {
     // Scene
@@ -64,7 +68,34 @@ function initScene() {
     const ground = new THREE.Mesh(groundGeometry, groundMaterial);
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
+    ground.name = 'ground'; // Name it so we can ignore it in raycasting
     scene.add(ground);
+
+    // TransformControls for 3D manipulation
+    transformControls = new TransformControls(camera, renderer.domElement);
+    transformControls.setMode('translate'); // Start with translate mode
+    transformControls.setSize(0.8);
+    scene.add(transformControls);
+    
+    // When transformControls is used, disable orbit controls
+    transformControls.addEventListener('dragging-changed', (event) => {
+        controls.enabled = !event.value;
+    });
+    
+    // Listen for transform changes to update MAC
+    transformControls.addEventListener('objectChange', () => {
+        if (selectedMesh && transformControls.object) {
+            updateMACFromMesh();
+        }
+    });
+    
+    // Raycaster for object selection
+    raycaster = new THREE.Raycaster();
+    mouse = new THREE.Vector2();
+    
+    // Click event for selecting objects
+    canvas.addEventListener('click', onCanvasClick, false);
+    canvas.addEventListener('dblclick', onCanvasDoubleClick, false);
 
     // Start with a simple box
     currentMAC = new MAC('box', {
@@ -90,11 +121,155 @@ function animate() {
     renderer.render(scene, camera);
 }
 
+// Canvas click handler for object selection
+function onCanvasClick(event) {
+    // Calculate mouse position in normalized device coordinates
+    const canvas = renderer.domElement;
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    
+    // Update raycaster
+    raycaster.setFromCamera(mouse, camera);
+    
+    // Get all intersectable objects (exclude ground and grid)
+    const intersectableObjects = [];
+    if (currentMesh) {
+        currentMesh.traverse((child) => {
+            if (child.isMesh && child.name !== 'ground') {
+                intersectableObjects.push(child);
+            }
+        });
+    }
+    
+    const intersects = raycaster.intersectObjects(intersectableObjects, false);
+    
+    if (intersects.length > 0) {
+        const clickedObject = intersects[0].object;
+        selectMeshObject(clickedObject);
+    } else {
+        // Click on empty space - deselect
+        deselectMeshObject();
+    }
+}
+
+// Double-click to focus on selected object
+function onCanvasDoubleClick(event) {
+    if (selectedMesh) {
+        // Calculate center of selected mesh
+        const box = new THREE.Box3().setFromObject(selectedMesh);
+        const center = box.getCenter(new THREE.Vector3());
+        
+        // Smoothly move camera to focus on object
+        controls.target.copy(center);
+        controls.update();
+    }
+}
+
+// Select a mesh object from the 3D scene
+function selectMeshObject(mesh) {
+    // Deselect previous
+    if (selectedMesh && selectedMesh.material) {
+        // Restore original emissive
+        if (selectedMesh.userData.originalEmissive !== undefined) {
+            selectedMesh.material.emissive.copy(selectedMesh.userData.originalEmissive);
+            selectedMesh.material.emissiveIntensity = selectedMesh.userData.originalEmissiveIntensity || 0;
+        }
+    }
+    
+    selectedMesh = mesh;
+    
+    // Highlight selected mesh
+    if (mesh.material) {
+        // Store original emissive
+        mesh.userData.originalEmissive = mesh.material.emissive.clone();
+        mesh.userData.originalEmissiveIntensity = mesh.material.emissiveIntensity;
+        
+        // Set highlight
+        mesh.material.emissive.setHex(0x4a9eff);
+        mesh.material.emissiveIntensity = 0.3;
+    }
+    
+    // Attach transform controls
+    transformControls.attach(mesh);
+    
+    // Update UI
+    updateSelectionUI();
+}
+
+// Deselect mesh object
+function deselectMeshObject() {
+    if (selectedMesh && selectedMesh.material) {
+        // Restore original emissive
+        if (selectedMesh.userData.originalEmissive !== undefined) {
+            selectedMesh.material.emissive.copy(selectedMesh.userData.originalEmissive);
+            selectedMesh.material.emissiveIntensity = selectedMesh.userData.originalEmissiveIntensity || 0;
+        }
+    }
+    
+    selectedMesh = null;
+    transformControls.detach();
+    updateSelectionUI();
+}
+
+// Update MAC data from mesh transforms after manipulation
+function updateMACFromMesh() {
+    if (!selectedMesh || !currentMAC) return;
+    
+    // This is a simplified version - in a full implementation,
+    // you'd need to traverse the MAC tree and find the corresponding node
+    // For now, we'll just show the updated position in the UI
+    updateSelectionUI();
+}
+
+// Update UI to show selected object info
+function updateSelectionUI() {
+    const selectionInfo = document.getElementById('3DSelectionInfo');
+    if (!selectionInfo) return;
+    
+    if (selectedMesh) {
+        const pos = selectedMesh.position;
+        const rot = selectedMesh.rotation;
+        const scl = selectedMesh.scale;
+        
+        selectionInfo.innerHTML = `
+            <strong>Selected in 3D:</strong><br/>
+            Position: (${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}, ${pos.z.toFixed(2)})<br/>
+            Rotation: (${rot.x.toFixed(2)}, ${rot.y.toFixed(2)}, ${rot.z.toFixed(2)})<br/>
+            Scale: (${scl.x.toFixed(2)}, ${scl.y.toFixed(2)}, ${scl.z.toFixed(2)})
+        `;
+        selectionInfo.style.display = 'block';
+    } else {
+        selectionInfo.style.display = 'none';
+    }
+}
+
+// Change transform mode (translate, rotate, scale)
+function setTransformMode(mode) {
+    gizmoMode = mode;
+    transformControls.setMode(mode);
+    
+    // Update button states
+    document.querySelectorAll('.gizmo-mode-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.getElementById(mode + 'ModeBtn')?.classList.add('active');
+}
+
 function updateDisplay() {
+    // Detach transform controls if attached
+    if (transformControls.object) {
+        transformControls.detach();
+    }
+    
     // Remove old mesh
     if (currentMesh) {
         scene.remove(currentMesh);
     }
+    
+    // Deselect
+    selectedMesh = null;
+    updateSelectionUI();
 
     // Build and add new mesh (try animated version if available)
     if (currentMAC) {
@@ -107,6 +282,27 @@ function updateDisplay() {
         } else {
             currentMesh = currentMAC.build();
         }
+        
+        // Make all meshes selectable and add better materials
+        currentMesh.traverse((child) => {
+            if (child.isMesh) {
+                // Enable shadows
+                child.castShadow = true;
+                child.receiveShadow = true;
+                
+                // Ensure material can be highlighted
+                if (child.material) {
+                    // Make sure material has emissive property
+                    if (!child.material.emissive) {
+                        child.material.emissive = new THREE.Color(0x000000);
+                    }
+                    if (child.material.emissiveIntensity === undefined) {
+                        child.material.emissiveIntensity = 0;
+                    }
+                }
+            }
+        });
+        
         scene.add(currentMesh);
         
         // Update info panel
@@ -373,6 +569,44 @@ document.getElementById('resetCameraBtn').addEventListener('click', () => {
 
 document.getElementById('toggleGridBtn').addEventListener('click', () => {
     gridHelper.visible = !gridHelper.visible;
+});
+
+// Transform mode buttons for 3D viewport
+document.getElementById('translateModeBtn')?.addEventListener('click', () => {
+    setTransformMode('translate');
+});
+
+document.getElementById('rotateModeBtn')?.addEventListener('click', () => {
+    setTransformMode('rotate');
+});
+
+document.getElementById('scaleModeBtn')?.addEventListener('click', () => {
+    setTransformMode('scale');
+});
+
+// Keyboard shortcuts for transform modes
+document.addEventListener('keydown', (event) => {
+    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
+    
+    switch(event.key.toLowerCase()) {
+        case 'w':
+            setTransformMode('translate');
+            break;
+        case 'e':
+            setTransformMode('rotate');
+            break;
+        case 'r':
+            setTransformMode('scale');
+            break;
+        case 'escape':
+        case 'delete':
+        case 'backspace':
+            if (event.key === 'delete' || event.key === 'backspace') {
+                event.preventDefault();
+                deselectMeshObject();
+            }
+            break;
+    }
 });
 
 document.getElementById('applyTransformBtn').addEventListener('click', () => {

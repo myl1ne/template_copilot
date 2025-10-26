@@ -76,6 +76,11 @@
             background: #c0392b;
         }
 
+        .gizmo-mode-btn.active {
+            background: #4a9eff;
+            color: white;
+        }
+
         .sidebar {
             background: #202020;
             border-right: 1px solid #404040;
@@ -455,7 +460,14 @@
             <div class="viewport-controls">
                 <button class="btn btn-secondary" id="resetCameraBtn">Reset Camera</button>
                 <button class="btn btn-secondary" id="toggleGridBtn">Toggle Grid</button>
+                <div style="display: inline-block; margin-left: 20px; padding-left: 20px; border-left: 1px solid #404040;">
+                    <span style="margin-right: 10px; color: #b0b0b0;">Transform Mode:</span>
+                    <button class="btn btn-secondary gizmo-mode-btn active" id="translateModeBtn" title="Move (W)">Move</button>
+                    <button class="btn btn-secondary gizmo-mode-btn" id="rotateModeBtn" title="Rotate (E)">Rotate</button>
+                    <button class="btn btn-secondary gizmo-mode-btn" id="scaleModeBtn" title="Scale (R)">Scale</button>
+                </div>
             </div>
+            <div id="3DSelectionInfo" class="info-panel" style="position: absolute; top: 70px; left: 10px; display: none; max-width: 300px;"></div>
         </div>
 
         <div class="editor-panel">
@@ -467,6 +479,15 @@
             </div>
 
             <div class="tab-content active" data-content="properties">
+                <div class="info-panel" style="background: #2a4a6a; margin-bottom: 15px;">
+                    <strong>💡 3D Viewport Controls:</strong><br/>
+                    • <strong>Click</strong> objects to select them<br/>
+                    • <strong>Drag</strong> gizmo handles to move/rotate/scale<br/>
+                    • <strong>Double-click</strong> to focus on object<br/>
+                    • <strong>W/E/R</strong> - Switch between Move/Rotate/Scale modes<br/>
+                    • <strong>ESC</strong> - Deselect object
+                </div>
+                
                 <div class="panel-section">
                     <h3>Current MAC</h3>
                     <div class="form-group">

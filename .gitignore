@@ -38,5 +38,6 @@ Thumbs.db
 
 # Data
 data/
+demo_data/
 *.db
 *.sqlite

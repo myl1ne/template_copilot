@@ -17,6 +17,9 @@ jobs:
   validate:
     name: Validate Template Completeness
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     
     steps:
       - name: Checkout code
@@ -52,6 +55,8 @@ jobs:
   check-documentation-consistency:
     name: Check Documentation Consistency
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     
     steps:
       - name: Checkout code

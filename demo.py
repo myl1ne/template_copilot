@@ -8,9 +8,7 @@ to demonstrate the system without running the full AI simulation.
 
 import sys
 import os
-
-# Add parent directory to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import traceback
 
 from teamrpg.persona import PersonaManager
 from teamrpg.team import TeamManager
@@ -248,6 +246,5 @@ if __name__ == "__main__":
         create_demo_scenario()
     except Exception as e:
         print(f"\n❌ Error: {e}")
-        import traceback
         traceback.print_exc()
         sys.exit(1)

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimized Fluid Simulation - Three.js</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: #0a0a0a;
+            color: #fff;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            max-width: 350px;
+            z-index: 100;
+        }
+        
+        h1 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #4fc3f7;
+        }
+        
+        .section {
+            margin: 15px 0;
+        }
+        
+        .section h2 {
+            font-size: 1em;
+            color: #81c784;
+            margin-bottom: 8px;
+        }
+        
+        .control {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        label {
+            font-size: 0.9em;
+            color: #ccc;
+        }
+        
+        input[type="range"] {
+            width: 150px;
+        }
+        
+        button {
+            background: #4fc3f7;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #000;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #81d4fa;
+        }
+        
+        .stats {
+            font-size: 0.85em;
+            color: #999;
+            margin-top: 10px;
+        }
+        
+        #toggle-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        
+        .technique-info {
+            background: rgba(79, 195, 247, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #4fc3f7;
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    
+    <div id="info-panel">
+        <h1>🌊 Fluid Simulation</h1>
+        
+        <div class="technique-info">
+            <strong>Technique:</strong> Screen-Space Fluid Rendering with GPU-accelerated particle system
+        </div>
+        
+        <div class="section">
+            <h2>Controls</h2>
+            <div class="control">
+                <label>Fluid Type:</label>
+                <select id="fluid-type" style="padding: 5px; border-radius: 3px; background: #333; color: #fff; border: 1px solid #4fc3f7;">
+                    <option value="water">Water</option>
+                    <option value="oil">Oil</option>
+                </select>
+                <span id="fluid-type-name" style="font-size: 0.85em; color: #4fc3f7;">Water</span>
+            </div>
+            <div class="control">
+                <label>Particle Count:</label>
+                <span id="particle-count">10000</span>
+            </div>
+            <div class="control">
+                <label>Particle Size:</label>
+                <input type="range" id="particle-size" min="0.5" max="5" step="0.1" value="2">
+                <span id="size-value">2.0</span>
+            </div>
+            <div class="control">
+                <label>Flow Speed:</label>
+                <input type="range" id="flow-speed" min="0.1" max="3" step="0.1" value="1">
+                <span id="speed-value">1.0</span>
+            </div>
+            <div class="control">
+                <label>Turbulence:</label>
+                <input type="range" id="turbulence" min="0" max="2" step="0.1" value="0.5">
+                <span id="turbulence-value">0.5</span>
+            </div>
+            <div class="control">
+                <button id="reset-btn">Reset Simulation</button>
+            </div>
+            <div style="margin-top: 10px; font-size: 0.8em; color: #81c784; line-height: 1.5;">
+                💡 <strong>Tip:</strong> Hold Shift + Left Click or Middle Mouse Button to drag the container and see the fluid react!
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Optimization Features</h2>
+            <ul style="font-size: 0.85em; line-height: 1.6; color: #ccc;">
+                <li>✓ GPU-based particle updates</li>
+                <li>✓ Instanced rendering</li>
+                <li>✓ Screen-space smoothing</li>
+                <li>✓ Frustum culling</li>
+                <li>✓ LOD system</li>
+                <li>✓ Interactive container physics</li>
+                <li>✓ Multiple fluid types</li>
+            </ul>
+        </div>
+        
+        <div class="stats">
+            <div>FPS: <span id="fps">60</span></div>
+            <div>Particles: <span id="active-particles">10000</span></div>
+        </div>
+    </div>
+    
+    <div id="toggle-panel" onclick="togglePanel()">
+        ℹ️ Info
+    </div>
+    
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module" src="./fluid-simulation.js"></script>
+    <script>
+        function togglePanel() {
+            const panel = document.getElementById('info-panel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

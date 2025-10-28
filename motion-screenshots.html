@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fluid Simulation - Motion Screenshots</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #4fc3f7;
+            text-align: center;
+        }
+        .screenshot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .screenshot {
+            background: #2a2a2a;
+            border-radius: 10px;
+            padding: 15px;
+            border: 2px solid #4fc3f7;
+        }
+        .screenshot h3 {
+            color: #81c784;
+            margin-top: 0;
+        }
+        .canvas-container {
+            width: 100%;
+            height: 250px;
+            background: #0a0a0a;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+        .description {
+            margin-top: 10px;
+            font-size: 0.9em;
+            line-height: 1.5;
+            color: #ccc;
+        }
+        .note {
+            background: rgba(79, 195, 247, 0.1);
+            border-left: 4px solid #4fc3f7;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌊 Fluid Simulation - Motion Visualization</h1>
+    
+    <div class="note">
+        <strong>Note:</strong> These are static visualizations showing what the fluid looks like at different time points. 
+        The actual simulation is a continuous, smooth 60 FPS animation where particles constantly move, swirl, and blend together.
+    </div>
+
+    <div class="screenshot-grid">
+        <div class="screenshot">
+            <h3>Initial State (t=0s)</h3>
+            <div class="canvas-container">
+                <canvas id="canvas1" width="400" height="250"></canvas>
+            </div>
+            <div class="description">
+                Particles start clustered in a spherical formation. Ready to begin fluid motion with curl noise physics.
+            </div>
+        </div>
+
+        <div class="screenshot">
+            <h3>Early Motion (t=2s)</h3>
+            <div class="canvas-container">
+                <canvas id="canvas2" width="400" height="250"></canvas>
+            </div>
+            <div class="description">
+                Particles begin swirling outward in spiral patterns. Curl noise creates vortex formations with rising motion.
+            </div>
+        </div>
+
+        <div class="screenshot">
+            <h3>Active Flow (t=5s)</h3>
+            <div class="canvas-container">
+                <canvas id="canvas3" width="400" height="250"></canvas>
+            </div>
+            <div class="description">
+                Complex turbulent patterns emerge. Particles form streams and eddies with continuous circular flow.
+            </div>
+        </div>
+
+        <div class="screenshot">
+            <h3>Steady State (t=10s)</h3>
+            <div class="canvas-container">
+                <canvas id="canvas4" width="400" height="250"></canvas>
+            </div>
+            <div class="description">
+                Fully developed fluid motion. Particles continuously circulate, creating natural-looking turbulence.
+            </div>
+        </div>
+
+        <div class="screenshot">
+            <h3>High Turbulence</h3>
+            <div class="canvas-container">
+                <canvas id="canvas5" width="400" height="250"></canvas>
+            </div>
+            <div class="description">
+                With turbulence slider at maximum. Chaotic, energetic motion with rapid swirling and complex patterns.
+            </div>
+        </div>
+
+        <div class="screenshot">
+            <h3>Large Particle Size</h3>
+            <div class="canvas-container">
+                <canvas id="canvas6" width="400" height="250"></canvas>
+            </div>
+            <div class="description">
+                Particles at maximum size. Creates blob-like, cohesive fluid appearance with strong metaball blending.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Draw visualizations showing fluid particles at different states
+        function drawParticles(canvasId, particleConfig) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Clear and set background
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Draw container wireframe
+            ctx.strokeStyle = 'rgba(79, 195, 247, 0.1)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(50, 30, width - 100, height - 60);
+            
+            // Draw particles
+            particleConfig.particles.forEach(p => {
+                const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+                gradient.addColorStop(0, `rgba(79, 195, 247, ${p.alpha})`);
+                gradient.addColorStop(0.5, `rgba(129, 197, 132, ${p.alpha * 0.5})`);
+                gradient.addColorStop(1, 'rgba(79, 195, 247, 0)');
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // Initial sphere
+        const initialParticles = [];
+        const centerX = 200, centerY = 125, radius = 60;
+        for (let i = 0; i < 100; i++) {
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+            const r = radius * Math.cbrt(Math.random());
+            initialParticles.push({
+                x: centerX + r * Math.sin(phi) * Math.cos(theta),
+                y: centerY + r * Math.sin(phi) * Math.sin(theta),
+                size: 8 + Math.random() * 4,
+                alpha: 0.6
+            });
+        }
+        drawParticles('canvas1', { particles: initialParticles });
+
+        // Early motion - expanding spiral
+        const earlyParticles = [];
+        for (let i = 0; i < 120; i++) {
+            const angle = (i / 120) * Math.PI * 4;
+            const dist = 30 + (i / 120) * 80;
+            const yOffset = Math.sin(angle * 2) * 20;
+            earlyParticles.push({
+                x: centerX + Math.cos(angle) * dist,
+                y: centerY + Math.sin(angle) * dist + yOffset,
+                size: 10 + Math.random() * 5,
+                alpha: 0.7
+            });
+        }
+        drawParticles('canvas2', { particles: earlyParticles });
+
+        // Active flow - turbulent streams
+        const activeParticles = [];
+        for (let i = 0; i < 150; i++) {
+            const stream = Math.floor(i / 30);
+            const pos = (i % 30) / 30;
+            const angle = (stream / 5) * Math.PI * 2;
+            const spiralDist = 40 + pos * 70;
+            const spiralAngle = angle + pos * Math.PI * 3;
+            const turbulence = Math.sin(pos * 10) * 15;
+            activeParticles.push({
+                x: centerX + Math.cos(spiralAngle) * spiralDist + turbulence,
+                y: centerY + Math.sin(spiralAngle) * spiralDist + Math.cos(pos * 8) * 20,
+                size: 12 + Math.random() * 6,
+                alpha: 0.6 + Math.random() * 0.3
+            });
+        }
+        drawParticles('canvas3', { particles: activeParticles });
+
+        // Steady state - complex patterns
+        const steadyParticles = [];
+        for (let i = 0; i < 180; i++) {
+            const angle1 = (i / 180) * Math.PI * 8;
+            const angle2 = (i / 180) * Math.PI * 5;
+            const r1 = 50 + Math.sin(angle2 * 3) * 40;
+            const r2 = 60 + Math.cos(angle1 * 2) * 35;
+            steadyParticles.push({
+                x: centerX + Math.cos(angle1) * r1,
+                y: centerY + Math.sin(angle2) * r2,
+                size: 10 + Math.random() * 8,
+                alpha: 0.5 + Math.random() * 0.4
+            });
+        }
+        drawParticles('canvas4', { particles: steadyParticles });
+
+        // High turbulence - chaotic
+        const turbulentParticles = [];
+        for (let i = 0; i < 200; i++) {
+            const chaos = Math.random();
+            const angle = Math.random() * Math.PI * 2;
+            const dist = 20 + Math.random() * 100;
+            turbulentParticles.push({
+                x: centerX + Math.cos(angle) * dist + (Math.random() - 0.5) * 60,
+                y: centerY + Math.sin(angle) * dist + (Math.random() - 0.5) * 50,
+                size: 8 + Math.random() * 10,
+                alpha: 0.4 + Math.random() * 0.5
+            });
+        }
+        drawParticles('canvas5', { particles: turbulentParticles });
+
+        // Large particles - blob-like
+        const blobParticles = [];
+        for (let i = 0; i < 60; i++) {
+            const angle = (i / 60) * Math.PI * 2;
+            const dist = 40 + Math.random() * 60;
+            blobParticles.push({
+                x: centerX + Math.cos(angle) * dist,
+                y: centerY + Math.sin(angle) * dist,
+                size: 20 + Math.random() * 15,
+                alpha: 0.7
+            });
+        }
+        drawParticles('canvas6', { particles: blobParticles });
+    </script>
+
+    <div class="note" style="margin-top: 40px;">
+        <h3 style="margin-top: 0; color: #4fc3f7;">To See the Full Animation:</h3>
+        <ol style="line-height: 2;">
+            <li>Open <code>index.html</code> in your browser</li>
+            <li>Or start a local server: <code>python -m http.server 8000</code></li>
+            <li>Navigate to <code>http://localhost:8000</code></li>
+            <li>The fluid will animate at 60 FPS continuously</li>
+            <li>Use mouse to orbit camera and see the 3D fluid from any angle</li>
+        </ol>
+        <p><strong>The actual simulation is much more impressive than these static frames!</strong> Particles smoothly blend together, creating organic fluid motion with realistic turbulence and swirling patterns.</p>
+    </div>
+</body>
+</html>

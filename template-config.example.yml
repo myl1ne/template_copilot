@@ -1,0 +1,109 @@
+# Template Copilot Configuration Example
+#
+# This file demonstrates how to configure the template for your project.
+# Copy this file to your project root and customize it.
+
+# Project Information
+project:
+  name: "Your Project Name"
+  description: "Brief description of your project"
+  version: "0.1.0"
+  repository: "https://github.com/your-org/your-repo"
+  license: "MIT"
+
+# Documentation Settings
+documentation:
+  # Auto-update documentation on these events
+  auto_update:
+    - pull_request
+    - push
+    - issue_update
+  
+  # Files to validate for placeholders
+  validate_files:
+    - README.md
+    - docs/project-overview.md
+    - docs/roadmap.md
+    - docs/backlog.md
+  
+  # Documentation review schedule
+  review_schedule: "monthly"
+
+# GitHub Integration
+github:
+  # Issue labels for automatic backlog sync
+  labels:
+    priority:
+      high: "priority: high"
+      medium: "priority: medium"
+      low: "priority: low"
+    type:
+      bug: "type: bug"
+      feature: "type: feature"
+      enhancement: "type: enhancement"
+      documentation: "type: documentation"
+  
+  # Milestone tracking
+  milestones:
+    enabled: true
+    sync_with_roadmap: true
+  
+  # Project board integration
+  project_board:
+    enabled: false
+    board_id: null
+
+# Copilot Instructions
+copilot:
+  # Custom instructions file location
+  instructions_file: ".github/copilot-instructions.md"
+  
+  # Automation rules
+  automation:
+    # Automatically update backlog when issues change
+    sync_backlog_on_issue_update: true
+    
+    # Update roadmap on version changes
+    sync_roadmap_on_version_change: true
+    
+    # Create changelog entries from commits
+    auto_changelog: false
+
+# Validation Rules
+validation:
+  # Fail on placeholders in production branch
+  strict_mode: true
+  
+  # Require all placeholders to be replaced
+  require_complete: true
+  
+  # Check for broken links
+  check_links: true
+
+# Template Customization
+template:
+  # Include optional sections
+  sections:
+    contributing: true
+    code_of_conduct: false
+    security: false
+    changelog: false
+  
+  # Language and locale
+  language: "en"
+  locale: "en-US"
+  
+  # Date format
+  date_format: "YYYY-MM-DD"
+
+# Advanced Settings
+advanced:
+  # Custom validation script
+  validation_script: "validate_template.py"
+  
+  # Custom GitHub Actions workflows
+  workflows:
+    - ".github/workflows/validate-template.yml"
+  
+  # Additional documentation directories
+  extra_docs_dirs: []

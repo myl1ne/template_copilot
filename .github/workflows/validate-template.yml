@@ -1,0 +1,89 @@
+name: Template Validation
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'README.md'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate Template Completeness
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      
+      - name: Run template validation
+        run: python validate_template.py
+        continue-on-error: true
+        id: validation
+      
+      - name: Comment on validation results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const validationPassed = '${{ steps.validation.outcome }}' === 'success';
+            const message = validationPassed
+              ? '✅ Template validation passed! All placeholders have been replaced.'
+              : '⚠️ Template validation found placeholders that may need to be replaced. See workflow logs for details.';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
+
+  check-documentation-consistency:
+    name: Check Documentation Consistency
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Check for broken internal links
+        run: |
+          echo "Checking for broken internal links..."
+          
+          # Find all markdown files
+          FILES=$(find . -name "*.md" -not -path "./.git/*" -not -path "./node_modules/*")
+          
+          BROKEN_LINKS=0
+          for file in $FILES; do
+            # Extract links in markdown format [text](link)
+            LINKS=$(grep -oP '\[([^\]]+)\]\(([^)]+)\)' "$file" | grep -oP '\(([^)]+)\)' | tr -d '()' | grep -v "^http" | grep -v "^#" || true)
+            
+            for link in $LINKS; do
+              # Handle relative links
+              DIR=$(dirname "$file")
+              TARGET="$DIR/$link"
+              
+              if [ ! -f "$TARGET" ] && [ ! -d "$TARGET" ]; then
+                echo "❌ Broken link in $file: $link"
+                BROKEN_LINKS=$((BROKEN_LINKS + 1))
+              fi
+            done
+          done
+          
+          if [ $BROKEN_LINKS -gt 0 ]; then
+            echo "Found $BROKEN_LINKS broken link(s)"
+            exit 1
+          else
+            echo "✅ All internal links are valid"
+          fi

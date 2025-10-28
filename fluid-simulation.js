@@ -19,12 +19,39 @@ class FluidSimulation {
             particleSize: 2.0,
             flowSpeed: 1.0,
             turbulence: 0.5,
-            containerSize: 30
+            containerSize: 30,
+            fluidType: 'water' // 'water' or 'oil'
         };
+        
+        // Fluid type properties
+        this.fluidTypes = {
+            water: {
+                density: 1.0,
+                viscosity: 0.99,
+                buoyancy: 0.3,
+                color: { r: 0.2, g: 0.6, b: 0.9 },
+                name: 'Water'
+            },
+            oil: {
+                density: 0.8,
+                viscosity: 0.95,
+                buoyancy: 0.15,
+                color: { r: 0.8, g: 0.6, b: 0.2 },
+                name: 'Oil'
+            }
+        };
+        
+        // Container physics
+        this.containerVelocity = new THREE.Vector3(0, 0, 0);
+        this.containerPosition = new THREE.Vector3(0, 0, 0);
+        this.containerRotation = new THREE.Euler(0, 0, 0);
+        this.isDraggingContainer = false;
+        this.previousContainerPosition = new THREE.Vector3();
         
         this.init();
         this.createFluidParticles();
         this.setupControls();
+        this.setupContainerDrag();
         this.animate();
     }
     
@@ -38,8 +65,8 @@ class FluidSimulation {
         this.camera = new THREE.PerspectiveCamera(
             75,
             window.innerWidth / window.innerHeight,
-            0.1,
-            1000
+            1,  // Increased near clipping to prevent zoom issues
+            500 // Adjusted far clipping
         );
         this.camera.position.set(40, 40, 40);
         this.camera.lookAt(0, 0, 0);
@@ -58,6 +85,8 @@ class FluidSimulation {
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.05;
+        this.controls.minDistance = 20;  // Prevent zooming too close
+        this.controls.maxDistance = 150; // Prevent zooming too far
         
         // Lighting
         const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
@@ -128,11 +157,12 @@ class FluidSimulation {
             velocities[i3 + 1] = (Math.random() - 0.5) * 0.1;
             velocities[i3 + 2] = (Math.random() - 0.5) * 0.1;
             
-            // Color variation (blue to cyan gradient)
+            // Color variation based on fluid type
+            const fluidColor = this.fluidTypes[this.params.fluidType].color;
             const colorMix = Math.random();
-            colors[i3] = 0.2 + colorMix * 0.3;      // R
-            colors[i3 + 1] = 0.6 + colorMix * 0.3;  // G
-            colors[i3 + 2] = 0.9 + colorMix * 0.1;  // B
+            colors[i3] = fluidColor.r + colorMix * 0.2;      // R
+            colors[i3 + 1] = fluidColor.g + colorMix * 0.2;  // G
+            colors[i3 + 2] = fluidColor.b + colorMix * 0.1;  // B
             
             // Size variation
             sizes[i] = this.params.particleSize * (0.5 + Math.random() * 0.5);
@@ -167,9 +197,9 @@ class FluidSimulation {
                     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
                     gl_Position = projectionMatrix * mvPosition;
                     
-                    // Size attenuation based on distance
-                    float distanceScale = 1.0 / -mvPosition.z;
-                    gl_PointSize = size * distanceScale * 50.0 * pixelRatio;
+                    // Size attenuation based on distance - improved to prevent disappearing
+                    float distanceScale = 1.0 / max(-mvPosition.z, 1.0);
+                    gl_PointSize = size * clamp(distanceScale * 50.0, 5.0, 100.0) * pixelRatio;
                 }
             `,
             fragmentShader: `
@@ -214,6 +244,10 @@ class FluidSimulation {
         
         const speed = this.params.flowSpeed;
         const turbulence = this.params.turbulence;
+        const fluidProps = this.fluidTypes[this.params.fluidType];
+        
+        // Apply container movement to particles
+        const containerAccel = this.containerVelocity.clone().multiplyScalar(deltaTime * 5);
         
         for (let i = 0; i < count; i++) {
             const i3 = i * 3;
@@ -245,13 +279,18 @@ class FluidSimulation {
             vx += Math.cos(angle + Math.PI / 2) * 0.5 * speed * deltaTime;
             vz += Math.sin(angle + Math.PI / 2) * 0.5 * speed * deltaTime;
             
-            // Add rising motion (buoyancy)
-            vy += 0.3 * speed * deltaTime;
+            // Add rising motion (buoyancy) - based on fluid type
+            vy += fluidProps.buoyancy * speed * deltaTime;
             
-            // Damping
-            vx *= 0.99;
-            vy *= 0.99;
-            vz *= 0.99;
+            // Apply container movement influence
+            vx += containerAccel.x;
+            vy += containerAccel.y;
+            vz += containerAccel.z;
+            
+            // Damping based on viscosity
+            vx *= fluidProps.viscosity;
+            vy *= fluidProps.viscosity;
+            vz *= fluidProps.viscosity;
             
             // Update position
             x += vx;
@@ -344,6 +383,17 @@ class FluidSimulation {
     }
     
     setupControls() {
+        // Fluid type control
+        const fluidTypeSelect = document.getElementById('fluid-type');
+        if (fluidTypeSelect) {
+            fluidTypeSelect.addEventListener('change', (e) => {
+                this.params.fluidType = e.target.value;
+                this.updateFluidColors();
+                document.getElementById('fluid-type-name').textContent = 
+                    this.fluidTypes[this.params.fluidType].name;
+            });
+        }
+        
         // Particle size control
         const sizeSlider = document.getElementById('particle-size');
         const sizeValue = document.getElementById('size-value');
@@ -378,6 +428,73 @@ class FluidSimulation {
         // Reset button
         const resetBtn = document.getElementById('reset-btn');
         resetBtn.addEventListener('click', () => this.reset());
+    }
+    
+    setupContainerDrag() {
+        // Make container draggable with mouse
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        
+        this.renderer.domElement.addEventListener('mousedown', (e) => {
+            // Check if clicking on container (middle mouse or shift+left click)
+            if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
+                isDragging = true;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+                this.previousContainerPosition.copy(this.containerPosition);
+                e.preventDefault();
+            }
+        });
+        
+        this.renderer.domElement.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - previousMousePosition.x;
+                const deltaY = e.clientY - previousMousePosition.y;
+                
+                // Convert screen movement to world movement
+                const movementScale = 0.1;
+                this.containerPosition.x += deltaX * movementScale;
+                this.containerPosition.y -= deltaY * movementScale;
+                
+                // Update container visual position
+                this.container.position.copy(this.containerPosition);
+                
+                // Calculate velocity for physics
+                const deltaPos = this.containerPosition.clone().sub(this.previousContainerPosition);
+                this.containerVelocity.copy(deltaPos).multiplyScalar(10);
+                
+                this.previousContainerPosition.copy(this.containerPosition);
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+                e.preventDefault();
+            }
+        });
+        
+        this.renderer.domElement.addEventListener('mouseup', (e) => {
+            if (isDragging) {
+                isDragging = false;
+                // Apply damping to container velocity
+                this.containerVelocity.multiplyScalar(0.5);
+            }
+        });
+        
+        this.renderer.domElement.addEventListener('mouseleave', () => {
+            isDragging = false;
+        });
+    }
+    
+    updateFluidColors() {
+        const colors = this.particles.geometry.attributes.color.array;
+        const fluidColor = this.fluidTypes[this.params.fluidType].color;
+        const count = colors.length / 3;
+        
+        for (let i = 0; i < count; i++) {
+            const i3 = i * 3;
+            const colorMix = Math.random();
+            colors[i3] = fluidColor.r + colorMix * 0.2;
+            colors[i3 + 1] = fluidColor.g + colorMix * 0.2;
+            colors[i3 + 2] = fluidColor.b + colorMix * 0.1;
+        }
+        
+        this.particles.geometry.attributes.color.needsUpdate = true;
     }
     
     reset() {
@@ -434,6 +551,9 @@ class FluidSimulation {
         this.lastFrameTime = currentTime;
         
         this.time += deltaTime;
+        
+        // Decay container velocity
+        this.containerVelocity.multiplyScalar(0.95);
         
         // Update particle positions
         this.updateParticles(deltaTime);

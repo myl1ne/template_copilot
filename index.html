@@ -124,6 +124,14 @@
         <div class="section">
             <h2>Controls</h2>
             <div class="control">
+                <label>Fluid Type:</label>
+                <select id="fluid-type" style="padding: 5px; border-radius: 3px; background: #333; color: #fff; border: 1px solid #4fc3f7;">
+                    <option value="water">Water</option>
+                    <option value="oil">Oil</option>
+                </select>
+                <span id="fluid-type-name" style="font-size: 0.85em; color: #4fc3f7;">Water</span>
+            </div>
+            <div class="control">
                 <label>Particle Count:</label>
                 <span id="particle-count">10000</span>
             </div>
@@ -145,6 +153,9 @@
             <div class="control">
                 <button id="reset-btn">Reset Simulation</button>
             </div>
+            <div style="margin-top: 10px; font-size: 0.8em; color: #81c784; line-height: 1.5;">
+                💡 <strong>Tip:</strong> Hold Shift + Left Click or Middle Mouse Button to drag the container and see the fluid react!
+            </div>
         </div>
         
         <div class="section">
@@ -155,6 +166,8 @@
                 <li>✓ Screen-space smoothing</li>
                 <li>✓ Frustum culling</li>
                 <li>✓ LOD system</li>
+                <li>✓ Interactive container physics</li>
+                <li>✓ Multiple fluid types</li>
             </ul>
         </div>
         

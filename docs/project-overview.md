@@ -1,58 +1,62 @@
-# [Project Name] - Project Overview
+# TeamRPG - Project Overview
 
-> **Note**: This is a template file. Replace all placeholder content with actual project information.
+## What is TeamRPG?
 
-## What is [Project Name]?
-
-[Project Name] is a [brief description of what the project does in one sentence].
+TeamRPG is an AI-powered workplace simulator that enables the creation and management of AI personas working together in teams, complete with Slack-like communication channels and autonomous decision-making capabilities.
 
 ## Target Audience
 
 This project is designed for:
-- [Primary user group]
-- [Secondary user group]
-- [Any other relevant stakeholders]
+- AI researchers exploring multi-agent systems
+- Developers experimenting with LLM-powered agents
+- Teams interested in workplace simulation and agent collaboration
+- Anyone curious about autonomous AI interactions
 
 ## Key Features
 
-- **[Feature 1]**: [Brief description of the feature and its benefit]
-- **[Feature 2]**: [Brief description of the feature and its benefit]
-- **[Feature 3]**: [Brief description of the feature and its benefit]
+- **AI Persona Management**: Create and manage AI personas with unique roles, personalities, and skills, each powered by OpenAI's GPT models
+- **Team Formation**: Organize personas into teams with specific purposes and project assignments
+- **Project Assignment**: Create projects with goals and assign them to teams for collaborative work
+- **Slack-like Messaging**: Public and private channels where personas can exchange messages and collaborate asynchronously
+- **Autonomous Execution Loop**: Agents independently read context, make decisions, and take actions (respond to messages, post updates, work on projects)
+- **Persistent State**: Save and load complete simulation states for long-running scenarios
 
 ## Quick Start
 
 ### Prerequisites
-- [List any required software, versions, or system requirements]
+- Python 3.7 or higher
+- OpenAI API key
 
 ### Installation
 ```bash
-# Replace with actual installation commands
-npm install [project-name]
-# or
-pip install [project-name]
-# or
-git clone [repository-url]
+git clone https://github.com/myl1ne/template_copilot.git
+cd template_copilot
+pip install -r requirements.txt
 ```
 
 ### Basic Usage
 ```bash
-# Replace with actual usage examples
-[project-name] --help
+# Set your OpenAI API key
+export OPENAI_API_KEY='your-api-key-here'
+
+# Run the interactive CLI
+python teamrpg_cli.py
 ```
 
 ## Core Benefits
 
-1. **[Primary Benefit]**: [Explain how this solves a key problem]
-2. **[Secondary Benefit]**: [Explain additional value provided]
-3. **[Tertiary Benefit]**: [Explain any other significant advantages]
+1. **Realistic Workplace Simulation**: Watch AI agents collaborate, communicate, and work on projects in a simulated environment
+2. **Experimental Platform**: Test multi-agent behaviors, communication patterns, and collaboration strategies
+3. **Easy to Extend**: Modular architecture makes it simple to add new features or customize behavior
+4. **Educational Tool**: Learn about LLM-powered agents, prompt engineering, and autonomous decision-making
 
 ## Links & Resources
 
-- **Repository**: [GitHub repository URL]
-- **Documentation**: [Link to full documentation]
-- **Issues & Support**: [Link to issue tracker]
-- **License**: [License type and link]
+- **Repository**: https://github.com/myl1ne/template_copilot
+- **Documentation**: See docs/ directory for detailed information
+- **Issues & Support**: GitHub Issues
+- **License**: MIT
 
 ---
 
-*Last updated: [Date] | Version: [Current version]*
+*Last updated: 2024-10-28 | Version: 0.1.0*

@@ -79,14 +79,14 @@ We welcome examples for different project types:
 
 ## Validation
 
-All examples should pass the validation script:
+All examples should pass the validation script when run from the repository root:
 
 ```bash
-cd /path/to/example-project
-python ../../validate_template.py
+# From the template_copilot root directory
+python validate_template.py
 ```
 
-If an example has placeholders, it should document why (e.g., for demonstration purposes).
+Note: The validation script checks the main template files (README.md, docs/), not the example projects. The examples are meant to show what completed documentation looks like after placeholders are replaced.
 
 ---
 

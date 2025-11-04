@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloop - Ecosystem Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: #111;
+            color: #fff;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        #ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            max-width: 350px;
+            z-index: 1000;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #4fc3f7;
+        }
+        .control-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #aaa;
+        }
+        select, input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            color: #fff;
+            font-size: 14px;
+        }
+        input[type="range"] {
+            padding: 0;
+        }
+        button {
+            padding: 10px 20px;
+            background: #4fc3f7;
+            border: none;
+            border-radius: 5px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-top: 5px;
+        }
+        button:hover {
+            background: #29b6f6;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        #stats {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #888;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 15px;
+        }
+        .stat-line {
+            margin: 5px 0;
+        }
+        .speed-display {
+            display: inline-block;
+            margin-left: 10px;
+            font-weight: bold;
+            color: #4fc3f7;
+        }
+        #legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    
+    <div id="ui">
+        <h1>Bloop Ecosystem</h1>
+        
+        <div class="control-group">
+            <label for="level-select">Demonstration Level:</label>
+            <select id="level-select">
+                <option value="valley">Valley with River</option>
+                <option value="mountain">Mountain Range</option>
+                <option value="lake">Lake Basin</option>
+                <option value="volcano">Volcanic Island</option>
+                <option value="canyon">Canyon System</option>
+            </select>
+        </div>
+        
+        <div class="control-group">
+            <label for="speed-control">
+                Simulation Speed: <span class="speed-display" id="speed-value">1x</span>
+            </label>
+            <input type="range" id="speed-control" min="0" max="10" value="1" step="1">
+        </div>
+        
+        <div class="control-group">
+            <button id="pause-btn">Pause</button>
+            <button id="reset-btn">Reset</button>
+        </div>
+        
+        <div id="stats">
+            <div class="stat-line">FPS: <span id="fps">0</span></div>
+            <div class="stat-line">Simulation Ticks: <span id="ticks">0</span></div>
+            <div class="stat-line">Active Elements: <span id="active">0</span></div>
+        </div>
+    </div>
+    
+    <div id="legend">
+        <strong style="display: block; margin-bottom: 10px;">Elements</strong>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #87ceeb;"></div>
+            <span>Air</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #1e90ff;"></div>
+            <span>Water</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #8b4513;"></div>
+            <span>Soil</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #696969;"></div>
+            <span>Granite</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #f4a460;"></div>
+            <span>Sand</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ff4500;"></div>
+            <span>Lava</span>
+        </div>
+    </div>
+    
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

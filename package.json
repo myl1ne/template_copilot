@@ -1,0 +1,21 @@
+{
+  "name": "bloop-ecosystem-game",
+  "version": "1.0.0",
+  "description": "A fluid ecosystem simulation game built with Three.js featuring voxel-based terrain, physics, and element interactions",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": ["three.js", "game", "ecosystem", "simulation", "voxel", "physics"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "three": "^0.160.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

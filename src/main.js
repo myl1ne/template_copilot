@@ -19,7 +19,7 @@ class Game {
         // Simulation state
         this.isPaused = false;
         this.simulationSpeed = 1;
-        this.currentLevel = 'valley';
+        this.currentLevel = 'watercycle';
         
         // Performance tracking
         this.lastTime = performance.now();
@@ -88,6 +88,9 @@ class Game {
         
         // Generate level
         switch (levelName) {
+            case 'watercycle':
+                LevelGenerator.generateWaterCycle(this.world);
+                break;
             case 'valley':
                 LevelGenerator.generateValley(this.world);
                 break;

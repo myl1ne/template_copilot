@@ -5,7 +5,9 @@ export const ElementType = {
     SOIL: 2,
     GRANITE: 3,
     SAND: 4,
-    LAVA: 5
+    LAVA: 5,
+    STEAM: 6,
+    ICE: 7
 };
 
 export const ElementState = {
@@ -37,6 +39,8 @@ export const ElementProperties = {
         boilingPoint: 100,
         erosionPower: 0.001,
         erosionResistance: 0,
+        evaporationRate: 0.0001,
+        condensationRate: 0.001,
         transparent: false
     },
     [ElementType.SOIL]: {
@@ -86,6 +90,33 @@ export const ElementProperties = {
         coolsToType: ElementType.GRANITE,
         erosionResistance: 0,
         transparent: false
+    },
+    [ElementType.STEAM]: {
+        name: 'Steam',
+        color: 0xf0f0f0,
+        density: 0.0006,
+        state: ElementState.GAS,
+        flowRate: 0.95,
+        meltingPoint: 0,
+        boilingPoint: 100,
+        condensationRate: 0.002,
+        condensesToType: ElementType.WATER,
+        transparent: true,
+        opacity: 0.4
+    },
+    [ElementType.ICE]: {
+        name: 'Ice',
+        color: 0xb0e0e6,
+        density: 0.92,
+        state: ElementState.SOLID,
+        flowRate: 0,
+        meltingPoint: 0,
+        boilingPoint: 100,
+        meltingRate: 0.0005,
+        meltsToType: ElementType.WATER,
+        erosionResistance: 0.5,
+        transparent: true,
+        opacity: 0.7
     }
 };
 

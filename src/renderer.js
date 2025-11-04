@@ -60,8 +60,8 @@ export class VoxelRenderer {
             const props = ElementProperties[elementType];
             const material = new THREE.MeshLambertMaterial({
                 color: props.color,
-                transparent: props.transparent || false,
-                opacity: props.transparent ? 0.3 : 1.0
+                transparent: props.transparent || props.opacity !== undefined,
+                opacity: props.opacity !== undefined ? props.opacity : 1.0
             });
             
             const mesh = new THREE.InstancedMesh(geometry, material, maxInstances);

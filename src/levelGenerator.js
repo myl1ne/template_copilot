@@ -232,4 +232,120 @@ export class LevelGenerator {
         // Add water source at high end
         world.addSource(2, Math.floor(height * 0.75), canyonPath[2].z, ElementType.WATER, 20);
     }
+    
+    // Generate water cycle demonstration level
+    static generateWaterCycle(world) {
+        const { width, height, depth } = world;
+        
+        // Create base terrain
+        for (let x = 0; x < width; x++) {
+            for (let z = 0; z < depth; z++) {
+                // Bedrock layer
+                for (let y = 0; y < 2; y++) {
+                    world.setVoxel(x, y, z, ElementType.GRANITE);
+                }
+                
+                // Variable terrain height
+                const centerX = width / 2;
+                const centerZ = depth / 2;
+                const dx = x - centerX;
+                const dz = z - centerZ;
+                const dist = Math.sqrt(dx * dx + dz * dz);
+                
+                // Create a large basin in the center
+                const basinDepth = Math.max(5, 15 - Math.floor(dist / 3));
+                
+                for (let y = 2; y < basinDepth; y++) {
+                    if (y < basinDepth - 2) {
+                        world.setVoxel(x, y, z, ElementType.GRANITE);
+                    } else {
+                        world.setVoxel(x, y, z, ElementType.SOIL);
+                    }
+                }
+                
+                // Add mountains on the edges
+                if (dist > width / 3) {
+                    const mountainHeight = Math.floor(basinDepth + (dist - width / 3) / 2);
+                    for (let y = basinDepth; y < Math.min(mountainHeight, height * 0.8); y++) {
+                        if (y < mountainHeight - 3) {
+                            world.setVoxel(x, y, z, ElementType.GRANITE);
+                        } else {
+                            world.setVoxel(x, y, z, ElementType.SOIL);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Fill the central basin with water
+        for (let x = Math.floor(width * 0.3); x < Math.floor(width * 0.7); x++) {
+            for (let z = Math.floor(depth * 0.3); z < Math.floor(depth * 0.7); z++) {
+                for (let y = 5; y < 12; y++) {
+                    world.setVoxel(x, y, z, ElementType.WATER, 20);
+                }
+            }
+        }
+        
+        // Add a heat source (lava) under part of the basin to drive evaporation
+        const heatX = Math.floor(width * 0.4);
+        const heatZ = Math.floor(depth * 0.4);
+        for (let dx = -3; dx <= 3; dx++) {
+            for (let dz = -3; dz <= 3; dz++) {
+                const x = heatX + dx;
+                const z = heatZ + dz;
+                if (x >= 0 && x < width && z >= 0 && z < depth) {
+                    // Lava chamber at depth 3
+                    world.setVoxel(x, 3, z, ElementType.LAVA, 1200);
+                    // Heat the granite above it
+                    world.setVoxel(x, 4, z, ElementType.GRANITE, 800);
+                }
+            }
+        }
+        
+        // Add cold mountains with ice caps
+        for (let x = 0; x < width; x++) {
+            for (let z = 0; z < depth; z++) {
+                const centerX = width / 2;
+                const centerZ = depth / 2;
+                const dx = x - centerX;
+                const dz = z - centerZ;
+                const dist = Math.sqrt(dx * dx + dz * dz);
+                
+                if (dist > width / 2.5) {
+                    // Find mountain peaks
+                    for (let y = height - 1; y >= 0; y--) {
+                        const voxel = world.getVoxel(x, y, z);
+                        if (voxel && voxel.type !== ElementType.AIR) {
+                            // Add ice/snow on high peaks
+                            if (y > height * 0.6) {
+                                voxel.type = ElementType.ICE;
+                                voxel.temperature = -10;
+                            }
+                            // Set cooler temperature at altitude
+                            else if (y > height * 0.4) {
+                                voxel.temperature = 5;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Add water source to maintain cycle
+        world.addSource(Math.floor(width * 0.5), 11, Math.floor(depth * 0.5), ElementType.WATER, 20);
+        
+        // Set atmospheric gradient (cooler at top)
+        for (let x = 0; x < width; x++) {
+            for (let z = 0; z < depth; z++) {
+                for (let y = 0; y < height; y++) {
+                    const voxel = world.getVoxel(x, y, z);
+                    if (voxel && voxel.type === ElementType.AIR) {
+                        // Temperature decreases with altitude
+                        voxel.temperature = 30 - (y * 0.5);
+                    }
+                }
+            }
+        }
+    }
 }

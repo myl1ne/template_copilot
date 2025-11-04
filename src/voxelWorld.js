@@ -88,11 +88,15 @@ export class VoxelWorld {
     update(deltaTime, simulationSpeed) {
         this.tickCount++;
         
-        // Reset updated flags
+        // Reset updated flags and calculate pressure
         for (let x = 0; x < this.width; x++) {
             for (let y = 0; y < this.height; y++) {
                 for (let z = 0; z < this.depth; z++) {
-                    this.voxels[x][y][z].updated = false;
+                    const voxel = this.voxels[x][y][z];
+                    voxel.updated = false;
+                    
+                    // Calculate pressure based on depth and elements above
+                    voxel.pressure = this.calculatePressure(x, y, z);
                 }
             }
         }
@@ -114,6 +118,61 @@ export class VoxelWorld {
                 }
             }
         }
+        
+        // Diffuse temperature
+        this.diffuseTemperature(deltaTime, simulationSpeed);
+    }
+    
+    // Calculate pressure at position
+    calculatePressure(x, y, z) {
+        let pressure = 0;
+        // Add atmospheric pressure
+        pressure += 1.0;
+        
+        // Add pressure from elements above
+        for (let dy = y + 1; dy < this.height; dy++) {
+            const above = this.getVoxel(x, dy, z);
+            if (above && above.type !== ElementType.AIR) {
+                pressure += ElementProperties[above.type].density * 0.1;
+            }
+        }
+        
+        return pressure;
+    }
+    
+    // Diffuse temperature between neighboring voxels
+    diffuseTemperature(deltaTime, speed) {
+        const diffusionRate = 0.01 * speed * deltaTime;
+        
+        for (let x = 0; x < this.width; x++) {
+            for (let y = 0; y < this.height; y++) {
+                for (let z = 0; z < this.depth; z++) {
+                    const voxel = this.voxels[x][y][z];
+                    if (voxel.type === ElementType.AIR) continue;
+                    
+                    // Average with neighbors
+                    const neighbors = [
+                        [x+1, y, z], [x-1, y, z],
+                        [x, y+1, z], [x, y-1, z],
+                        [x, y, z+1], [x, y, z-1]
+                    ];
+                    
+                    let tempSum = voxel.temperature;
+                    let count = 1;
+                    
+                    for (const [nx, ny, nz] of neighbors) {
+                        const neighbor = this.getVoxel(nx, ny, nz);
+                        if (neighbor && neighbor.type !== ElementType.AIR) {
+                            tempSum += neighbor.temperature;
+                            count++;
+                        }
+                    }
+                    
+                    const avgTemp = tempSum / count;
+                    voxel.temperature += (avgTemp - voxel.temperature) * diffusionRate;
+                }
+            }
+        }
     }
     
     // Update a single voxel
@@ -122,6 +181,9 @@ export class VoxelWorld {
         if (!voxel || voxel.type === ElementType.AIR) return;
         
         const props = ElementProperties[voxel.type];
+        
+        // Handle phase transitions based on temperature and pressure
+        this.handlePhaseTransitions(x, y, z, speed, deltaTime);
         
         // Handle cooling (lava -> granite)
         if (voxel.type === ElementType.LAVA && props.coolingRate) {
@@ -144,6 +206,50 @@ export class VoxelWorld {
         }
     }
     
+    // Handle phase transitions (water <-> steam <-> ice)
+    handlePhaseTransitions(x, y, z, speed, deltaTime) {
+        const voxel = this.getVoxel(x, y, z);
+        const props = ElementProperties[voxel.type];
+        
+        // Water evaporation
+        if (voxel.type === ElementType.WATER) {
+            // Evaporate based on temperature and surface exposure
+            if (voxel.temperature > 100 || (voxel.temperature > 80 && Math.random() < props.evaporationRate * speed)) {
+                // Check if surface (air above)
+                const above = this.getVoxel(x, y + 1, z);
+                if (above && above.type === ElementType.AIR) {
+                    voxel.type = ElementType.STEAM;
+                    voxel.temperature = Math.max(voxel.temperature, 100);
+                }
+            }
+            // Freeze if below 0
+            else if (voxel.temperature < 0) {
+                voxel.type = ElementType.ICE;
+            }
+        }
+        // Steam condensation
+        else if (voxel.type === ElementType.STEAM) {
+            // Cool steam gradually
+            voxel.temperature -= 0.05 * speed * deltaTime;
+            
+            // Condense if temperature drops or high pressure
+            if (voxel.temperature < 100 || voxel.pressure > 5) {
+                if (Math.random() < props.condensationRate * speed * voxel.pressure) {
+                    voxel.type = ElementType.WATER;
+                    voxel.temperature = Math.min(voxel.temperature, 99);
+                }
+            }
+        }
+        // Ice melting
+        else if (voxel.type === ElementType.ICE) {
+            if (voxel.temperature > 0) {
+                if (Math.random() < props.meltingRate * speed) {
+                    voxel.type = ElementType.WATER;
+                }
+            }
+        }
+    }
+    
     // Handle liquid/powder flow
     handleFlow(x, y, z, speed) {
         const voxel = this.getVoxel(x, y, z);
@@ -158,14 +264,28 @@ export class VoxelWorld {
             }
         }
         
-        // Try to fall down first (gravity)
-        const below = this.getVoxel(x, y - 1, z);
-        if (below && this.getDensity(x, y - 1, z) < this.getDensity(x, y, z)) {
-            this.swap(x, y, z, x, y - 1, z);
-            return;
+        // Steam rises instead of falls
+        if (voxel.type === ElementType.STEAM) {
+            const above = this.getVoxel(x, y + 1, z);
+            if (above && above.type === ElementType.AIR) {
+                this.swap(x, y, z, x, y + 1, z);
+                return;
+            }
+            // Also disperse at the top
+            if (y >= this.height - 2) {
+                voxel.type = ElementType.AIR;
+                return;
+            }
+        } else {
+            // Regular liquids fall down (gravity)
+            const below = this.getVoxel(x, y - 1, z);
+            if (below && this.getDensity(x, y - 1, z) < this.getDensity(x, y, z)) {
+                this.swap(x, y, z, x, y - 1, z);
+                return;
+            }
         }
         
-        // If can't fall, try to flow sideways
+        // If can't fall/rise, try to flow sideways
         if (Math.random() < props.flowRate * speed) {
             const directions = [
                 [1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1],

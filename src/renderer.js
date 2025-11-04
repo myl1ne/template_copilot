@@ -67,6 +67,15 @@ export class VoxelRenderer {
             const mesh = new THREE.InstancedMesh(geometry, material, maxInstances);
             mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
             mesh.count = 0; // Start with no instances
+            
+            // Initialize instanceColor for lava
+            if (elementType === ElementType.LAVA) {
+                mesh.instanceColor = new THREE.InstancedBufferAttribute(
+                    new Float32Array(maxInstances * 3), 
+                    3
+                );
+            }
+            
             this.scene.add(mesh);
             
             this.instancedMeshes[elementType] = mesh;

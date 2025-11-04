@@ -149,6 +149,15 @@ export class VoxelWorld {
         const voxel = this.getVoxel(x, y, z);
         const props = ElementProperties[voxel.type];
         
+        // Check if fluid is at edge of map (disappear if flowing off)
+        if (x === 0 || x === this.width - 1 || z === 0 || z === this.depth - 1) {
+            // Only make it disappear if it's near the bottom or actively flowing
+            if (y < this.height / 2) {
+                voxel.type = ElementType.AIR;
+                return;
+            }
+        }
+        
         // Try to fall down first (gravity)
         const below = this.getVoxel(x, y - 1, z);
         if (below && this.getDensity(x, y - 1, z) < this.getDensity(x, y, z)) {

@@ -4,10 +4,10 @@ import { LevelGenerator } from './levelGenerator.js';
 
 class Game {
     constructor() {
-        // World dimensions
-        this.worldWidth = 30;
-        this.worldHeight = 25;
-        this.worldDepth = 30;
+        // World dimensions - increased for bigger levels
+        this.worldWidth = 50;
+        this.worldHeight = 40;
+        this.worldDepth = 50;
         
         // Create world
         this.world = new VoxelWorld(this.worldWidth, this.worldHeight, this.worldDepth);

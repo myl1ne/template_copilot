@@ -4,7 +4,7 @@ import { LevelGenerator } from './levelGenerator.js';
 
 class Game {
     constructor() {
-        // World dimensions - increased for bigger levels
+        // World dimensions - configurable based on level
         this.worldWidth = 50;
         this.worldHeight = 40;
         this.worldDepth = 50;
@@ -19,7 +19,7 @@ class Game {
         // Simulation state
         this.isPaused = false;
         this.simulationSpeed = 1;
-        this.currentLevel = 'watercycle';
+        this.currentLevel = 'epic';
         
         // Performance tracking
         this.lastTime = performance.now();
@@ -83,11 +83,25 @@ class Game {
     loadLevel(levelName) {
         this.currentLevel = levelName;
         
+        // Set world dimensions based on level
+        if (levelName === 'epic') {
+            this.worldWidth = 500;
+            this.worldHeight = 250;
+            this.worldDepth = 500;
+        } else {
+            this.worldWidth = 50;
+            this.worldHeight = 40;
+            this.worldDepth = 50;
+        }
+        
         // Clear world
         this.world = new VoxelWorld(this.worldWidth, this.worldHeight, this.worldDepth);
         
         // Generate level
         switch (levelName) {
+            case 'epic':
+                LevelGenerator.generateEpicWorld(this.world);
+                break;
             case 'watercycle':
                 LevelGenerator.generateWaterCycle(this.world);
                 break;

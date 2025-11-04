@@ -17,14 +17,20 @@ export class VoxelWorld {
         this.height = height;
         this.depth = depth;
         
-        // 3D array of voxels [x][y][z]
-        this.voxels = [];
-        for (let x = 0; x < width; x++) {
-            this.voxels[x] = [];
-            for (let y = 0; y < height; y++) {
-                this.voxels[x][y] = [];
-                for (let z = 0; z < depth; z++) {
-                    this.voxels[x][y][z] = new Voxel();
+        // Use sparse storage for large worlds - only store non-air voxels
+        this.voxels = new Map(); // key: "x,y,z", value: Voxel
+        this.useSparseStorage = (width * height * depth) > 1000000; // Use sparse for worlds > 1M voxels
+        
+        if (!this.useSparseStorage) {
+            // 3D array of voxels [x][y][z] for smaller worlds
+            this.voxelsArray = [];
+            for (let x = 0; x < width; x++) {
+                this.voxelsArray[x] = [];
+                for (let y = 0; y < height; y++) {
+                    this.voxelsArray[x][y] = [];
+                    for (let z = 0; z < depth; z++) {
+                        this.voxelsArray[x][y][z] = new Voxel();
+                    }
                 }
             }
         }
@@ -33,20 +39,62 @@ export class VoxelWorld {
         this.tickCount = 0;
     }
     
+    // Helper to create voxel key for sparse storage
+    getKey(x, y, z) {
+        return `${x},${y},${z}`;
+    }
+    
+    // Helper to create voxel key for sparse storage
+    getKey(x, y, z) {
+        return `${x},${y},${z}`;
+    }
+    
     // Get voxel at position
     getVoxel(x, y, z) {
         if (x < 0 || x >= this.width || y < 0 || y >= this.height || z < 0 || z >= this.depth) {
             return null;
         }
-        return this.voxels[x][y][z];
+        
+        if (this.useSparseStorage) {
+            const key = this.getKey(x, y, z);
+            let voxel = this.voxels.get(key);
+            if (!voxel) {
+                // Return a default air voxel, don't store it
+                return new Voxel(ElementType.AIR, 20);
+            }
+            return voxel;
+        } else {
+            return this.voxelsArray[x][y][z];
+        }
     }
     
     // Set voxel at position
     setVoxel(x, y, z, type, temperature = 20) {
-        const voxel = this.getVoxel(x, y, z);
-        if (voxel) {
-            voxel.type = type;
-            voxel.temperature = temperature;
+        if (x < 0 || x >= this.width || y < 0 || y >= this.height || z < 0 || z >= this.depth) {
+            return;
+        }
+        
+        if (this.useSparseStorage) {
+            const key = this.getKey(x, y, z);
+            // Only store non-air voxels to save memory
+            if (type === ElementType.AIR) {
+                this.voxels.delete(key);
+            } else {
+                let voxel = this.voxels.get(key);
+                if (!voxel) {
+                    voxel = new Voxel(type, temperature);
+                    this.voxels.set(key, voxel);
+                } else {
+                    voxel.type = type;
+                    voxel.temperature = temperature;
+                }
+            }
+        } else {
+            const voxel = this.voxelsArray[x][y][z];
+            if (voxel) {
+                voxel.type = type;
+                voxel.temperature = temperature;
+            }
         }
     }
     
@@ -88,39 +136,68 @@ export class VoxelWorld {
     update(deltaTime, simulationSpeed) {
         this.tickCount++;
         
-        // Reset updated flags and calculate pressure
-        for (let x = 0; x < this.width; x++) {
-            for (let y = 0; y < this.height; y++) {
-                for (let z = 0; z < this.depth; z++) {
-                    const voxel = this.voxels[x][y][z];
-                    voxel.updated = false;
-                    
-                    // Calculate pressure based on depth and elements above
-                    voxel.pressure = this.calculatePressure(x, y, z);
-                }
+        if (this.useSparseStorage) {
+            // For large sparse worlds, only update active voxels
+            // Reset updated flags
+            for (const [key, voxel] of this.voxels) {
+                voxel.updated = false;
+                // Calculate pressure for active voxels
+                const [x, y, z] = key.split(',').map(Number);
+                voxel.pressure = this.calculatePressure(x, y, z);
             }
-        }
-        
-        // Update sources
-        for (const source of this.sources) {
-            this.setVoxel(source.x, source.y, source.z, source.type, source.temperature);
-        }
-        
-        // Process voxels from bottom to top for gravity
-        for (let y = 0; y < this.height; y++) {
+            
+            // Update sources
+            for (const source of this.sources) {
+                this.setVoxel(source.x, source.y, source.z, source.type, source.temperature);
+            }
+            
+            // Process active voxels
+            const voxelsToUpdate = Array.from(this.voxels.entries());
+            for (const [key, voxel] of voxelsToUpdate) {
+                if (voxel.updated) continue;
+                
+                const [x, y, z] = key.split(',').map(Number);
+                this.updateVoxel(x, y, z, deltaTime, simulationSpeed);
+                voxel.updated = true;
+            }
+            
+            // Simplified temperature diffusion for large worlds (skip for performance)
+        } else {
+            // Original dense array processing for small worlds
+            // Reset updated flags and calculate pressure
             for (let x = 0; x < this.width; x++) {
-                for (let z = 0; z < this.depth; z++) {
-                    const voxel = this.voxels[x][y][z];
-                    if (voxel.updated) continue;
-                    
-                    this.updateVoxel(x, y, z, deltaTime, simulationSpeed);
-                    voxel.updated = true;
+                for (let y = 0; y < this.height; y++) {
+                    for (let z = 0; z < this.depth; z++) {
+                        const voxel = this.voxelsArray[x][y][z];
+                        voxel.updated = false;
+                        
+                        // Calculate pressure based on depth and elements above
+                        voxel.pressure = this.calculatePressure(x, y, z);
+                    }
                 }
             }
+            
+            // Update sources
+            for (const source of this.sources) {
+                this.setVoxel(source.x, source.y, source.z, source.type, source.temperature);
+            }
+            
+            // Process voxels from bottom to top for gravity
+            for (let y = 0; y < this.height; y++) {
+                for (let x = 0; x < this.width; x++) {
+                    for (let z = 0; z < this.depth; z++) {
+                        const voxel = this.voxelsArray[x][y][z];
+                        if (voxel.updated) continue;
+                        
+                        this.updateVoxel(x, y, z, deltaTime, simulationSpeed);
+                        voxel.updated = true;
+                    }
+                }
+            }
+            
+            // Diffuse temperature
+            this.diffuseTemperature(deltaTime, simulationSpeed);
         }
-        
-        // Diffuse temperature
-        this.diffuseTemperature(deltaTime, simulationSpeed);
     }
     
     // Calculate pressure at position
@@ -377,16 +454,21 @@ export class VoxelWorld {
     
     // Get active element count (non-air)
     getActiveElementCount() {
-        let count = 0;
-        for (let x = 0; x < this.width; x++) {
-            for (let y = 0; y < this.height; y++) {
-                for (let z = 0; z < this.depth; z++) {
-                    if (this.voxels[x][y][z].type !== ElementType.AIR) {
-                        count++;
+        if (this.useSparseStorage) {
+            // For sparse storage, just return the size of the map
+            return this.voxels.size;
+        } else {
+            let count = 0;
+            for (let x = 0; x < this.width; x++) {
+                for (let y = 0; y < this.height; y++) {
+                    for (let z = 0; z < this.depth; z++) {
+                        if (this.voxelsArray[x][y][z].type !== ElementType.AIR) {
+                            count++;
+                        }
                     }
                 }
             }
+            return count;
         }
-        return count;
     }
 }

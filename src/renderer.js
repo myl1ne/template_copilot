@@ -93,28 +93,54 @@ export class VoxelRenderer {
         }
         
         // Update all voxels
-        for (let x = 0; x < this.world.width; x++) {
-            for (let y = 0; y < this.world.height; y++) {
-                for (let z = 0; z < this.world.depth; z++) {
-                    const voxel = this.world.getVoxel(x, y, z);
-                    
-                    if (voxel.type === ElementType.AIR) continue;
-                    
-                    const mesh = this.instancedMeshes[voxel.type];
-                    if (!mesh) continue;
-                    
-                    dummy.position.set(x, y, z);
-                    dummy.updateMatrix();
-                    
-                    mesh.setMatrixAt(counts[voxel.type], dummy.matrix);
-                    
-                    // Update color for lava based on temperature
-                    if (voxel.type === ElementType.LAVA) {
-                        const color = new THREE.Color(getElementColor(voxel.type, voxel.temperature));
-                        mesh.setColorAt(counts[voxel.type], color);
+        if (this.world.useSparseStorage) {
+            // For sparse worlds, iterate over only active voxels
+            for (const [key, voxel] of this.world.voxels) {
+                if (voxel.type === ElementType.AIR) continue;
+                
+                const mesh = this.instancedMeshes[voxel.type];
+                if (!mesh) continue;
+                
+                const [x, y, z] = key.split(',').map(Number);
+                
+                dummy.position.set(x, y, z);
+                dummy.updateMatrix();
+                
+                mesh.setMatrixAt(counts[voxel.type], dummy.matrix);
+                
+                // Update color for lava based on temperature
+                if (voxel.type === ElementType.LAVA) {
+                    const color = new THREE.Color(getElementColor(voxel.type, voxel.temperature));
+                    mesh.setColorAt(counts[voxel.type], color);
+                }
+                
+                counts[voxel.type]++;
+            }
+        } else {
+            // For dense array worlds
+            for (let x = 0; x < this.world.width; x++) {
+                for (let y = 0; y < this.world.height; y++) {
+                    for (let z = 0; z < this.world.depth; z++) {
+                        const voxel = this.world.getVoxel(x, y, z);
+                        
+                        if (voxel.type === ElementType.AIR) continue;
+                        
+                        const mesh = this.instancedMeshes[voxel.type];
+                        if (!mesh) continue;
+                        
+                        dummy.position.set(x, y, z);
+                        dummy.updateMatrix();
+                        
+                        mesh.setMatrixAt(counts[voxel.type], dummy.matrix);
+                        
+                        // Update color for lava based on temperature
+                        if (voxel.type === ElementType.LAVA) {
+                            const color = new THREE.Color(getElementColor(voxel.type, voxel.temperature));
+                            mesh.setColorAt(counts[voxel.type], color);
+                        }
+                        
+                        counts[voxel.type]++;
                     }
-                    
-                    counts[voxel.type]++;
                 }
             }
         }

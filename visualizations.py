@@ -7,8 +7,6 @@ import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 import networkx as nx
-from datetime import datetime
-import random
 
 
 def render_ontology_tree(ontology_data):

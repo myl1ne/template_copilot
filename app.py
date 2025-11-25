@@ -13,8 +13,6 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 import networkx as nx
-from datetime import datetime, timedelta
-import random
 
 # Import data and visualization modules
 from sample_data import get_sample_ontology, get_sample_entities

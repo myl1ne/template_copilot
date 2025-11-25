@@ -16,6 +16,17 @@ import networkx as nx
 from datetime import datetime, timedelta
 import random
 
+# Import data and visualization modules
+from sample_data import get_sample_ontology, get_sample_entities
+from visualizations import (
+    render_ontology_tree, 
+    get_tree_statistics,
+    render_spatiotemporal_map,
+    render_timeline,
+    render_entity_graph,
+    get_graph_statistics
+)
+
 # Page configuration
 st.set_page_config(
     page_title="Company Understanding Platform",
@@ -74,7 +85,6 @@ with st.sidebar:
         )
         
         if st.button("Load Sample Data", type="primary"):
-            from sample_data import get_sample_ontology, get_sample_entities
             st.session_state.ontology_data = get_sample_ontology(sample_choice)
             st.session_state.entity_data = get_sample_entities(sample_choice)
             st.success("✅ Sample data loaded successfully!")
@@ -165,8 +175,6 @@ else:
         st.header("Ontology Tree Visualization")
         
         if st.session_state.ontology_data:
-            from visualizations import render_ontology_tree, get_tree_statistics
-            
             col1, col2 = st.columns([3, 1])
             
             with col1:
@@ -188,8 +196,6 @@ else:
         st.header("Spatiotemporal Entity Visualization")
         
         if st.session_state.entity_data:
-            from visualizations import render_spatiotemporal_map, render_timeline
-            
             st.subheader("🗺️ Geographic Distribution")
             render_spatiotemporal_map(st.session_state.entity_data)
             
@@ -205,8 +211,6 @@ else:
         st.header("Entity Relationship Graph")
         
         if st.session_state.entity_data:
-            from visualizations import render_entity_graph, get_graph_statistics
-            
             col1, col2 = st.columns([3, 1])
             
             with col1:

@@ -104,11 +104,16 @@ def get_tree_statistics(ontology_data):
     
     stats = traverse(ontology_data)
     
+    # Prevent division by zero
+    avg_children = 0
+    if len(stats['children_counts']) > 0:
+        avg_children = sum(stats['children_counts']) / len(stats['children_counts'])
+    
     return {
         'total_nodes': stats['total'],
         'max_depth': stats['max_depth'] + 1,
         'leaf_nodes': stats['leaves'],
-        'avg_children': sum(stats['children_counts']) / len(stats['children_counts'])
+        'avg_children': avg_children
     }
 
 
@@ -215,21 +220,34 @@ def render_timeline(entity_data):
     entities_flat = []
     for email in entity_data:
         for entity in email['detected_entities']:
-            if 'timestamp' in entity:
-                entities_flat.append({
-                    'email_id': email['email_id'],
-                    'entity_text': entity['entity_text'],
-                    'entity_type': entity['entity_type'],
-                    'timestamp': entity['timestamp'],
-                    'location': entity.get('location', 'Unknown')
-                })
+            # Skip entities with invalid or missing timestamps
+            if 'timestamp' in entity and entity['timestamp']:
+                try:
+                    entities_flat.append({
+                        'email_id': email['email_id'],
+                        'entity_text': entity['entity_text'],
+                        'entity_type': entity['entity_type'],
+                        'timestamp': entity['timestamp'],
+                        'location': entity.get('location', 'Unknown')
+                    })
+                except (ValueError, TypeError):
+                    # Skip invalid timestamp formats
+                    continue
     
     if not entities_flat:
         st.warning("No temporal data available")
         return
     
     df = pd.DataFrame(entities_flat)
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
+    
+    # Remove any rows with invalid timestamps
+    df = df.dropna(subset=['timestamp'])
+    
+    if df.empty:
+        st.warning("No valid temporal data available")
+        return
+    
     df['date'] = df['timestamp'].dt.date
     
     # Timeline aggregation
@@ -281,10 +299,8 @@ def render_timeline(entity_data):
     st.plotly_chart(fig_heatmap, use_container_width=True)
 
 
-def render_entity_graph(entity_data):
-    """Render entity relationship graph"""
-    
-    # Build graph from co-occurrence in emails
+def _build_entity_graph(entity_data):
+    """Build a NetworkX graph from entity co-occurrence data"""
     G = nx.Graph()
     
     # Add entities and connections
@@ -312,6 +328,15 @@ def render_entity_graph(entity_data):
                     G[id1][id2]['weight'] += 1
                 else:
                     G.add_edge(id1, id2, weight=1)
+    
+    return G, entity_types
+
+
+def render_entity_graph(entity_data):
+    """Render entity relationship graph"""
+    
+    # Build graph from co-occurrence in emails
+    G, entity_types = _build_entity_graph(entity_data)
     
     if G.number_of_nodes() == 0:
         st.warning("No entity relationships found")
@@ -421,25 +446,8 @@ def render_entity_graph(entity_data):
 def get_graph_statistics(entity_data):
     """Calculate statistics about the entity graph"""
     
-    # Build graph
-    G = nx.Graph()
-    
-    for email in entity_data:
-        entities = email['detected_entities']
-        
-        for entity in entities:
-            node_id = entity['entity_instance']
-            G.add_node(node_id, type=entity['entity_type'])
-        
-        for i, entity1 in enumerate(entities):
-            for entity2 in entities[i+1:]:
-                id1 = entity1['entity_instance']
-                id2 = entity2['entity_instance']
-                
-                if G.has_edge(id1, id2):
-                    G[id1][id2]['weight'] += 1
-                else:
-                    G.add_edge(id1, id2, weight=1)
+    # Build graph using shared helper
+    G, _ = _build_entity_graph(entity_data)
     
     # Get unique entity types
     entity_types = set()

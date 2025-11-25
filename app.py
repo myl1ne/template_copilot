@@ -86,7 +86,6 @@ with st.sidebar:
             st.session_state.ontology_data = get_sample_ontology(sample_choice)
             st.session_state.entity_data = get_sample_entities(sample_choice)
             st.success("✅ Sample data loaded successfully!")
-            st.rerun()
     
     else:
         st.subheader("Upload Ontology JSON")

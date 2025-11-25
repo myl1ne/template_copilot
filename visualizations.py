@@ -42,17 +42,25 @@ def render_ontology_tree(ontology_data):
     
     # Display using expanders for hierarchical view
     def render_node(node, level=0):
-        indent = "  " * level
-        
-        with st.expander(f"{indent}📁 **{node['entity_type']}**", expanded=(level < 2)):
-            st.markdown(f"*{node['description']}*")
-            
+        indent = "&nbsp;&nbsp;" * level
+        if level == 0:
+            with st.expander(f"📁 **{node['entity_type']}**", expanded=True):
+                st.markdown(f"*{node['description']}*")
+                if node.get('children'):
+                    st.caption(f"Children: {len(node['children'])}")
+                    for child in node['children']:
+                        render_node(child, level + 1)
+                else:
+                    st.caption("🍃 Leaf node")
+        else:
+            st.markdown(f"{indent}📁 **{node['entity_type']}**  ")
+            st.markdown(f"{indent}*{node['description']}*")
             if node.get('children'):
-                st.caption(f"Children: {len(node['children'])}")
+                st.caption(f"{indent}Children: {len(node['children'])}")
                 for child in node['children']:
                     render_node(child, level + 1)
             else:
-                st.caption("🍃 Leaf node")
+                st.caption(f"{indent}🍃 Leaf node")
     
     render_node(ontology_data, 0)
     

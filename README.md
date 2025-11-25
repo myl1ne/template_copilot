@@ -1,81 +1,159 @@
-# [Project Name] Template
+# Company Ontology & Entity Understanding Platform
 
-> **Note**: This is a meta-template repository. Replace `[Project Name]` and all placeholder content with your actual project information.
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.28.0-FF4B4B.svg)](https://streamlit.io)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Template for kickstarting new projects with GitHub Copilot-managed documentation.
+> **Interactive visualization platform for understanding company structure and processes through autonomous ontology extraction from email data.**
+
+## 🎯 Overview
+
+This platform transforms email communications into actionable insights by autonomously extracting and visualizing organizational structures, entity relationships, and spatiotemporal patterns.
+
+### Key Features
+
+- **🌳 Ontology Tree Visualization**: Interactive hierarchical company structure with sunburst charts
+- **🗺️ Spatiotemporal Entity Mapping**: Geographic and temporal distribution of entities  
+- **🔗 Entity Relationship Graphs**: Network analysis showing how entities connect
 
 ## 🚀 Quick Start
 
-1. **Use this template** to create a new repository
-2. **Replace placeholders** in all documentation files with your project information
-3. **Configure GitHub Copilot** to automatically maintain your documentation
-4. **Set up issue labels** for automatic backlog synchronization
+### Prerequisites
+- Python 3.8 or higher
+- pip package manager
 
-## 📚 Documentation Structure
+### Installation
 
-This template provides a complete documentation ecosystem that GitHub Copilot will maintain:
+```bash
+# Clone the repository
+git clone https://github.com/myl1ne/template_copilot.git
+cd template_copilot
 
-### Core Documents
-- **[Project Overview](docs/project-overview.md)** - One-page summary of your project
-- **[Status & Roadmap](docs/roadmap.md)** - Current status and long-term planning
-- **[Current Backlog](docs/backlog.md)** - Task tracking synchronized with GitHub Issues
+# Install dependencies
+pip install -r requirements.txt
 
-### Copilot Configuration
-- **[Copilot Instructions](.github/copilot-instructions.md)** - Instructions for maintaining documentation
+# Run the application
+streamlit run app.py
+```
 
-## 🤖 How It Works
+The application will open in your browser at `http://localhost:8501`
 
-This template includes:
+### First Steps
 
-1. **GitHub Copilot Instructions** - Automated documentation maintenance rules
-2. **Structured Templates** - Consistent format for all project documentation  
-3. **GitHub Integration** - Automatic synchronization with issues and project boards
-4. **Living Documentation** - Documents that evolve with your project
+1. **Load Sample Data**: Use the sidebar to select "Sample Data" and choose a dataset
+2. **Explore Visualizations**: Navigate through the three tabs:
+   - Ontology Tree: View hierarchical structure
+   - Spatiotemporal Map: See geographic and temporal patterns
+   - Entity Graph: Analyze relationship networks
+3. **Try Custom Data**: Upload your own ontology and entity JSON files
 
-## 🛠️ Customization
+## 📊 Data Format
 
-After using this template:
+### Ontology Tree Structure
+```json
+{
+  "entity_type": "Organization",
+  "description": "Root organization description",
+  "children": [
+    {
+      "entity_type": "Department",
+      "description": "Department description",
+      "children": []
+    }
+  ]
+}
+```
 
-1. **Update Project Information**:
-   - Replace `[Project Name]` throughout all files
-   - Add your actual project description and details
-   - Configure repository-specific information
+### Entity Instances Format
+```json
+{
+  "email_id": "email_001",
+  "detected_entities": [
+    {
+      "entity_text": "John Doe",
+      "entity_type": "Person",
+      "entity_instance": "john.doe",
+      "location": "New York",
+      "latitude": 40.7128,
+      "longitude": -74.0060,
+      "timestamp": "2024-01-15T10:30:00",
+      "confidence": 0.95
+    }
+  ]
+}
+```
 
-2. **Customize Documentation**:
-   - Modify templates to match your project needs
-   - Add project-specific sections or remove unused ones
-   - Update the roadmap with your actual goals
+## 📚 Documentation
 
-3. **Configure GitHub Integration**:
-   - Set up issue labels for automatic backlog updates
-   - Configure project boards if needed
-   - Enable GitHub Copilot for your repository
+- **[Detailed Usage Guide](README_APP.md)** - Complete application documentation
+- **[Project Overview](docs/project-overview.md)** - Project goals and benefits
+- **[Roadmap](docs/roadmap.md)** - Current status and future plans
+- **[Backlog](docs/backlog.md)** - Task tracking and priorities
 
-## 📖 Usage Guide
+## 🛠️ Technology Stack
 
-### For Project Maintainers
-- The documentation will be automatically updated by GitHub Copilot
-- Review and approve Copilot's suggested changes
-- Manually update when major project changes occur
+- **Streamlit**: Web application framework
+- **Plotly**: Interactive visualizations
+- **NetworkX**: Graph analysis
+- **Pandas**: Data manipulation
+- **PyDeck**: Map rendering
 
-### For Contributors
-- Check the [backlog](docs/backlog.md) for current tasks
-- Refer to the [roadmap](docs/roadmap.md) for project direction
-- Read the [project overview](docs/project-overview.md) for context
+## 🎨 Features in Detail
 
-## 🎯 Benefits
+### Ontology Tree Visualization
+- Expandable/collapsible hierarchical view
+- Sunburst chart representation
+- Tree statistics and metrics
+- Export capabilities
 
-- **Consistent Documentation** - Standardized format across all projects
-- **Automated Maintenance** - Reduced manual documentation overhead  
-- **GitHub Integration** - Seamless connection with development workflow
-- **Living Documents** - Documentation that stays current with development
+### Spatiotemporal Mapping
+- Interactive world map with entity markers
+- Timeline analysis with date filtering
+- Activity heatmap (day/hour patterns)
+- Entity type and confidence filtering
+
+### Entity Relationship Graph
+- Network visualization of entity co-occurrence
+- Multiple layout algorithms
+- Node sizing based on connections
+- Color coding by entity type
+- Network statistics (density, clustering)
+
+## 🤝 Contributing
+
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## 📝 License
+
+MIT License - see LICENSE file for details
+
+## 🐛 Issues & Support
+
+- Report issues on [GitHub Issues](https://github.com/myl1ne/template_copilot/issues)
+- Check [documentation](README_APP.md) for common questions
+- Review sample data for format examples
+
+## 🔮 Future Enhancements
+
+- Real-time data ingestion from email APIs
+- Advanced NER model integration
+- Multi-user authentication
+- Export capabilities for all visualizations
+- Custom color schemes and themes
 
 ---
 
-## Template Information
+## About This Template
 
-This is the `template_copilot` repository - a meta-template for creating copilot-managed documentation systems.
+This project was created using the `template_copilot` meta-template system for GitHub Copilot-managed documentation. The template provides automated documentation maintenance and GitHub integration.
 
-**Template Version**: 1.0.0  
-**Last Updated**: 2024-09-27  
-**License**: MIT
+**Version**: 1.0.0  
+**Last Updated**: 2024-11-25  
+
+---
+
+**Built with ❤️ for autonomous company understanding**

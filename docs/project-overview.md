@@ -1,58 +1,56 @@
-# [Project Name] - Project Overview
+# Company Ontology & Entity Understanding Platform - Project Overview
 
-> **Note**: This is a template file. Replace all placeholder content with actual project information.
+## What is the Company Understanding Platform?
 
-## What is [Project Name]?
-
-[Project Name] is a [brief description of what the project does in one sentence].
+The Company Understanding Platform is a Streamlit-based visualization tool that transforms email data into actionable insights through autonomous ontology extraction and entity relationship mapping.
 
 ## Target Audience
 
 This project is designed for:
-- [Primary user group]
-- [Secondary user group]
-- [Any other relevant stakeholders]
+- Data analysts investigating organizational structure
+- Business intelligence teams analyzing company communications
+- Researchers studying organizational behavior and networks
+- Product teams prototyping knowledge extraction systems
 
 ## Key Features
 
-- **[Feature 1]**: [Brief description of the feature and its benefit]
-- **[Feature 2]**: [Brief description of the feature and its benefit]
-- **[Feature 3]**: [Brief description of the feature and its benefit]
+- **Ontology Tree Visualization**: Interactive hierarchical views of company structure extracted from email data, with sunburst charts and detailed statistics
+- **Spatiotemporal Entity Mapping**: Geographic and temporal distribution of detected entities on interactive maps with timeline analysis
+- **Entity Relationship Graphs**: Network visualization showing how entities are connected through email co-occurrence
 
 ## Quick Start
 
 ### Prerequisites
-- [List any required software, versions, or system requirements]
+- Python 3.8 or higher
+- pip package manager
 
 ### Installation
 ```bash
-# Replace with actual installation commands
-npm install [project-name]
-# or
-pip install [project-name]
-# or
-git clone [repository-url]
+git clone https://github.com/myl1ne/template_copilot.git
+cd template_copilot
+pip install -r requirements.txt
 ```
 
 ### Basic Usage
 ```bash
-# Replace with actual usage examples
-[project-name] --help
+streamlit run app.py
 ```
+
+Then open your browser to `http://localhost:8501`
 
 ## Core Benefits
 
-1. **[Primary Benefit]**: [Explain how this solves a key problem]
-2. **[Secondary Benefit]**: [Explain additional value provided]
-3. **[Tertiary Benefit]**: [Explain any other significant advantages]
+1. **Autonomous Understanding**: Automatically extracts and visualizes organizational structure from unstructured email data
+2. **Multi-dimensional Analysis**: Combines hierarchical, geographic, temporal, and network perspectives in one platform
+3. **Interactive Exploration**: Provides intuitive, interactive visualizations for exploring complex organizational data
 
 ## Links & Resources
 
-- **Repository**: [GitHub repository URL]
-- **Documentation**: [Link to full documentation]
-- **Issues & Support**: [Link to issue tracker]
-- **License**: [License type and link]
+- **Repository**: https://github.com/myl1ne/template_copilot
+- **Documentation**: See README_APP.md for detailed usage guide
+- **Issues & Support**: GitHub Issues
+- **License**: MIT
 
 ---
 
-*Last updated: [Date] | Version: [Current version]*
+*Last updated: 2024-11-25 | Version: 1.0.0*

@@ -1,0 +1,86 @@
+{
+  "entity_type": "Technology Company",
+  "description": "Software company extracted from 5,000 emails over 6 months",
+  "children": [
+    {
+      "entity_type": "Engineering",
+      "description": "Product development and technical teams",
+      "children": [
+        {
+          "entity_type": "Backend Engineering",
+          "description": "Server-side systems and APIs",
+          "children": [
+            {
+              "entity_type": "Platform Services",
+              "description": "Core platform infrastructure and services",
+              "children": []
+            },
+            {
+              "entity_type": "Data Engineering",
+              "description": "Data pipelines and analytics infrastructure",
+              "children": []
+            }
+          ]
+        },
+        {
+          "entity_type": "Frontend Engineering",
+          "description": "User interface and client applications",
+          "children": [
+            {
+              "entity_type": "Web Platform",
+              "description": "Web application development",
+              "children": []
+            },
+            {
+              "entity_type": "Mobile Apps",
+              "description": "iOS and Android applications",
+              "children": []
+            }
+          ]
+        },
+        {
+          "entity_type": "Infrastructure",
+          "description": "DevOps and cloud infrastructure",
+          "children": []
+        }
+      ]
+    },
+    {
+      "entity_type": "Product",
+      "description": "Product management and design",
+      "children": [
+        {
+          "entity_type": "Product Management",
+          "description": "Product strategy and roadmap",
+          "children": []
+        },
+        {
+          "entity_type": "Product Design",
+          "description": "UX/UI design and research",
+          "children": []
+        }
+      ]
+    },
+    {
+      "entity_type": "Business",
+      "description": "Commercial and operations teams",
+      "children": [
+        {
+          "entity_type": "Sales",
+          "description": "Revenue and customer acquisition",
+          "children": []
+        },
+        {
+          "entity_type": "Marketing",
+          "description": "Brand and demand generation",
+          "children": []
+        },
+        {
+          "entity_type": "Customer Success",
+          "description": "Customer support and retention",
+          "children": []
+        }
+      ]
+    }
+  ]
+}

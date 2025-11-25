@@ -1,0 +1,107 @@
+[
+  {
+    "email_id": "email_001",
+    "detected_entities": [
+      {
+        "entity_text": "Sarah Chen",
+        "entity_type": "Person",
+        "entity_instance": "sarah.chen",
+        "location": "San Francisco",
+        "latitude": 37.7749,
+        "longitude": -122.4194,
+        "timestamp": "2024-09-15T10:30:00",
+        "confidence": 0.95
+      },
+      {
+        "entity_text": "Platform Services Team",
+        "entity_type": "Department",
+        "entity_instance": "platform_services",
+        "location": "San Francisco",
+        "latitude": 37.7749,
+        "longitude": -122.4194,
+        "timestamp": "2024-09-15T10:30:00",
+        "confidence": 0.92
+      }
+    ]
+  },
+  {
+    "email_id": "email_002",
+    "detected_entities": [
+      {
+        "entity_text": "API Gateway Project",
+        "entity_type": "Project",
+        "entity_instance": "api_gateway",
+        "location": "New York",
+        "latitude": 40.7128,
+        "longitude": -74.0060,
+        "timestamp": "2024-09-20T14:15:00",
+        "confidence": 0.88
+      }
+    ]
+  },
+  {
+    "email_id": "email_003",
+    "detected_entities": [
+      {
+        "entity_text": "Mobile App Release",
+        "entity_type": "Event",
+        "entity_instance": "mobile_release_v2",
+        "location": "London",
+        "latitude": 51.5074,
+        "longitude": -0.1278,
+        "timestamp": "2024-10-01T09:00:00",
+        "confidence": 0.91
+      },
+      {
+        "entity_text": "John Smith",
+        "entity_type": "Person",
+        "entity_instance": "john.smith",
+        "location": "London",
+        "latitude": 51.5074,
+        "longitude": -0.1278,
+        "timestamp": "2024-10-01T09:00:00",
+        "confidence": 0.94
+      }
+    ]
+  },
+  {
+    "email_id": "email_004",
+    "detected_entities": [
+      {
+        "entity_text": "React Framework",
+        "entity_type": "Technology",
+        "entity_instance": "react",
+        "location": "Singapore",
+        "latitude": 1.3521,
+        "longitude": 103.8198,
+        "timestamp": "2024-10-10T16:45:00",
+        "confidence": 0.97
+      }
+    ]
+  },
+  {
+    "email_id": "email_005",
+    "detected_entities": [
+      {
+        "entity_text": "Customer Success Team",
+        "entity_type": "Department",
+        "entity_instance": "customer_success",
+        "location": "Toronto",
+        "latitude": 43.6532,
+        "longitude": -79.3832,
+        "timestamp": "2024-10-15T11:20:00",
+        "confidence": 0.89
+      },
+      {
+        "entity_text": "Enterprise Customer Onboarding",
+        "entity_type": "Process",
+        "entity_instance": "enterprise_onboarding",
+        "location": "Toronto",
+        "latitude": 43.6532,
+        "longitude": -79.3832,
+        "timestamp": "2024-10-15T11:20:00",
+        "confidence": 0.85
+      }
+    ]
+  }
+]

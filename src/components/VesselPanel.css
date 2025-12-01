@@ -1,0 +1,203 @@
+.vessel-panel {
+  width: 320px;
+  height: 100%;
+  background: #1e1e1e;
+  color: #fff;
+  overflow-y: auto;
+  border-right: 1px solid #333;
+}
+
+.panel-section {
+  padding: 20px;
+  border-bottom: 1px solid #333;
+}
+
+.panel-title {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #4dabf7;
+}
+
+.section-title {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.stat-card {
+  background: #2a2a2a;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #4dabf7;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.vessel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vessel-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #2a2a2a;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.vessel-item:hover {
+  background: #333;
+  transform: translateX(4px);
+}
+
+.vessel-item.selected {
+  border-color: #4dabf7;
+  background: #2d3f4f;
+}
+
+.vessel-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.vessel-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.vessel-name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vessel-type {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 6px;
+}
+
+.vessel-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+.status-badge.in_transit {
+  background: #4dabf7;
+  color: #fff;
+}
+
+.status-badge.docked {
+  background: #51cf66;
+  color: #fff;
+}
+
+.status-badge.loading {
+  background: #ffd43b;
+  color: #333;
+}
+
+.vessel-speed {
+  font-size: 11px;
+  color: #999;
+}
+
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.event-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: #2a2a2a;
+  border-radius: 8px;
+}
+
+.event-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.event-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-description {
+  font-size: 13px;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.event-time {
+  font-size: 11px;
+  color: #999;
+}
+
+.no-events {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Scrollbar styling */
+.vessel-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.vessel-panel::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.vessel-panel::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.vessel-panel::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

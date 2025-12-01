@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import FallbackMap from './components/FallbackMap';
+import ShippingMap from './components/ShippingMap';
 import Timeline from './components/Timeline';
 import VesselPanel from './components/VesselPanel';
 import { getTimeRange } from './data/shippingData';
@@ -11,6 +12,7 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedVessel, setSelectedVessel] = useState(null);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [useMapbox, setUseMapbox] = useState(false);
 
   // Auto-play functionality
   useEffect(() => {
@@ -68,6 +70,18 @@ function App() {
                 <option value={8}>8x</option>
               </select>
             </div>
+            <div className="map-toggle">
+              <label htmlFor="mapbox-toggle">Map:</label>
+              <select
+                id="mapbox-toggle"
+                value={useMapbox ? 'mapbox' : 'd3'}
+                onChange={(e) => setUseMapbox(e.target.value === 'mapbox')}
+                className="speed-select"
+              >
+                <option value="d3">D3.js (Default)</option>
+                <option value="mapbox">Mapbox</option>
+              </select>
+            </div>
           </div>
         </div>
       </header>
@@ -80,10 +94,17 @@ function App() {
         />
         
         <div className="map-container">
-          <FallbackMap 
-            currentTime={currentTime}
-            selectedVessel={selectedVessel}
-          />
+          {useMapbox ? (
+            <ShippingMap 
+              currentTime={currentTime}
+              selectedVessel={selectedVessel}
+            />
+          ) : (
+            <FallbackMap 
+              currentTime={currentTime}
+              selectedVessel={selectedVessel}
+            />
+          )}
           
           <div className="timeline-wrapper">
             <Timeline 

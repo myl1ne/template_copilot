@@ -11,23 +11,39 @@ const ShippingMap = ({ currentTime, selectedVessel }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapError, setMapError] = useState(null);
   const vesselsMarkers = useRef({});
   const portMarkers = useRef({});
 
   // Initialize map
   useEffect(() => {
     if (map.current) return; // Initialize map only once
+    
+    console.log('Initializing Mapbox...');
+    console.log('Mapbox Access Token:', mapboxgl.accessToken);
+    console.log('Token length:', mapboxgl.accessToken?.length || 0);
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
-      center: [20, 30],
-      zoom: 2,
-      projection: 'globe'
-    });
+    if (!mapboxgl.accessToken) {
+      setMapError('No Mapbox token found. Please set VITE_MAPBOX_TOKEN in .env file.');
+      console.error('Mapbox token is missing!');
+      return;
+    }
 
-    map.current.on('load', () => {
-      setMapLoaded(true);
+    let cancelled = false;
+
+    try {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/dark-v11',
+        center: [20, 30],
+        zoom: 2,
+        projection: 'globe'
+      });
+
+      map.current.on('load', () => {
+        if (cancelled) return;
+        console.log('Map loaded successfully!');
+        setMapLoaded(true);
       
       // Add fog for atmosphere effect
       map.current.setFog({
@@ -95,9 +111,21 @@ const ShippingMap = ({ currentTime, selectedVessel }) => {
       });
     });
 
+    map.current.on('error', (e) => {
+      if (cancelled) return;
+      console.error('Mapbox error:', e);
+      setMapError(`Map error: ${e.error?.message || 'Unknown error'}`);
+    });
+    } catch (error) {
+      console.error('Failed to initialize Mapbox:', error);
+      setMapError(`Initialization error: ${error.message}`);
+    }
+
     return () => {
+      cancelled = true;
       if (map.current) {
         map.current.remove();
+        map.current = null;
       }
     };
   }, []);
@@ -152,7 +180,24 @@ const ShippingMap = ({ currentTime, selectedVessel }) => {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />
-      {!mapLoaded && (
+      {mapError && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: 'rgba(255, 0, 0, 0.9)',
+          color: 'white',
+          padding: '20px',
+          borderRadius: '8px',
+          fontSize: '16px',
+          maxWidth: '400px',
+          textAlign: 'center'
+        }}>
+          {mapError}
+        </div>
+      )}
+      {!mapLoaded && !mapError && (
         <div style={{
           position: 'absolute',
           top: '50%',

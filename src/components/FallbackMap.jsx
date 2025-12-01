@@ -112,19 +112,31 @@ const FallbackMap = ({ currentTime, selectedVessel }) => {
         const line = d3.line()
           .x(d => projection(d)[0])
           .y(d => projection(d)[1])
-          .curve(d3.curveBasis);
+          .curve(d3.curveBasis)
+          .defined(d => {
+            const [x, y] = projection(d);
+            return !isNaN(x) && !isNaN(y) && isFinite(x) && isFinite(y);
+          });
 
-        // Create curved path
-        const coords = route.trajectory.map(t => t.coordinates);
-        const pathData = line(coords);
+        // Create curved path - filter valid coordinates
+        const coords = route.trajectory
+          .map(t => t.coordinates)
+          .filter(c => {
+            const [x, y] = projection(c);
+            return !isNaN(x) && !isNaN(y) && isFinite(x) && isFinite(y);
+          });
+        
+        if (coords.length > 1) {
+          const pathData = line(coords);
 
-        svg.append('path')
-          .attr('d', pathData)
-          .attr('stroke', '#3887be')
-          .attr('stroke-width', 2)
-          .attr('stroke-opacity', 0.5)
-          .attr('fill', 'none')
-          .attr('stroke-dasharray', '5,5');
+          svg.append('path')
+            .attr('d', pathData)
+            .attr('stroke', '#3887be')
+            .attr('stroke-width', 2)
+            .attr('stroke-opacity', 0.5)
+            .attr('fill', 'none')
+            .attr('stroke-dasharray', '5,5');
+        }
       }
     });
 

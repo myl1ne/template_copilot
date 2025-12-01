@@ -3,8 +3,9 @@ import mapboxgl from 'mapbox-gl';
 import { ports, routes, getAllVesselPositions } from '../data/shippingData';
 import './ShippingMap.css';
 
-// Note: In production, use environment variables for API keys
-mapboxgl.accessToken = 'pk.eyJ1IjoiZXhhbXBsZSIsImEiOiJjbGV4YW1wbGUifQ.example'; // This is a placeholder
+// Use environment variable for API key (recommended for production)
+// In development, you can set this in a .env file: VITE_MAPBOX_TOKEN=your_token_here
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
 
 const ShippingMap = ({ currentTime, selectedVessel }) => {
   const mapContainer = useRef(null);

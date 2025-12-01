@@ -63,10 +63,19 @@ function generateTrajectory(startPort, endPort, startTime, durationDays) {
   
   for (let i = 0; i <= steps; i++) {
     const progress = i / steps;
+    
     // Add some curve to the route (great circle approximation)
-    const midLat = (startLat + endLat) / 2 + Math.sin(progress * Math.PI) * 5;
-    const lat = startLat + (midLat - startLat) * progress * 2 * (progress < 0.5 ? 1 : 0) +
-                (midLat + (endLat - midLat) * (progress - 0.5) * 2) * (progress >= 0.5 ? 1 : 0);
+    // This creates a natural arc by adding a sine wave to the latitude
+    const arcHeight = 5; // Degrees of latitude for the curve
+    const midLat = (startLat + endLat) / 2 + Math.sin(progress * Math.PI) * arcHeight;
+    
+    // Interpolate latitude through the midpoint to create a smooth curve
+    // First half: interpolate from start to mid, second half: mid to end
+    const lat = progress < 0.5
+      ? startLat + (midLat - startLat) * (progress * 2)
+      : midLat + (endLat - midLat) * ((progress - 0.5) * 2);
+    
+    // Linear interpolation for longitude
     const lon = startLon + (endLon - startLon) * progress;
     
     const timestamp = new Date(startTime.getTime() + (durationDays * 24 * 60 * 60 * 1000 * progress));

@@ -32,14 +32,18 @@ An interactive web-based visualization for shipping data, featuring real-time ve
    npm install
    ```
 
-3. **Configure Mapbox Token**:
+3. **Configure Mapbox Token (Optional)**:
    - Sign up for a free Mapbox account at [mapbox.com](https://mapbox.com)
    - Get your access token from the Mapbox dashboard
-   - Open `src/components/ShippingMap.jsx`
-   - Replace the placeholder token with your actual Mapbox token:
-     ```javascript
-     mapboxgl.accessToken = 'YOUR_MAPBOX_TOKEN_HERE';
+   - Create a `.env` file in the project root:
+     ```bash
+     cp .env.example .env
      ```
+   - Add your Mapbox token to `.env`:
+     ```
+     VITE_MAPBOX_TOKEN=your_actual_token_here
+     ```
+   - **Note**: The app works without this token using the D3.js fallback map!
 
 4. **Start the development server**:
    ```bash

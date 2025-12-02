@@ -133,14 +133,6 @@ export function getOperationsByTimeRange(startTime, endTime = null) {
 }
 
 /**
- * Get operations at a specific time (or before)
- * @param {Date} currentTime - Current time in the visualization
- */
-export function getOperationsAtTime(currentTime) {
-  return rawOperations.filter(op => op.date <= currentTime);
-}
-
-/**
  * Get vessel position at a specific time
  * @param {string} vesselName - Name of the vessel
  * @param {Date} currentTime - Current time
@@ -169,55 +161,6 @@ export function getTimeRange() {
     start: new Date(Math.min(...dates)),
     end: new Date(Math.max(...dates))
   };
-}
-
-/**
- * Get operation types statistics
- */
-export function getOperationTypeStats() {
-  const stats = {};
-  
-  rawOperations.forEach(op => {
-    if (!stats[op.operation_type]) {
-      stats[op.operation_type] = {
-        type: op.operation_type,
-        count: 0,
-        vessels: new Set()
-      };
-    }
-    stats[op.operation_type].count++;
-    stats[op.operation_type].vessels.add(op.vessel);
-  });
-  
-  return Object.values(stats).map(s => ({
-    ...s,
-    vessels: s.vessels.size
-  }));
-}
-
-/**
- * Get vessel trajectory (path) between two time points
- * @param {string} vesselName - Name of the vessel
- * @param {Date} startTime - Start time
- * @param {Date} endTime - End time
- */
-export function getVesselTrajectory(vesselName, startTime, endTime) {
-  return rawOperations
-    .filter(op => op.vessel === vesselName && op.date >= startTime && op.date <= endTime)
-    .sort((a, b) => a.date - b.date)
-    .map(op => ({
-      coordinates: [op.longitude, op.latitude],
-      timestamp: op.date.toISOString(),
-      location: op.location_name,
-      operationType: op.operation_type
-    }));
-}
-
-/**
- * Get all operations
- */
-export function getAllOperations() {
-  return rawOperations;
 }
 
 /**
@@ -276,32 +219,6 @@ export function getAllVesselPositions(currentTime) {
 }
 
 /**
- * Get routes for map display (vessel trajectories)
- * This generates routes based on vessel operations
- */
-export function getRoutes() {
-  const vessels = getVessels();
-  const routes = [];
-  
-  vessels.forEach(vessel => {
-    const operations = getVesselOperations(vessel.name);
-    
-    if (operations.length > 1) {
-      routes.push({
-        id: vessel.id,
-        vesselId: vessel.id,
-        trajectory: operations.map(op => ({
-          coordinates: [op.longitude, op.latitude],
-          timestamp: op.date.toISOString()
-        }))
-      });
-    }
-  });
-  
-  return routes;
-}
-
-/**
  * Get vessel's trajectory trail up to current time
  * Returns all GPS positions from the start up to currentTime
  * @param {string} vesselName - Name of the vessel
@@ -328,20 +245,17 @@ export function getVesselTrail(vesselName, currentTime) {
   };
 }
 
+// Note: This project uses named exports, not default export
+// Remove this default export if not needed
 export default {
   parseCSVData,
   getVessels,
   getPorts,
   getVesselOperations,
   getOperationsByTimeRange,
-  getOperationsAtTime,
   getVesselPositionAtTime,
   getTimeRange,
-  getOperationTypeStats,
-  getVesselTrajectory,
-  getAllOperations,
   getOperationTypeColor,
   getAllVesselPositions,
-  getRoutes,
   getVesselTrail
 };

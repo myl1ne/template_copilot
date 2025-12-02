@@ -16,10 +16,6 @@ const ShippingMap = ({ currentTime, selectedVessel, onMapReady }) => {
   // Initialize map
   useEffect(() => {
     if (map.current) return; // Initialize map only once
-    
-    console.log('Initializing Mapbox...');
-    console.log('Mapbox Access Token:', mapboxgl.accessToken);
-    console.log('Token length:', mapboxgl.accessToken?.length || 0);
 
     if (!mapboxgl.accessToken) {
       setMapError('No Mapbox token found. Please set VITE_MAPBOX_TOKEN in .env file.');
@@ -40,7 +36,6 @@ const ShippingMap = ({ currentTime, selectedVessel, onMapReady }) => {
 
       map.current.on('load', () => {
         if (cancelled) return;
-        console.log('Map loaded successfully!');
         setMapLoaded(true);
         
         // Expose map controls to parent component
@@ -77,7 +72,6 @@ const ShippingMap = ({ currentTime, selectedVessel, onMapReady }) => {
 
       // Get ports from real data
       const ports = getPorts();
-      console.log('Ports loaded:', ports.length, 'ports');
 
       if (ports.length > 0) {
         // Add ports as a native Mapbox layer (better performance, no lag)
@@ -198,8 +192,6 @@ const ShippingMap = ({ currentTime, selectedVessel, onMapReady }) => {
     if (!mapLoaded || !currentTime) return;
 
     const vesselPositions = getAllVesselPositions(currentTime);
-    
-    console.log('Updating vessel positions:', vesselPositions.length, 'vessels at', currentTime);
 
     // Update or create vessels layer FIRST
     const geojsonData = {
@@ -446,7 +438,7 @@ const ShippingMap = ({ currentTime, selectedVessel, onMapReady }) => {
           !isNaN(coords[0]) && !isNaN(coords[1])) {
         map.current.flyTo({
           center: coords,
-          zoom: Math.max(map.current.getZoom(), 4), // Zoom to at least 4, or keep current zoom if higher
+          zoom: Math.max(map.current.getZoom(), 3),
           duration: 1500,
           essential: true
         });

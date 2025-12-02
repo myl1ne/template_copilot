@@ -1,20 +1,36 @@
 import React from 'react';
-import { vessels, getAllVesselPositions, events } from '../data/shippingData';
+import { 
+  getVessels, 
+  getVesselPositionAtTime, 
+  getOperationsByTimeRange,
+  getOperationTypeColor 
+} from '../data/vesselOperationsData';
 import './VesselPanel.css';
 
 const VesselPanel = ({ currentTime, selectedVessel, onSelectVessel }) => {
-  const vesselPositions = currentTime ? getAllVesselPositions(currentTime) : [];
+  const vessels = getVessels();
   
-  // Get current events
-  const currentEvents = events
-    .filter(event => {
-      const eventTime = new Date(event.timestamp);
-      const currentTimeObj = new Date(currentTime);
-      const timeDiff = Math.abs(eventTime - currentTimeObj);
-      return timeDiff < 2 * 60 * 60 * 1000; // Within 2 hours
-    })
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-    .slice(0, 5);
+  // Get vessel positions at current time
+  const vesselPositions = vessels.map(vessel => ({
+    ...vessel,
+    currentPosition: getVesselPositionAtTime(vessel.name, currentTime)
+  })).filter(v => v.currentPosition); // Only show vessels with positions at current time
+  
+  // Get recent operations (within 24 hours before current time)
+  const oneDayBefore = new Date(currentTime.getTime() - 24 * 60 * 60 * 1000);
+  const recentOperations = getOperationsByTimeRange(oneDayBefore, currentTime)
+    .sort((a, b) => b.date - a.date)
+    .slice(0, 10);
+
+  // Count active vessels
+  const activeVessels = vesselPositions.length;
+  const totalVessels = vessels.length;
+
+  // Group operations by type
+  const operationTypeCounts = {};
+  recentOperations.forEach(op => {
+    operationTypeCounts[op.operation_type] = (operationTypeCounts[op.operation_type] || 0) + 1;
+  });
 
   return (
     <div className="vessel-panel">
@@ -22,48 +38,42 @@ const VesselPanel = ({ currentTime, selectedVessel, onSelectVessel }) => {
         <h2 className="panel-title">Fleet Status</h2>
         <div className="stats-grid">
           <div className="stat-card">
-            <div className="stat-value">{vessels.length}</div>
+            <div className="stat-value">{totalVessels}</div>
             <div className="stat-label">Total Vessels</div>
           </div>
           <div className="stat-card">
-            <div className="stat-value">
-              {vesselPositions.filter(v => v.position?.status === 'in_transit').length}
-            </div>
-            <div className="stat-label">In Transit</div>
+            <div className="stat-value">{activeVessels}</div>
+            <div className="stat-label">Active</div>
           </div>
           <div className="stat-card">
-            <div className="stat-value">
-              {vesselPositions.filter(v => v.position?.status === 'docked').length}
-            </div>
-            <div className="stat-label">Docked</div>
+            <div className="stat-value">{recentOperations.length}</div>
+            <div className="stat-label">Recent Ops (24h)</div>
           </div>
         </div>
       </div>
 
       <div className="panel-section">
-        <h3 className="section-title">Vessels</h3>
+        <h3 className="section-title">Active Vessels</h3>
         <div className="vessel-list">
           {vesselPositions.map(vessel => (
             <div
               key={vessel.id}
-              className={`vessel-item ${selectedVessel === vessel.id ? 'selected' : ''}`}
-              onClick={() => onSelectVessel(vessel.id)}
+              className={`vessel-item ${selectedVessel === vessel.name ? 'selected' : ''}`}
+              onClick={() => onSelectVessel(vessel.name)}
             >
               <div className="vessel-icon">
-                {vessel.position?.status === 'in_transit' ? '🚢' : '⚓'}
+                🚢
               </div>
               <div className="vessel-info">
                 <div className="vessel-name">{vessel.name}</div>
-                <div className="vessel-type">{vessel.type}</div>
+                <div className="vessel-type">{vessel.currentPosition?.operation_type}</div>
                 <div className="vessel-status">
-                  <span className={`status-badge ${vessel.position?.status}`}>
-                    {vessel.position?.status?.replace('_', ' ')}
+                  <span className="vessel-location">
+                    {vessel.currentPosition?.location_name || 'Unknown'}
                   </span>
-                  {vessel.position?.speed && (
-                    <span className="vessel-speed">
-                      {vessel.position.speed.toFixed(1)} kts
-                    </span>
-                  )}
+                  <span className="vessel-confidence">
+                    {(vessel.currentPosition?.confidence * 100).toFixed(0)}%
+                  </span>
                 </div>
               </div>
             </div>
@@ -72,24 +82,30 @@ const VesselPanel = ({ currentTime, selectedVessel, onSelectVessel }) => {
       </div>
 
       <div className="panel-section">
-        <h3 className="section-title">Recent Events</h3>
+        <h3 className="section-title">Recent Operations</h3>
         <div className="events-list">
-          {currentEvents.length > 0 ? (
-            currentEvents.map(event => (
-              <div key={event.id} className="event-item">
-                <div className={`event-icon ${event.type}`}>
-                  {event.type === 'departure' ? '🛫' : '🛬'}
+          {recentOperations.length > 0 ? (
+            recentOperations.map((operation, index) => (
+              <div key={`${operation.vessel}-${operation.date}-${index}`} className="event-item">
+                <div 
+                  className="event-icon"
+                  style={{ backgroundColor: getOperationTypeColor(operation.operation_type) }}
+                >
+                  {operation.operation_type.charAt(0)}
                 </div>
                 <div className="event-info">
-                  <div className="event-description">{event.description}</div>
+                  <div className="event-description">
+                    <strong>{operation.vessel}</strong> - {operation.operation_type}
+                  </div>
+                  <div className="event-location">{operation.location_name}</div>
                   <div className="event-time">
-                    {new Date(event.timestamp).toLocaleString()}
+                    {operation.date.toLocaleString()}
                   </div>
                 </div>
               </div>
             ))
           ) : (
-            <div className="no-events">No recent events</div>
+            <div className="no-events">No recent operations</div>
           )}
         </div>
       </div>

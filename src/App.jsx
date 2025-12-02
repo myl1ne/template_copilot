@@ -3,16 +3,33 @@ import FallbackMap from './components/FallbackMap';
 import ShippingMap from './components/ShippingMap';
 import Timeline from './components/Timeline';
 import VesselPanel from './components/VesselPanel';
-import { getTimeRange } from './data/shippingData';
+import { parseCSVData, getTimeRange } from './data/vesselOperationsData';
 import './App.css';
 
 function App() {
-  const timeRange = getTimeRange();
-  const [currentTime, setCurrentTime] = useState(timeRange.start);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [timeRange, setTimeRange] = useState({ start: new Date(), end: new Date() });
+  const [currentTime, setCurrentTime] = useState(new Date());
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedVessel, setSelectedVessel] = useState(null);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [useMapbox, setUseMapbox] = useState(false);
+
+  // Load CSV data on component mount
+  useEffect(() => {
+    fetch('/vessel_operations_map_20251202_134536.csv')
+      .then(response => response.text())
+      .then(csvText => {
+        parseCSVData(csvText);
+        const range = getTimeRange();
+        setTimeRange(range);
+        setCurrentTime(range.start);
+        setDataLoaded(true);
+      })
+      .catch(error => {
+        console.error('Error loading CSV data:', error);
+      });
+  }, []);
 
   // Auto-play functionality
   useEffect(() => {
@@ -47,12 +64,23 @@ function App() {
     setPlaybackSpeed(speed);
   }, []);
 
+  if (!dataLoaded) {
+    return (
+      <div className="app loading">
+        <div className="loading-message">
+          <h2>Loading vessel operations data...</h2>
+          <p>Please wait while we process the data.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       <header className="app-header">
         <div className="header-content">
           <h1 className="app-title">
-            🚢 Shipping Visualization Dashboard
+            🚢 Vessel Operations Visualization
           </h1>
           <div className="header-controls">
             <div className="speed-control">

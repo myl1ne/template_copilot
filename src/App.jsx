@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import FallbackMap from './components/FallbackMap';
 import ShippingMap from './components/ShippingMap';
 import Timeline from './components/Timeline';
 import VesselPanel from './components/VesselPanel';
-import { parseCSVData, getTimeRange } from './data/vesselOperationsData';
+import VesselJourney from './components/VesselJourney';
+import { parseCSVData, getTimeRange, getVessels } from './data/vesselOperationsData';
 import './App.css';
 
 function App() {
@@ -13,7 +13,8 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [selectedVessel, setSelectedVessel] = useState(null);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
-  const [useMapbox, setUseMapbox] = useState(false);
+  const [vessels, setVessels] = useState([]);
+  const [journeyVessel, setJourneyVessel] = useState(null);
 
   // Load CSV data on component mount
   useEffect(() => {
@@ -22,8 +23,10 @@ function App() {
       .then(csvText => {
         parseCSVData(csvText);
         const range = getTimeRange();
+        const vesselList = getVessels();
         setTimeRange(range);
         setCurrentTime(range.start);
+        setVessels(vesselList);
         setDataLoaded(true);
       })
       .catch(error => {
@@ -98,18 +101,6 @@ function App() {
                 <option value={8}>8x</option>
               </select>
             </div>
-            <div className="map-toggle">
-              <label htmlFor="mapbox-toggle">Map:</label>
-              <select
-                id="mapbox-toggle"
-                value={useMapbox ? 'mapbox' : 'd3'}
-                onChange={(e) => setUseMapbox(e.target.value === 'mapbox')}
-                className="speed-select"
-              >
-                <option value="d3">D3.js (Default)</option>
-                <option value="mapbox">Mapbox</option>
-              </select>
-            </div>
           </div>
         </div>
       </header>
@@ -119,20 +110,14 @@ function App() {
           currentTime={currentTime}
           selectedVessel={selectedVessel}
           onSelectVessel={setSelectedVessel}
+          onViewJourney={setJourneyVessel}
         />
         
         <div className="map-container">
-          {useMapbox ? (
-            <ShippingMap 
-              currentTime={currentTime}
-              selectedVessel={selectedVessel}
-            />
-          ) : (
-            <FallbackMap 
-              currentTime={currentTime}
-              selectedVessel={selectedVessel}
-            />
-          )}
+          <ShippingMap 
+            currentTime={currentTime}
+            selectedVessel={selectedVessel}
+          />
           
           <div className="timeline-wrapper">
             <Timeline 
@@ -148,11 +133,17 @@ function App() {
       
       <div className="info-banner">
         <p>
-          ℹ️ This is a demo visualization using sample shipping data and D3.js rendering. 
-          For enhanced maps with satellite imagery, see ShippingMap.jsx and add your Mapbox API token.
-          Data shows vessel movements between major ports with geolocation and temporal information.
+          ℹ️ Vessel operations visualization using real production data with Mapbox GL.
+          Showing GPS position reports and operational events with geolocation and temporal information.
         </p>
       </div>
+
+      {journeyVessel && (
+        <VesselJourney 
+          vesselName={journeyVessel} 
+          onClose={() => setJourneyVessel(null)} 
+        />
+      )}
     </div>
   );
 }

@@ -146,27 +146,13 @@ export function getOperationsAtTime(currentTime) {
  * @param {Date} currentTime - Current time
  */
 export function getVesselPositionAtTime(vesselName, currentTime) {
-  // First, try to get direct position reports (actual GPS coordinates)
+  // Only use direct position reports (actual GPS coordinates)
+  // This prevents ships from "teleporting" to locations mentioned in operational messages
   const directPositions = rawOperations
     .filter(op => op.vessel === vesselName && op.date <= currentTime && op.coord_source === 'direct')
     .sort((a, b) => b.date - a.date);
   
-  if (directPositions.length > 0) {
-    return directPositions[0];
-  }
-  
-  // If no direct positions, fall back to geocoded positions
-  // but try to use voyage planning operations which are more likely to reflect actual position
-  const vesselOps = rawOperations
-    .filter(op => 
-      op.vessel === vesselName && 
-      op.date <= currentTime &&
-      (op.operation_type === 'Voyage Planning and Execution' || 
-       op.operation_type === 'Vessel Arrival Reporting')
-    )
-    .sort((a, b) => b.date - a.date);
-  
-  return vesselOps.length > 0 ? vesselOps[0] : null;
+  return directPositions.length > 0 ? directPositions[0] : null;
 }
 
 /**

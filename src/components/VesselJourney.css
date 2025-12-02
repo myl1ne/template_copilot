@@ -1,0 +1,231 @@
+.vessel-journey-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.vessel-journey-panel {
+  background: #1e1e1e;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { 
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.vessel-journey-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #333;
+}
+
+.vessel-journey-header h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 24px;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 32px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.close-button:hover {
+  background: #333;
+  color: #fff;
+}
+
+.vessel-journey-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  padding: 20px 24px;
+  background: #252525;
+  border-bottom: 1px solid #333;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.vessel-journey-timeline {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+.vessel-journey-timeline h3 {
+  margin: 0 0 16px 0;
+  color: #fff;
+  font-size: 18px;
+}
+
+.operations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.operation-item {
+  background: #252525;
+  border-left: 3px solid #3887be;
+  border-radius: 6px;
+  padding: 12px 16px;
+  transition: all 0.2s;
+}
+
+.operation-item:hover {
+  background: #2a2a2a;
+  transform: translateX(4px);
+}
+
+.operation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.operation-type-badge {
+  flex: 1;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: white;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.coord-source {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.coord-source.direct {
+  background: #4CAF50;
+  color: white;
+}
+
+.coord-source.geocoded {
+  background: #666;
+  color: white;
+}
+
+.operation-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.operation-time {
+  font-size: 13px;
+  color: #3887be;
+  font-weight: 600;
+}
+
+.operation-location {
+  font-size: 14px;
+  color: #fff;
+  font-weight: 500;
+}
+
+.operation-coordinates {
+  font-size: 12px;
+  color: #999;
+  font-family: monospace;
+}
+
+.operation-description {
+  font-size: 13px;
+  color: #ccc;
+  line-height: 1.4;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid #333;
+}
+
+.operation-confidence {
+  font-size: 11px;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* Scrollbar styling */
+.vessel-journey-timeline::-webkit-scrollbar {
+  width: 8px;
+}
+
+.vessel-journey-timeline::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.vessel-journey-timeline::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.vessel-journey-timeline::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

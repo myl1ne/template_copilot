@@ -9,7 +9,7 @@ import {
 } from '../data/vesselOperationsData';
 import './FallbackMap.css';
 
-const FallbackMap = ({ currentTime, selectedVessel }) => {
+const FallbackMap = ({ currentTime, selectedVessel, vesselFilter }) => {
   const svgRef = useRef(null);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
 
@@ -120,8 +120,13 @@ const FallbackMap = ({ currentTime, selectedVessel }) => {
       .attr('stroke-width', 1);
 
     // Get vessels and their positions
-    const vessels = getVessels();
+    let vessels = getVessels();
     const ports = getPorts();
+
+    // Apply vessel filter
+    if (vesselFilter && vesselFilter !== 'all') {
+      vessels = vessels.filter(v => v.name === vesselFilter);
+    }
 
     // Draw vessel trajectories if a vessel is selected
     if (selectedVessel) {

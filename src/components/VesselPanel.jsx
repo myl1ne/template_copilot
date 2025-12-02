@@ -7,7 +7,7 @@ import {
 } from '../data/vesselOperationsData';
 import './VesselPanel.css';
 
-const VesselPanel = ({ currentTime, selectedVessel, onSelectVessel }) => {
+const VesselPanel = ({ currentTime, selectedVessel, onSelectVessel, onViewJourney }) => {
   const vessels = getVessels();
   
   // Get vessel positions at current time
@@ -59,23 +59,34 @@ const VesselPanel = ({ currentTime, selectedVessel, onSelectVessel }) => {
             <div
               key={vessel.id}
               className={`vessel-item ${selectedVessel === vessel.name ? 'selected' : ''}`}
-              onClick={() => onSelectVessel(vessel.name)}
             >
-              <div className="vessel-icon">
-                🚢
-              </div>
-              <div className="vessel-info">
-                <div className="vessel-name">{vessel.name}</div>
-                <div className="vessel-type">{vessel.currentPosition?.operation_type}</div>
-                <div className="vessel-status">
-                  <span className="vessel-location">
-                    {vessel.currentPosition?.location_name || 'Unknown'}
-                  </span>
-                  <span className="vessel-confidence">
-                    {(vessel.currentPosition?.confidence * 100).toFixed(0)}%
-                  </span>
+              <div 
+                className="vessel-main"
+                onClick={() => onSelectVessel(vessel.name)}
+              >
+                <div className="vessel-icon">
+                  🚢
+                </div>
+                <div className="vessel-info">
+                  <div className="vessel-name">{vessel.name}</div>
+                  <div className="vessel-type">{vessel.currentPosition?.operation_type}</div>
+                  <div className="vessel-status">
+                    <span className="vessel-location">
+                      {vessel.currentPosition?.location_name || 'Unknown'}
+                    </span>
+                    <span className="vessel-confidence">
+                      {(vessel.currentPosition?.confidence * 100).toFixed(0)}%
+                    </span>
+                  </div>
                 </div>
               </div>
+              <button 
+                className="journey-button"
+                onClick={() => onViewJourney(vessel.name)}
+                title="View full journey"
+              >
+                📋
+              </button>
             </div>
           ))}
         </div>

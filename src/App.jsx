@@ -15,6 +15,7 @@ function App() {
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [vessels, setVessels] = useState([]);
   const [journeyVessel, setJourneyVessel] = useState(null);
+  const [mapControls, setMapControls] = useState(null);
 
   // Load CSV data on component mount
   useEffect(() => {
@@ -67,6 +68,20 @@ function App() {
     setPlaybackSpeed(speed);
   }, []);
 
+  const handleVesselSelect = useCallback((vesselName) => {
+    // Toggle selection - if clicking the same vessel, unselect it
+    setSelectedVessel(prev => {
+      const newSelection = prev === vesselName ? null : vesselName;
+      
+      // Center map on the selected vessel (only if selecting, not unselecting)
+      if (newSelection && mapControls && mapControls.centerOnVessel) {
+        mapControls.centerOnVessel(newSelection);
+      }
+      
+      return newSelection;
+    });
+  }, [mapControls]);
+
   if (!dataLoaded) {
     return (
       <div className="app loading">
@@ -109,7 +124,7 @@ function App() {
         <VesselPanel 
           currentTime={currentTime}
           selectedVessel={selectedVessel}
-          onSelectVessel={setSelectedVessel}
+          onSelectVessel={handleVesselSelect}
           onViewJourney={setJourneyVessel}
         />
         
@@ -117,6 +132,7 @@ function App() {
           <ShippingMap 
             currentTime={currentTime}
             selectedVessel={selectedVessel}
+            onMapReady={setMapControls}
           />
           
           <div className="timeline-wrapper">

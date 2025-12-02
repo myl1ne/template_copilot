@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
-import { getPorts, getAllVesselPositions } from '../data/vesselOperationsData';
+import { getPorts, getAllVesselPositions, getVesselTrail } from '../data/vesselOperationsData';
 import './ShippingMap.css';
 
 // Use environment variable for API key (recommended for production)
 // In development, you can set this in a .env file: VITE_MAPBOX_TOKEN=your_token_here
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN || '';
 
-const ShippingMap = ({ currentTime, selectedVessel }) => {
+const ShippingMap = ({ currentTime, selectedVessel, onMapReady }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -42,6 +42,29 @@ const ShippingMap = ({ currentTime, selectedVessel }) => {
         if (cancelled) return;
         console.log('Map loaded successfully!');
         setMapLoaded(true);
+        
+        // Expose map controls to parent component
+        if (onMapReady) {
+          onMapReady({
+            centerOnVessel: (vesselName) => {
+              const vessels = getAllVesselPositions(currentTime);
+              const vessel = vessels.find(v => v.name === vesselName);
+              if (vessel && vessel.position && vessel.position.coordinates) {
+                const coords = vessel.position.coordinates;
+                // Validate coordinates before using them
+                if (Array.isArray(coords) && coords.length === 2 && 
+                    !isNaN(coords[0]) && !isNaN(coords[1])) {
+                  map.current.flyTo({
+                    center: coords,
+                    zoom: 4,
+                    duration: 1500,
+                    essential: true
+                  });
+                }
+              }
+            }
+          });
+        }
       
       // Add fog for atmosphere effect
       map.current.setFog({
@@ -125,9 +148,11 @@ const ShippingMap = ({ currentTime, selectedVessel }) => {
           new mapboxgl.Popup()
             .setLngLat(coordinates)
             .setHTML(`
-              <div style="padding: 8px;">
-                <h3 style="margin: 0 0 8px 0; font-size: 14px;">${name}</h3>
-                <p style="margin: 0; font-size: 12px; color: #666;">Operations: ${operations}</p>
+              <div style="padding: 12px; background: #1e1e1e; color: #fff; min-width: 200px; border-radius: 6px;">
+                <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #4dabf7; border-bottom: 1px solid #333; padding-bottom: 6px;">
+                  ⚓ ${name}
+                </h3>
+                <p style="margin: 6px 0; font-size: 12px;"><strong style="color: #aaa;">Operations:</strong> ${operations}</p>
               </div>
             `)
             .addTo(map.current);
@@ -176,7 +201,7 @@ const ShippingMap = ({ currentTime, selectedVessel }) => {
     
     console.log('Updating vessel positions:', vesselPositions.length, 'vessels at', currentTime);
 
-    // Update or create vessels layer
+    // Update or create vessels layer FIRST
     const geojsonData = {
       type: 'FeatureCollection',
       features: vesselPositions
@@ -260,12 +285,16 @@ const ShippingMap = ({ currentTime, selectedVessel }) => {
         new mapboxgl.Popup()
           .setLngLat(coordinates)
           .setHTML(`
-            <div style="padding: 8px; min-width: 200px;">
-              <h3 style="margin: 0 0 8px 0; font-size: 14px;">${name}</h3>
-              <p style="margin: 4px 0; font-size: 12px;"><strong>Status:</strong> ${status.replace('_', ' ')}</p>
-              ${port ? `<p style="margin: 4px 0; font-size: 12px;"><strong>Location:</strong> ${port}</p>` : ''}
-              ${operation ? `<p style="margin: 4px 0; font-size: 12px;"><strong>Operation:</strong> ${operation}</p>` : ''}
-              ${description ? `<p style="margin: 4px 0; font-size: 11px; color: #666;">${description}</p>` : ''}
+            <div style="padding: 12px; background: #1e1e1e; color: #fff; min-width: 250px; border-radius: 6px;">
+              <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #4dabf7; border-bottom: 1px solid #333; padding-bottom: 6px;">
+                🚢 ${name}
+              </h3>
+              <div style="font-size: 12px; line-height: 1.6;">
+                <p style="margin: 6px 0;"><strong style="color: #aaa;">Status:</strong> ${status.replace('_', ' ')}</p>
+                ${port ? `<p style="margin: 6px 0;"><strong style="color: #aaa;">Location:</strong> ${port}</p>` : ''}
+                ${operation ? `<p style="margin: 6px 0;"><strong style="color: #aaa;">Operation:</strong> ${operation}</p>` : ''}
+                ${description ? `<p style="margin: 6px 0; padding-top: 6px; border-top: 1px solid #333; font-size: 11px; color: #bbb;">${description}</p>` : ''}
+              </div>
             </div>
           `)
           .addTo(map.current);
@@ -283,7 +312,147 @@ const ShippingMap = ({ currentTime, selectedVessel }) => {
       // Update existing source
       map.current.getSource('vessels').setData(geojsonData);
     }
+
+    // NOW handle vessel trails (after vessels layer exists)
+    // Create trail position markers (no lines, just points)
+    const trailPointFeatures = [];
+    
+    vesselPositions.forEach(vessel => {
+      const trail = getVesselTrail(vessel.name, currentTime);
+      
+      // Add position points (excluding the last one which is the current ship position)
+      trail.points.slice(0, -1).forEach((point, idx) => {
+        trailPointFeatures.push({
+          type: 'Feature',
+          properties: {
+            vesselName: vessel.name,
+            date: point.date.toISOString(),
+            location: point.location,
+            description: point.description || '',
+            operationType: point.operationType || '',
+            isSelected: selectedVessel === vessel.name
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: point.coordinates
+          }
+        });
+      });
+    });
+
+    // Update or create trail points
+    if (!map.current.getSource('vessel-trail-points')) {
+      map.current.addSource('vessel-trail-points', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: trailPointFeatures
+        }
+      });
+
+      map.current.addLayer({
+        id: 'vessel-trail-points-layer',
+        type: 'circle',
+        source: 'vessel-trail-points',
+        paint: {
+          'circle-radius': [
+            'case',
+            ['get', 'isSelected'],
+            7,  // Larger for selected
+            3   // Normal size
+          ],
+          'circle-color': [
+            'case',
+            ['get', 'isSelected'],
+            '#ffa500',  // Orange for selected vessel trail
+            '#3887be'   // Blue for other vessels
+          ],
+          'circle-opacity': [
+            'case',
+            ['get', 'isSelected'],
+            0.9,  // More opaque for selected
+            0.7   // Less opaque for others
+          ],
+          'circle-stroke-width': [
+            'case',
+            ['get', 'isSelected'],
+            2.5,  // Thicker stroke for selected
+            1.5   // Normal stroke
+          ],
+          'circle-stroke-color': [
+            'case',
+            ['get', 'isSelected'],
+            '#ffffff',  // White stroke for selected
+            '#ffffff'   // White stroke for others
+          ],
+          'circle-stroke-opacity': 0.9
+        }
+      }, 'vessels-layer');
+
+      // Add hover popup for trail points
+      map.current.on('mouseenter', 'vessel-trail-points-layer', () => {
+        map.current.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.current.on('mouseleave', 'vessel-trail-points-layer', () => {
+        map.current.getCanvas().style.cursor = '';
+      });
+
+      map.current.on('click', 'vessel-trail-points-layer', (e) => {
+        const coordinates = e.features[0].geometry.coordinates.slice();
+        
+        // Get full operation details from the data
+        const { vesselName, date, location, description, operationType } = e.features[0].properties;
+        
+        const positionDate = new Date(date);
+        
+        new mapboxgl.Popup()
+          .setLngLat(coordinates)
+          .setHTML(`
+            <div style="padding: 12px; background: #1e1e1e; color: #fff; min-width: 250px; max-width: 350px; border-radius: 6px;">
+              <h3 style="margin: 0 0 8px 0; font-size: 14px; color: #4dabf7; border-bottom: 1px solid #333; padding-bottom: 6px;">
+                🚢 ${vesselName}
+              </h3>
+              <div style="font-size: 12px; line-height: 1.6;">
+                <p style="margin: 6px 0;"><strong style="color: #aaa;">Time:</strong> ${positionDate.toLocaleString()}</p>
+                <p style="margin: 6px 0;"><strong style="color: #aaa;">Location:</strong> ${location || 'Unknown'}</p>
+                ${operationType ? `<p style="margin: 6px 0;"><strong style="color: #aaa;">Operation:</strong> ${operationType}</p>` : ''}
+                <p style="margin: 6px 0;"><strong style="color: #aaa;">Coordinates:</strong> ${coordinates[1].toFixed(4)}°, ${coordinates[0].toFixed(4)}°</p>
+                <p style="margin: 6px 0;"><strong style="color: #aaa;">Source:</strong> <span style="color: #4CAF50;">📍 GPS (Direct)</span></p>
+                ${description ? `<p style="margin: 6px 0; padding-top: 6px; border-top: 1px solid #333; font-size: 11px; color: #bbb; line-height: 1.5;">${description}</p>` : ''}
+              </div>
+            </div>
+          `)
+          .addTo(map.current);
+      });
+    } else {
+      map.current.getSource('vessel-trail-points').setData({
+        type: 'FeatureCollection',
+        features: trailPointFeatures
+      });
+    }
   }, [currentTime, mapLoaded, selectedVessel]);
+
+  // Center map on selected vessel when selection changes
+  useEffect(() => {
+    if (!map.current || !mapLoaded || !selectedVessel) return;
+    
+    const vessels = getAllVesselPositions(currentTime);
+    const vessel = vessels.find(v => v.name === selectedVessel);
+    if (vessel && vessel.position && vessel.position.coordinates) {
+      const coords = vessel.position.coordinates;
+      // Validate coordinates before using them
+      if (Array.isArray(coords) && coords.length === 2 && 
+          !isNaN(coords[0]) && !isNaN(coords[1])) {
+        map.current.flyTo({
+          center: coords,
+          zoom: Math.max(map.current.getZoom(), 4), // Zoom to at least 4, or keep current zoom if higher
+          duration: 1500,
+          essential: true
+        });
+      }
+    }
+  }, [selectedVessel, mapLoaded, currentTime]);
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>

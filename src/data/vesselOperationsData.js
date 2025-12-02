@@ -99,7 +99,7 @@ export function getPorts() {
   // Only return locations with multiple operations OR multiple vessels
   // This filters out single waypoints and only shows actual ports
   return Array.from(portMap.values())
-    .filter(port => port.operations.length >= 3 || port.vessels.size >= 2)
+    .filter(port => port.operations.length >= 10 || port.vessels.size >= 3)
     .map(port => ({
       id: port.id,
       name: port.name,
@@ -250,6 +250,14 @@ export function getAllVesselPositions(currentTime) {
     
     if (!position) return null;
     
+    // Count direct position reports for this vessel
+    const directReports = rawOperations.filter(
+      op => op.vessel === vessel.name && op.coord_source === 'direct'
+    ).length;
+    
+    // Only show vessels with at least 3 direct position reports to avoid jumpy vessels
+    if (directReports < 3) return null;
+    
     return {
       id: vessel.id,
       name: vessel.name,
@@ -293,6 +301,33 @@ export function getRoutes() {
   return routes;
 }
 
+/**
+ * Get vessel's trajectory trail up to current time
+ * Returns all GPS positions from the start up to currentTime
+ * @param {string} vesselName - Name of the vessel
+ * @param {Date} currentTime - Current time
+ */
+export function getVesselTrail(vesselName, currentTime) {
+  const positions = rawOperations
+    .filter(op => 
+      op.vessel === vesselName && 
+      op.coord_source === 'direct' && 
+      op.date <= currentTime
+    )
+    .sort((a, b) => a.date - b.date);
+  
+  return {
+    line: positions.map(op => [op.longitude, op.latitude]),
+    points: positions.map(op => ({
+      coordinates: [op.longitude, op.latitude],
+      date: op.date,
+      location: op.location_name,
+      description: op.description,
+      operationType: op.operation_type
+    }))
+  };
+}
+
 export default {
   parseCSVData,
   getVessels,
@@ -307,5 +342,6 @@ export default {
   getAllOperations,
   getOperationTypeColor,
   getAllVesselPositions,
-  getRoutes
+  getRoutes,
+  getVesselTrail
 };

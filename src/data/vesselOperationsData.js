@@ -18,10 +18,21 @@ export function parseCSVData(csvText) {
     
     const [vessel, latitude, longitude, date, operation_type, location_name, description, confidence, coord_source] = cleanValues;
     
+    let lat = parseFloat(latitude);
+    let lon = parseFloat(longitude);
+    
+    // Normalize longitude to -180 to 180 range
+    while (lon > 180) lon -= 360;
+    while (lon < -180) lon += 360;
+    
+    // Validate latitude is in -90 to 90 range
+    if (lat > 90) lat = 90;
+    if (lat < -90) lat = -90;
+    
     return {
       vessel,
-      latitude: parseFloat(latitude),
-      longitude: parseFloat(longitude),
+      latitude: lat,
+      longitude: lon,
       date: new Date(date),
       operation_type,
       location_name,
@@ -59,24 +70,42 @@ export function getVessels() {
 
 /**
  * Get unique ports/locations from operations data
+ * Only returns locations with multiple operations or specific operation types
+ * to avoid showing every coordinate as a port
  */
 export function getPorts() {
   const portMap = new Map();
   
   rawOperations.forEach(op => {
-    const key = `${op.latitude},${op.longitude}`;
+    // Round coordinates to group nearby points (within ~1km)
+    const lat = Math.round(op.latitude * 100) / 100;
+    const lon = Math.round(op.longitude * 100) / 100;
+    const key = `${lat},${lon}`;
+    
     if (!portMap.has(key)) {
       portMap.set(key, {
         id: key,
         name: op.location_name || 'Unknown',
-        coordinates: [op.longitude, op.latitude],
-        operations: []
+        coordinates: [lon, lat],
+        operations: [],
+        vessels: new Set()
       });
     }
-    portMap.get(key).operations.push(op);
+    const port = portMap.get(key);
+    port.operations.push(op);
+    port.vessels.add(op.vessel);
   });
   
-  return Array.from(portMap.values());
+  // Only return locations with multiple operations OR multiple vessels
+  // This filters out single waypoints and only shows actual ports
+  return Array.from(portMap.values())
+    .filter(port => port.operations.length >= 3 || port.vessels.size >= 2)
+    .map(port => ({
+      id: port.id,
+      name: port.name,
+      coordinates: port.coordinates,
+      operations: port.operations
+    }));
 }
 
 /**
@@ -117,8 +146,24 @@ export function getOperationsAtTime(currentTime) {
  * @param {Date} currentTime - Current time
  */
 export function getVesselPositionAtTime(vesselName, currentTime) {
+  // First, try to get direct position reports (actual GPS coordinates)
+  const directPositions = rawOperations
+    .filter(op => op.vessel === vesselName && op.date <= currentTime && op.coord_source === 'direct')
+    .sort((a, b) => b.date - a.date);
+  
+  if (directPositions.length > 0) {
+    return directPositions[0];
+  }
+  
+  // If no direct positions, fall back to geocoded positions
+  // but try to use voyage planning operations which are more likely to reflect actual position
   const vesselOps = rawOperations
-    .filter(op => op.vessel === vesselName && op.date <= currentTime)
+    .filter(op => 
+      op.vessel === vesselName && 
+      op.date <= currentTime &&
+      (op.operation_type === 'Voyage Planning and Execution' || 
+       op.operation_type === 'Vessel Arrival Reporting')
+    )
     .sort((a, b) => b.date - a.date);
   
   return vesselOps.length > 0 ? vesselOps[0] : null;
@@ -207,6 +252,61 @@ export function getOperationTypeColor(operationType) {
   return colors[operationType] || '#999999';
 }
 
+/**
+ * Get all vessel positions at a specific time for map display
+ * @param {Date} currentTime - Current time
+ */
+export function getAllVesselPositions(currentTime) {
+  const vessels = getVessels();
+  
+  return vessels.map(vessel => {
+    const position = getVesselPositionAtTime(vessel.name, currentTime);
+    
+    if (!position) return null;
+    
+    return {
+      id: vessel.id,
+      name: vessel.name,
+      type: 'Tanker', // Default type since not in CSV
+      imo: 'N/A', // Not available in CSV
+      capacity: 'N/A', // Not available in CSV
+      position: {
+        coordinates: [position.longitude, position.latitude],
+        status: 'in_transit',
+        port: position.location_name,
+        operation: position.operation_type,
+        description: position.description
+      }
+    };
+  }).filter(v => v !== null);
+}
+
+/**
+ * Get routes for map display (vessel trajectories)
+ * This generates routes based on vessel operations
+ */
+export function getRoutes() {
+  const vessels = getVessels();
+  const routes = [];
+  
+  vessels.forEach(vessel => {
+    const operations = getVesselOperations(vessel.name);
+    
+    if (operations.length > 1) {
+      routes.push({
+        id: vessel.id,
+        vesselId: vessel.id,
+        trajectory: operations.map(op => ({
+          coordinates: [op.longitude, op.latitude],
+          timestamp: op.date.toISOString()
+        }))
+      });
+    }
+  });
+  
+  return routes;
+}
+
 export default {
   parseCSVData,
   getVessels,
@@ -219,5 +319,7 @@ export default {
   getOperationTypeStats,
   getVesselTrajectory,
   getAllOperations,
-  getOperationTypeColor
+  getOperationTypeColor,
+  getAllVesselPositions,
+  getRoutes
 };

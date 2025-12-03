@@ -19,7 +19,8 @@ function App() {
 
   // Load CSV data on component mount
   useEffect(() => {
-    fetch('/vessel_operations_map_20251202_134536.csv')
+    //fetch('/vessel_operations_map_20251202_134536.csv')
+    fetch('/vessel_operations_map_20251203_145606.csv')
       .then(response => response.text())
       .then(csvText => {
         parseCSVData(csvText);

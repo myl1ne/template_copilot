@@ -99,7 +99,7 @@ export function getPorts() {
   // Only return locations with multiple operations OR multiple vessels
   // This filters out single waypoints and only shows actual ports
   return Array.from(portMap.values())
-    .filter(port => port.operations.length >= 10 || port.vessels.size >= 3)
+    .filter(port => port.name.toLowerCase() !== 'unknown' && (port.operations.length >= 0 || port.vessels.size >= 0))
     .map(port => ({
       id: port.id,
       name: port.name,

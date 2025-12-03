@@ -1,0 +1,14 @@
+/* ShippingMap component styles */
+/* Note: Vessels and ports are now rendered as native Mapbox layers */
+/* Custom popup styling is handled inline in the component */
+
+.mapboxgl-popup-content {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+.mapboxgl-popup-close-button {
+  font-size: 20px !important;
+  padding: 0 8px !important;
+}

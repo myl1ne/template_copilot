@@ -1,81 +1,167 @@
-# [Project Name] Template
+# Gamified LLM Research Platform
 
-> **Note**: This is a meta-template repository. Replace `[Project Name]` and all placeholder content with your actual project information.
+An interactive platform for creating and managing nested AI agent hierarchies with gamification mechanics.
 
-Template for kickstarting new projects with GitHub Copilot-managed documentation.
+## 🎮 What is This?
+
+This platform allows you to create autonomous AI agents that can:
+- Spawn child agents to delegate subtasks
+- Manage computation budgets
+- Work in nested hierarchies
+- Execute complex research tasks
+
+Think of it as an idle game meets AI research lab - watch your agents think, create sub-processes, and complete tasks!
+
+## ✨ Key Features
+
+- **🤖 Nested Agent Structures**: Agents can spawn child agents for delegation
+- **⚡ Computation Budget System**: Manage resources across agent hierarchies
+- **📊 Real-time Monitoring**: Watch agents work in real-time via WebSocket
+- **🎯 Gamification**: Level up, earn XP, unlock achievements
+- **📚 Agent Templates**: Pre-configured agent types (Auditor, Researcher, etc.)
+- **🔍 Execution Logs**: Track every step of agent processing
+- **🎨 Modern UI**: Beautiful React interface with gradient themes
+
+## 🏗️ Architecture
+
+### Backend (FastAPI + Firestore)
+- RESTful API for agent management
+- WebSocket support for real-time updates
+- Firestore for persistent storage
+- Agent execution engine
+- Budget management system
+
+### Frontend (React)
+- Dashboard for agent overview
+- Detailed agent inspection views
+- Template library browser
+- Real-time updates via WebSocket
+- Responsive, gamified UI
 
 ## 🚀 Quick Start
 
-1. **Use this template** to create a new repository
-2. **Replace placeholders** in all documentation files with your project information
-3. **Configure GitHub Copilot** to automatically maintain your documentation
-4. **Set up issue labels** for automatic backlog synchronization
+### Prerequisites
+- Python 3.9+
+- Node.js 16+
+- Firebase project with Firestore
 
-## 📚 Documentation Structure
+### Backend Setup
 
-This template provides a complete documentation ecosystem that GitHub Copilot will maintain:
+1. Navigate to backend:
+```bash
+cd backend
+```
 
-### Core Documents
-- **[Project Overview](docs/project-overview.md)** - One-page summary of your project
-- **[Status & Roadmap](docs/roadmap.md)** - Current status and long-term planning
-- **[Current Backlog](docs/backlog.md)** - Task tracking synchronized with GitHub Issues
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-### Copilot Configuration
-- **[Copilot Instructions](.github/copilot-instructions.md)** - Instructions for maintaining documentation
+3. Configure Firebase:
+```bash
+cp .env.example .env
+# Edit .env with your Firebase credentials
+```
 
-## 🤖 How It Works
+4. Run the server:
+```bash
+python main.py
+```
 
-This template includes:
+Backend will be at `http://localhost:8000`
 
-1. **GitHub Copilot Instructions** - Automated documentation maintenance rules
-2. **Structured Templates** - Consistent format for all project documentation  
-3. **GitHub Integration** - Automatic synchronization with issues and project boards
-4. **Living Documentation** - Documents that evolve with your project
+### Frontend Setup
 
-## 🛠️ Customization
+1. Navigate to frontend:
+```bash
+cd frontend
+```
 
-After using this template:
+2. Install dependencies:
+```bash
+npm install
+```
 
-1. **Update Project Information**:
-   - Replace `[Project Name]` throughout all files
-   - Add your actual project description and details
-   - Configure repository-specific information
+3. Start development server:
+```bash
+npm start
+```
 
-2. **Customize Documentation**:
-   - Modify templates to match your project needs
-   - Add project-specific sections or remove unused ones
-   - Update the roadmap with your actual goals
+Frontend will open at `http://localhost:3000`
 
-3. **Configure GitHub Integration**:
-   - Set up issue labels for automatic backlog updates
-   - Configure project boards if needed
-   - Enable GitHub Copilot for your repository
+## 📖 Usage
 
-## 📖 Usage Guide
+1. **Create a Root Agent**: Start with a high-level task
+2. **Start Execution**: Watch your agent begin processing
+3. **Spawn Children**: Agents can create sub-agents for subtasks
+4. **Monitor Progress**: View logs and budget consumption
+5. **Level Up**: Complete agents to earn XP and unlock features
 
-### For Project Maintainers
-- The documentation will be automatically updated by GitHub Copilot
-- Review and approve Copilot's suggested changes
-- Manually update when major project changes occur
+## 🎨 Agent Templates
 
-### For Contributors
-- Check the [backlog](docs/backlog.md) for current tasks
-- Refer to the [roadmap](docs/roadmap.md) for project direction
-- Read the [project overview](docs/project-overview.md) for context
+The platform includes specialized agent templates:
 
-## 🎯 Benefits
+- **🔍 Auditor**: Reviews and verifies outputs
+- **⚖️ Ethical Committee**: Evaluates ethical implications
+- **🧠 Critical Thinker**: Analyzes arguments and finds flaws
+- **📚 Researcher**: Gathers and synthesizes information
+- **📝 Summarizer**: Condenses complex information
+- **✅ Validator**: Checks outputs against requirements
 
-- **Consistent Documentation** - Standardized format across all projects
-- **Automated Maintenance** - Reduced manual documentation overhead  
-- **GitHub Integration** - Seamless connection with development workflow
-- **Living Documents** - Documentation that stays current with development
+## 🎮 Game Mechanics
+
+- **Levels**: Progress through levels by completing agents
+- **Experience Points**: Earn XP based on agent complexity
+- **Computation Budget**: Strategic resource management
+- **Achievements**: Unlock rewards for milestones
+- **Template Unlocks**: Access advanced agent types as you level up
+
+## 📚 Documentation
+
+- **[Backend Documentation](backend/README.md)** - API and backend architecture
+- **[Frontend Documentation](frontend/README.md)** - UI components and features
+- **[Project Overview](docs/project-overview.md)** - High-level project summary
+- **[Roadmap](docs/roadmap.md)** - Current status and future plans
+
+## 🛠️ Technology Stack
+
+**Backend:**
+- FastAPI for REST API
+- Firebase Firestore for database
+- WebSockets for real-time updates
+- Pydantic for data validation
+
+**Frontend:**
+- React 18
+- React Router
+- Axios for API calls
+- CSS3 with gradient themes
+
+## 🤝 Contributing
+
+This is an initial implementation with room for enhancement:
+
+- LLM integration (currently simulated)
+- Advanced agent communication protocols
+- More sophisticated budget algorithms
+- Additional agent templates
+- User authentication
+- Multi-user support
+
+## 📝 License
+
+MIT License - see LICENSE file for details
+
+## 🎯 Future Enhancements
+
+- **LLM Integration**: Connect to OpenAI, Anthropic, or other LLM providers
+- **Agent Marketplace**: Share and discover agent templates
+- **Collaborative Features**: Multi-user agent collaboration
+- **Advanced Visualizations**: Graph/tree views of agent hierarchies
+- **Performance Analytics**: Detailed metrics and insights
+- **Mobile App**: Native mobile experience
+- **Agent Persistence**: Save and resume agent sessions
 
 ---
 
-## Template Information
-
-This is the `template_copilot` repository - a meta-template for creating copilot-managed documentation systems.
-
-**Template Version**: 1.0.0  
-**Last Updated**: 2024-09-27  
-**License**: MIT
+Built with ❤️ for AI enthusiasts and researchers

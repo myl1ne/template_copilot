@@ -1,0 +1,120 @@
+.agent-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.agent-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.agent-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.agent-icon {
+  font-size: 32px;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.agent-info {
+  flex: 1;
+}
+
+.agent-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 5px;
+}
+
+.agent-status {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+}
+
+.agent-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.agent-prompt {
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 60px;
+}
+
+.agent-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.metric-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.budget-section {
+  padding-top: 15px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.budget-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.budget-bar {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.budget-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}

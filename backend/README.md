@@ -54,6 +54,16 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 API will be available at `http://localhost:8000`
 API documentation at `http://localhost:8000/docs`
 
+### Demo Mode
+
+Without Firebase credentials, the backend runs in **DEMO MODE**:
+- Uses in-memory storage (data not persistent)
+- All features fully functional
+- Perfect for testing and development
+- No Firebase configuration required
+
+To enable persistent storage, configure Firebase credentials in `.env`.
+
 ## API Endpoints
 
 ### Users

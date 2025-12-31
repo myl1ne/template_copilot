@@ -40,54 +40,24 @@ Think of it as an idle game meets AI research lab - watch your agents think, cre
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Python 3.9+
-- Node.js 16+
-- Firebase project with Firestore
+**See [QUICK_START.md](QUICK_START.md) for detailed setup instructions.**
 
-### Backend Setup
-
-1. Navigate to backend:
+TL;DR:
 ```bash
+# Backend
 cd backend
-```
-
-2. Install dependencies:
-```bash
 pip install -r requirements.txt
-```
-
-3. Configure Firebase:
-```bash
-cp .env.example .env
-# Edit .env with your Firebase credentials
-```
-
-4. Run the server:
-```bash
 python main.py
-```
 
-Backend will be at `http://localhost:8000`
-
-### Frontend Setup
-
-1. Navigate to frontend:
-```bash
+# Frontend (new terminal)
 cd frontend
-```
-
-2. Install dependencies:
-```bash
 npm install
-```
-
-3. Start development server:
-```bash
 npm start
 ```
 
-Frontend will open at `http://localhost:3000`
+Visit `http://localhost:3000` to start creating agents!
+
+**Note:** Works out-of-the-box in demo mode. Firebase optional for persistent storage.
 
 ## 📖 Usage
 

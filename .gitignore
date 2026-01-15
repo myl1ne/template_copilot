@@ -1,0 +1,42 @@
+# Build artifacts
+/Assemblies/*.dll
+/Assemblies/*.pdb
+/Assemblies/*.mdb
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Source build outputs
+Source/TowerDefenseMod/bin/
+Source/TowerDefenseMod/obj/
+Source/.vs/
+
+# RimWorld specific
+*.mdb
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~

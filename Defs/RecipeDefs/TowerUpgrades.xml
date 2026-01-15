@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <RecipeDef>
+    <defName>TD_UpgradeTower_Mk1_To_Mk2</defName>
+    <label>upgrade to Mk2</label>
+    <description>Upgrade this tower from Mk1 to Mk2, improving its range and fire rate.</description>
+    <jobString>Upgrading tower.</jobString>
+    <workSpeedStat>GeneralLaborSpeed</workSpeedStat>
+    <effectWorking>Repair</effectWorking>
+    <soundWorking>Recipe_Machining</soundWorking>
+    <workAmount>5000</workAmount>
+    <workerClass>TowerDefenseMod.Towers.RecipeWorker_UpgradeTowerMk1ToMk2</workerClass>
+    <ingredients>
+      <li>
+        <filter>
+          <thingDefs>
+            <li>Steel</li>
+          </thingDefs>
+        </filter>
+        <count>50</count>
+      </li>
+      <li>
+        <filter>
+          <thingDefs>
+            <li>ComponentIndustrial</li>
+          </thingDefs>
+        </filter>
+        <count>2</count>
+      </li>
+    </ingredients>
+    <fixedIngredientFilter>
+      <thingDefs>
+        <li>Steel</li>
+        <li>ComponentIndustrial</li>
+      </thingDefs>
+    </fixedIngredientFilter>
+    <defaultIngredientFilter>
+      <thingDefs>
+        <li>Steel</li>
+        <li>ComponentIndustrial</li>
+      </thingDefs>
+    </defaultIngredientFilter>
+    <researchPrerequisite>TD_Research_Tower_Mk2</researchPrerequisite>
+    <skillRequirements>
+      <Construction>6</Construction>
+    </skillRequirements>
+    <workSkill>Construction</workSkill>
+  </RecipeDef>
+
+</Defs>

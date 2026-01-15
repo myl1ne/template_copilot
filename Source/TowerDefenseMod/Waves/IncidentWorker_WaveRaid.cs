@@ -72,9 +72,12 @@ namespace TowerDefenseMod.Waves
             LordMaker.MakeNewLord(hostileFaction, new LordJob_AssaultColony(hostileFaction, true, true, false, false, true), map, raiders);
 
             // Send letter to player
+            WaveMapComponent waveComp = map.GetComponent<WaveMapComponent>();
+            int waveNum = waveComp != null ? waveComp.WaveIndex : 0;
+            
             Find.LetterStack.ReceiveLetter(
                 "TD_WaveRaidLabel".Translate(),
-                "TD_WaveRaidDesc".Translate(raiders.Count, hostileFaction.Name),
+                "TD_WaveRaidDesc".Translate(raiders.Count.ToString(), hostileFaction.Name, waveNum.ToString()),
                 LetterDefOf.ThreatBig,
                 raiders[0]
             );

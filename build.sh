@@ -24,11 +24,25 @@ dotnet build TowerDefenseMod.sln -c Release
 if [ $? -eq 0 ]; then
     echo "Build successful! DLL output to Assemblies/"
     echo ""
-    echo "To install, copy this mod folder to:"
-    echo "  ~/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Mods/"
+    
+    # Define the mod installation directory
+    MOD_INSTALL_DIR="$HOME/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Mods/TowerDefenseMod"
+    
+    # Create the Mods directory if it doesn't exist
+    mkdir -p "$HOME/.config/unity3d/Ludeon Studios/RimWorld by Ludeon Studios/Mods"
+    
+    # Remove old installation if it exists
+    if [ -d "$MOD_INSTALL_DIR" ]; then
+        echo "Removing old installation..."
+        rm -rf "$MOD_INSTALL_DIR"
+    fi
+    
+    # Copy mod to RimWorld Mods folder
+    echo "Installing mod to: $MOD_INSTALL_DIR"
+    cp -r "$(pwd)/.." "$MOD_INSTALL_DIR"
+    
     echo ""
-    echo "Or create a symlink:"
-    echo "  ln -s $(pwd)/.. ~/.config/unity3d/Ludeon\\ Studios/RimWorld\\ by\\ Ludeon\\ Studios/Mods/TowerDefenseMod"
+    echo "Installation complete! Enable the mod in RimWorld's mod manager."
 else
     echo "Build failed!"
     exit 1

@@ -6,7 +6,7 @@ using Verse;
 namespace TowerDefenseMod.Towers
 {
     // Custom worker for tower upgrades
-    public class RecipeWorker_UpgradeTowerMk1ToMk2 : RecipeWorker
+    public class RecipeWorker_UpgradeTowerMkIToMkII : RecipeWorker
     {
         public override void ConsumeIngredient(Thing ingredient, RecipeDef recipe, Map map)
         {
@@ -18,28 +18,21 @@ namespace TowerDefenseMod.Towers
             if (thing?.def?.defName == null)
                 return false;
 
-            // Only available on Mk1 towers
-            return thing.def.defName == "TD_Tower_Mk1";
+            // Only available on MkI towers
+            return thing.def.defName == "TD_Tower_MkI";
         }
 
         // This is called when the recipe is completed
         public override void Notify_IterationCompleted(Pawn billDoer, List<Thing> ingredients)
         {
             base.Notify_IterationCompleted(billDoer, ingredients);
-            // The actual upgrade will be handled in a custom toil
-        }
-
-        // Override to add a finish action
-        public override IEnumerable<Thing> FinishAction(RecipeDef recipe, Pawn actor, List<Thing> ingredients, Thing dominantIngredient, IBillGiver billGiver)
-        {
-            // Perform the upgrade
-            Building tower = billGiver as Building;
-            if (tower != null && tower.def.defName == "TD_Tower_Mk1")
+            
+            // Find the tower (bill giver) and perform the upgrade
+            Building tower = billDoer?.CurJob?.bill?.billStack?.billGiver as Building;
+            if (tower != null && tower.def.defName == "TD_Tower_MkI")
             {
-                TowerUpgradeUtility.UpgradeTower(tower, "TD_Tower_Mk2");
+                TowerUpgradeUtility.UpgradeTower(tower, "TD_Tower_MkII");
             }
-
-            return Enumerable.Empty<Thing>();
         }
     }
 }

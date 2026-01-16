@@ -4,7 +4,7 @@
   <ResearchProjectDef>
     <defName>TD_Research_Towers_Basics</defName>
     <label>basic tower defense</label>
-    <description>Research the fundamentals of autonomous defensive towers and wave management systems. Unlocks the Wave Console and Basic Tower Mk1.</description>
+    <description>Research the fundamentals of autonomous defensive towers and wave management systems. Unlocks the Wave Console and Basic Tower MkI.</description>
     <baseCost>1200</baseCost>
     <techLevel>Industrial</techLevel>
     <prerequisites>
@@ -16,9 +16,9 @@
   </ResearchProjectDef>
 
   <ResearchProjectDef>
-    <defName>TD_Research_Tower_Mk2</defName>
+    <defName>TD_Research_Tower_MkII</defName>
     <label>advanced tower systems</label>
-    <description>Develop advanced tower upgrade techniques. Allows upgrading Basic Tower Mk1 to Mk2 with improved capabilities.</description>
+    <description>Develop advanced tower upgrade techniques. Allows upgrading Basic Tower MkI to MkII with improved capabilities.</description>
     <baseCost>2000</baseCost>
     <techLevel>Industrial</techLevel>
     <prerequisites>

@@ -2,15 +2,15 @@
 <Defs>
 
   <RecipeDef>
-    <defName>TD_UpgradeTower_Mk1_To_Mk2</defName>
-    <label>upgrade to Mk2</label>
-    <description>Upgrade this tower from Mk1 to Mk2, improving its range and fire rate.</description>
+    <defName>TD_UpgradeTower_MkI_To_MkII</defName>
+    <label>upgrade to MkII</label>
+    <description>Upgrade this tower from MkI to MkII, improving its range and fire rate.</description>
     <jobString>Upgrading tower.</jobString>
     <workSpeedStat>GeneralLaborSpeed</workSpeedStat>
     <effectWorking>Repair</effectWorking>
     <soundWorking>Recipe_Machining</soundWorking>
     <workAmount>5000</workAmount>
-    <workerClass>TowerDefenseMod.Towers.RecipeWorker_UpgradeTowerMk1ToMk2</workerClass>
+    <workerClass>TowerDefenseMod.Towers.RecipeWorker_UpgradeTowerMkIToMkII</workerClass>
     <ingredients>
       <li>
         <filter>
@@ -41,7 +41,7 @@
         <li>ComponentIndustrial</li>
       </thingDefs>
     </defaultIngredientFilter>
-    <researchPrerequisite>TD_Research_Tower_Mk2</researchPrerequisite>
+    <researchPrerequisite>TD_Research_Tower_MkII</researchPrerequisite>
     <skillRequirements>
       <Construction>6</Construction>
     </skillRequirements>

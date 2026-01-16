@@ -7,7 +7,7 @@
     <description>A console that allows you to manually trigger enemy waves. Use this to start the next wave of attackers when you're ready.</description>
     <thingClass>TowerDefenseMod.Waves.Building_WaveConsole</thingClass>
     <graphicData>
-      <texPath>Things/Building/Misc/CommsConsole</texPath>
+      <texPath>Things/Building/Misc/MultiAnalyzer</texPath>
       <graphicClass>Graphic_Single</graphicClass>
       <drawSize>(2,2)</drawSize>
     </graphicData>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+
+  <!-- Wave Console -->
+  <TD_StartWaveLabel>Start Next Wave</TD_StartWaveLabel>
+  <TD_StartWaveDesc>Trigger the next enemy wave. Enemies will spawn at the map edge and attack your colony.</TD_StartWaveDesc>
+
+  <!-- Wave Raid -->
+  <TD_WaveRaidLabel>Wave Attack!</TD_WaveRaidLabel>
+  <TD_WaveRaidDesc>{0} hostile {1} are attacking as part of wave {2}!</TD_WaveRaidDesc>
+
+  <!-- Tower Upgrade -->
+  <TD_TowerUpgraded>Tower upgraded to {0}</TD_TowerUpgraded>
+
+</LanguageData>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <!-- Map components are loaded via code in ModEntry, not XML defs -->
+  <!-- This file is kept for reference but the MapComponentDef type doesn't exist in RimWorld -->
+  <!-- See ModEntry.cs for how WaveMapComponent is registered -->
+
+</Defs>

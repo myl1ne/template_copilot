@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <IncidentDef>
+    <defName>TD_WaveRaid</defName>
+    <label>tower defense wave</label>
+    <category>ThreatBig</category>
+    <targetTags>
+      <li>Map_PlayerHome</li>
+    </targetTags>
+    <workerClass>TowerDefenseMod.Waves.IncidentWorker_WaveRaid</workerClass>
+    <baseChance>0</baseChance>
+    <minRefireDays>0</minRefireDays>
+    <pointsScaleable>true</pointsScaleable>
+    <minThreatPoints>50</minThreatPoints>
+  </IncidentDef>
+
+</Defs>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Tower Defense Mod</name>
+  <author>TowerDefense Team</author>
+  <supportedVersions>
+    <li>1.4</li>
+    <li>1.5</li>
+  </supportedVersions>
+  <packageId>towerdefense.mod</packageId>
+  <description>A tower defense mod for RimWorld featuring:
+- Autonomous upgradeable towers
+- Manual wave triggering via Wave Console
+- Research-gated tower upgrades
+- Bill-based tower upgrade system
+
+Build autonomous towers, trigger enemy waves, and upgrade your defenses through research and crafting.</description>
+  <modDependencies>
+    <li>
+      <packageId>ludeon.rimworld</packageId>
+      <displayName>RimWorld</displayName>
+      <steamWorkshopUrl>steam://url/CommunityFilePage/294100</steamWorkshopUrl>
+    </li>
+  </modDependencies>
+  <loadAfter>
+    <li>ludeon.rimworld</li>
+  </loadAfter>
+</ModMetaData>

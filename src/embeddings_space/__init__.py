@@ -11,6 +11,8 @@ from .visualizers.base import BaseVisualizer
 from .visualizers.embedding_viz import EmbeddingVisualizer
 from .visualizers.metric_landscape import MetricLandscapeVisualizer
 from .visualizers.som_viz import SOMVisualizer
+from .visualizers.interactive_viz import InteractiveEmbeddingVisualizer
+from .utils.importers import import_conversations, ChatGPTImporter, GenericJSONImporter
 
 __all__ = [
     "EmbeddingSpace",
@@ -22,4 +24,8 @@ __all__ = [
     "EmbeddingVisualizer",
     "MetricLandscapeVisualizer",
     "SOMVisualizer",
+    "InteractiveEmbeddingVisualizer",
+    "import_conversations",
+    "ChatGPTImporter",
+    "GenericJSONImporter",
 ]

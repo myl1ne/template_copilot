@@ -37,6 +37,20 @@ class MetricLandscapeVisualizer(BaseVisualizer):
         pca = PCA(n_components=2)
         return pca.fit_transform(embeddings)
     
+    def visualize(self, conversations: List[Conversation], **kwargs) -> plt.Figure:
+        """
+        Create a contour visualization (default implementation)
+        
+        Args:
+            conversations: List of conversations
+            **kwargs: Additional visualization parameters
+            
+        Returns:
+            Matplotlib figure
+        """
+        metric_name = kwargs.get('metric_name', list(conversations[0].metrics.keys())[0] if conversations[0].metrics else 'coherence')
+        return self.visualize_contour(conversations, metric_name, **kwargs)
+    
     def _interpolate_metric_grid(
         self,
         positions_2d: np.ndarray,

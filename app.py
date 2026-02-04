@@ -11,7 +11,7 @@ import numpy as np
 from datetime import datetime
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+sys.path.insert(0, str(Path(__file__).parent / 'src'))
 
 from embeddings_space.core.conversation import Conversation, ConversationManager
 from embeddings_space.core.embeddings import EmbeddingSpace

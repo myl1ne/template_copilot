@@ -241,7 +241,7 @@ def import_conversations(filepath: str, format: str = 'auto') -> List[Conversati
                 format = 'chatgpt'
             else:
                 format = 'generic'
-        except:
+        except Exception:
             format = 'generic'
     
     if format == 'chatgpt':

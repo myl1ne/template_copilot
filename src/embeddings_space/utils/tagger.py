@@ -92,7 +92,7 @@ class ConversationTagger:
         self,
         conversation: Conversation,
         use_mock: bool = False
-    ) -> Dict[str, any]:
+    ) -> Dict[str, Any]:
         """
         Extract topics and tags using LLM
         
@@ -141,7 +141,7 @@ Return the analysis as a JSON object."""
             print(f"Error extracting topics: {e}")
             return self._mock_extract_topics(conversation)
     
-    def _mock_extract_topics(self, conversation: Conversation) -> Dict[str, any]:
+    def _mock_extract_topics(self, conversation: Conversation) -> Dict[str, Any]:
         """Generate mock topic extraction"""
         
         keywords = self.extract_keywords_simple(conversation, top_n=7)

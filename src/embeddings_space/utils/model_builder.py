@@ -143,7 +143,7 @@ Always return a valid JSON object with these fields."""
     
     def batch_build_model(
         self,
-        conversations: list[Conversation],
+        conversations: List[Conversation],
         initial_model: Optional[Dict[str, Any]] = None,
         prompt_template: Optional[str] = None,
         use_mock: bool = False

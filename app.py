@@ -115,8 +115,10 @@ def main():
                 with st.spinner("Loading conversations..."):
                     try:
                         import tempfile
+                        from pathlib import Path
                         # Save uploaded file temporarily
-                        with tempfile.NamedTemporaryFile(delete=False, suffix=uploaded_file.name) as tmp_file:
+                        suffix = Path(uploaded_file.name).suffix
+                        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
                             tmp_file.write(uploaded_file.getbuffer())
                             temp_path = tmp_file.name
                         
@@ -287,7 +289,7 @@ def main():
                             try:
                                 create_time = datetime.fromtimestamp(conv.metadata['create_time'])
                                 st.write(f"**Created:** {create_time.strftime('%Y-%m-%d')}")
-                            except:
+                            except (ValueError, OSError, OverflowError):
                                 pass
                     with col3:
                         st.write(f"**Messages:** {len(conv.messages)}")
@@ -525,7 +527,7 @@ def main():
                     try:
                         dt = datetime.fromtimestamp(c.metadata['create_time'])
                         dates.append(dt.date())
-                    except:
+                    except (ValueError, OSError, OverflowError):
                         pass
                 
                 if dates:

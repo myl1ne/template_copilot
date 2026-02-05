@@ -1,0 +1,7 @@
+[server]
+# Increase max upload size to 2GB to handle large ChatGPT exports
+maxUploadSize = 2048
+
+[browser]
+# Gather usage stats
+gatherUsageStats = false

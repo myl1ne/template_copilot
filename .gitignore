@@ -52,6 +52,10 @@ experiments/cache/
 *.jpeg
 *.gif
 
+# Data and Persistence
+data/persistence/
+*.json.bak
+
 # MacOS
 .DS_Store
 

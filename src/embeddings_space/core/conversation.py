@@ -34,6 +34,7 @@ class Conversation:
     metadata: Dict[str, Any] = field(default_factory=dict)
     embedding: Optional[List[float]] = None
     metrics: Dict[str, float] = field(default_factory=dict)
+    summary: Optional[str] = None  # LLM-generated summary for embeddings
     
     def add_message(self, role: str, content: str, **kwargs) -> None:
         """Add a message to the conversation"""
@@ -59,7 +60,8 @@ class Conversation:
             'messages': [msg.to_dict() for msg in self.messages],
             'metadata': self.metadata,
             'embedding': self.embedding,
-            'metrics': self.metrics
+            'metrics': self.metrics,
+            'summary': self.summary
         }
     
     def to_json(self) -> str:
@@ -119,14 +121,16 @@ class ConversationManager:
     def save_to_json(self, filepath: str) -> None:
         """Save all conversations to a JSON file"""
         data = {
-            'conversations': [conv.to_dict() for conv in self.conversations]
+            'conversations': [conv.to_dict() for conv in self.conversations],
+            'saved_at': datetime.now().isoformat(),
+            'version': '1.0'
         }
-        with open(filepath, 'w') as f:
+        with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2)
     
     def load_from_json(self, filepath: str) -> None:
         """Load conversations from a JSON file"""
-        with open(filepath, 'r') as f:
+        with open(filepath, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
         self.conversations = []
@@ -135,7 +139,8 @@ class ConversationManager:
                 conversation_id=conv_data.get('conversation_id'),
                 metadata=conv_data.get('metadata', {}),
                 embedding=conv_data.get('embedding'),
-                metrics=conv_data.get('metrics', {})
+                metrics=conv_data.get('metrics', {}),
+                summary=conv_data.get('summary')
             )
             
             for msg_data in conv_data.get('messages', []):

@@ -5,6 +5,7 @@ Interactive Streamlit App for Conversation Embedding Visualization
 import streamlit as st
 import sys
 import os
+import tempfile
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -28,6 +29,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Persistence configuration
+PERSISTENCE_DIR = Path(__file__).parent / 'data' / 'persistence'
+PERSISTENCE_DIR.mkdir(parents=True, exist_ok=True)
+PERSISTENCE_FILE = PERSISTENCE_DIR / 'conversations_state.json'
+
 # Initialize session state
 if 'conversations' not in st.session_state:
     st.session_state.conversations = []
@@ -37,6 +43,8 @@ if 'embedding_space' not in st.session_state:
     st.session_state.embedding_space = EmbeddingSpace()
 if 'evaluator' not in st.session_state:
     st.session_state.evaluator = LLMEvaluator()
+if 'auto_loaded' not in st.session_state:
+    st.session_state.auto_loaded = False
 if 'embeddings_computed' not in st.session_state:
     st.session_state.embeddings_computed = False
 
@@ -64,6 +72,26 @@ def load_sample_data():
 
 
 def main():
+    # Auto-load previously saved state on first run
+    if not st.session_state.auto_loaded and PERSISTENCE_FILE.exists():
+        try:
+            st.session_state.conversation_manager.load_from_json(str(PERSISTENCE_FILE))
+            st.session_state.conversations = st.session_state.conversation_manager.conversations
+            
+            # Check if ALL conversations have embeddings (not just any)
+            if st.session_state.conversations:
+                embeddings_count = sum(1 for conv in st.session_state.conversations if conv.embedding is not None)
+                total_count = len(st.session_state.conversations)
+                st.session_state.embeddings_computed = (embeddings_count == total_count)
+            else:
+                st.session_state.embeddings_computed = False
+            
+            st.session_state.auto_loaded = True
+            st.toast(f"✅ Restored {len(st.session_state.conversations)} conversations from previous session", icon="💾")
+        except Exception as e:
+            st.toast(f"⚠️ Could not restore previous session: {e}", icon="⚠️")
+            st.session_state.auto_loaded = True
+    
     # Title and description
     st.title("🗺️ EmbeddingsSpace Explorer")
     st.markdown("""
@@ -75,8 +103,49 @@ def main():
     with st.sidebar:
         st.header("📊 Data Management")
         
+        # Persistence controls
+        st.subheader("💾 Save/Load State")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("💾 Save", use_container_width=True, help="Save current progress"):
+                try:
+                    st.session_state.conversation_manager.save_to_json(str(PERSISTENCE_FILE))
+                    st.success("Saved!")
+                except Exception as e:
+                    st.error(f"Save failed: {e}")
+        with col2:
+            if st.button("📂 Load", use_container_width=True, help="Load saved progress"):
+                try:
+                    st.session_state.conversation_manager.load_from_json(str(PERSISTENCE_FILE))
+                    st.session_state.conversations = st.session_state.conversation_manager.conversations
+                    if st.session_state.conversations:
+                        embeddings_count = sum(1 for conv in st.session_state.conversations if conv.embedding is not None)
+                        total_count = len(st.session_state.conversations)
+                        st.session_state.embeddings_computed = (embeddings_count == total_count)
+                    else:
+                        st.session_state.embeddings_computed = False
+                    st.success(f"Loaded {len(st.session_state.conversations)} conversations!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Load failed: {e}")
+        
+        if PERSISTENCE_FILE.exists():
+            file_size = PERSISTENCE_FILE.stat().st_size / (1024 * 1024)  # MB
+            st.caption(f"Saved state: {file_size:.1f}MB")
+        
+        st.divider()
+        
         # File upload
         st.subheader("Import Conversations")
+        
+        # Option to merge or replace
+        import_mode = st.radio(
+            "Import Mode",
+            ["Replace All", "Merge/Append"],
+            help="Replace: Clear existing conversations. Merge: Add to existing conversations.",
+            horizontal=True
+        )
+        
         uploaded_file = st.file_uploader(
             "Upload ChatGPT Export (JSON or ZIP)",
             type=['json', 'zip'],
@@ -88,19 +157,43 @@ def main():
                 with st.spinner("Loading conversations..."):
                     try:
                         # Save uploaded file temporarily
-                        temp_path = f"/tmp/{uploaded_file.name}"
-                        with open(temp_path, 'wb') as f:
-                            f.write(uploaded_file.getbuffer())
+                        with tempfile.NamedTemporaryFile(mode='wb', delete=False, suffix=Path(uploaded_file.name).suffix) as tmp:
+                            tmp.write(uploaded_file.getbuffer())
+                            temp_path = tmp.name
                         
                         # Import conversations
-                        conversations = import_conversations(temp_path, format='chatgpt')
-                        st.session_state.conversations = conversations
-                        st.session_state.conversation_manager = ConversationManager()
-                        for conv in conversations:
-                            st.session_state.conversation_manager.add_conversation(conv)
-                        st.session_state.embeddings_computed = False
+                        new_conversations = import_conversations(temp_path, format='chatgpt')
                         
-                        st.success(f"✅ Loaded {len(conversations)} conversations!")
+                        if import_mode == "Replace All":
+                            # Replace existing conversations
+                            st.session_state.conversations = new_conversations
+                            st.session_state.conversation_manager = ConversationManager()
+                            for conv in new_conversations:
+                                st.session_state.conversation_manager.add_conversation(conv)
+                            st.success(f"✅ Loaded {len(new_conversations)} conversations!")
+                        else:
+                            # Merge with existing conversations
+                            existing_ids = {c.conversation_id for c in st.session_state.conversations}
+                            merged_count = 0
+                            duplicate_count = 0
+                            
+                            for conv in new_conversations:
+                                if conv.conversation_id not in existing_ids:
+                                    st.session_state.conversation_manager.add_conversation(conv)
+                                    st.session_state.conversations.append(conv)
+                                    merged_count += 1
+                                else:
+                                    duplicate_count += 1
+                            
+                            st.success(f"✅ Added {merged_count} new conversations! (Skipped {duplicate_count} duplicates)")
+                        
+                        # Check if embeddings are still complete
+                        if st.session_state.conversations:
+                            embeddings_count = sum(1 for conv in st.session_state.conversations if conv.embedding is not None)
+                            total_count = len(st.session_state.conversations)
+                            st.session_state.embeddings_computed = (embeddings_count == total_count)
+                        else:
+                            st.session_state.embeddings_computed = False
                         
                         # Clean up
                         os.remove(temp_path)
@@ -132,14 +225,48 @@ def main():
             
             # Compute embeddings
             if not st.session_state.embeddings_computed:
-                if st.button("Compute Embeddings"):
-                    with st.spinner("Computing embeddings..."):
+                # Check how many conversations already have embeddings
+                processed_count = sum(1 for conv in st.session_state.conversations if conv.embedding is not None)
+                total_count = len(st.session_state.conversations)
+                
+                if processed_count > 0:
+                    progress_pct = (processed_count / total_count) * 100
+                    st.info(f"📊 {processed_count}/{total_count} conversations processed ({progress_pct:.1f}%)")
+                
+                button_label = "Resume Computing Embeddings" if processed_count > 0 else "Compute Embeddings"
+                if st.button(button_label):
+                    with st.spinner("Processing conversations and computing embeddings..."):
                         progress_bar = st.progress(0)
+                        status_text = st.empty()
+                        processed = 0
+                        
                         for i, conv in enumerate(st.session_state.conversations):
+                            # Skip if already has embedding
+                            if conv.embedding is not None:
+                                progress_bar.progress((i + 1) / total_count)
+                                continue
+                            
+                            processed += 1
+                            status_text.text(f"Processing conversation {i+1}/{total_count}: {(conv.metadata.get('title') or 'Untitled')[:50]}...")
                             st.session_state.embedding_space.embed_conversation(conv)
-                            progress_bar.progress((i + 1) / len(st.session_state.conversations))
+                            progress_bar.progress((i + 1) / total_count)
+                            
+                            # Auto-save every 10 conversations
+                            if processed % 10 == 0:
+                                try:
+                                    st.session_state.conversation_manager.save_to_json(str(PERSISTENCE_FILE))
+                                    status_text.text(f"✅ Saved progress: {i+1}/{total_count} conversations processed")
+                                except Exception as e:
+                                    st.warning(f"Failed to save progress: {e}")
+                                    status_text.text(f"Saved progress: {i+1}/{len(st.session_state.conversations)} conversations processed")
+                                except Exception as e:
+                                    st.warning(f"Failed to save progress: {e}")
+                        
+                        # Final save
+                        st.session_state.conversation_manager.save_to_json(str(PERSISTENCE_FILE))
+                        status_text.empty()
                         st.session_state.embeddings_computed = True
-                        st.success("✅ Embeddings computed!")
+                        st.success("✅ Embeddings computed and saved!")
                         st.rerun()
             else:
                 st.success("✅ Embeddings ready")
@@ -193,11 +320,13 @@ def main():
             st.header("Browse Conversations")
             
             # Search and filter
-            col1, col2 = st.columns([3, 1])
+            col1, col2, col3 = st.columns([3, 1, 1])
             with col1:
                 search_query = st.text_input("🔍 Search conversations", "")
             with col2:
                 sort_by = st.selectbox("Sort by", ["Recent", "Title", "Length"])
+            with col3:
+                sort_direction = st.selectbox("Direction", ["Descending", "Ascending"])
             
             # Filter conversations
             filtered_convs = st.session_state.conversations
@@ -205,14 +334,18 @@ def main():
                 filtered_convs = [
                     c for c in filtered_convs
                     if search_query.lower() in c.get_text().lower() or
-                       search_query.lower() in c.metadata.get('title', '').lower()
+                       search_query.lower() in (c.metadata.get('title') or '').lower()
                 ]
             
             # Sort
+            reverse = (sort_direction == "Descending")
             if sort_by == "Title":
-                filtered_convs = sorted(filtered_convs, key=lambda c: c.metadata.get('title', ''))
+                filtered_convs = sorted(filtered_convs, key=lambda c: (c.metadata.get('title') or '').lower(), reverse=reverse)
             elif sort_by == "Length":
-                filtered_convs = sorted(filtered_convs, key=lambda c: len(c.messages), reverse=True)
+                filtered_convs = sorted(filtered_convs, key=lambda c: len(c.messages), reverse=reverse)
+            elif sort_by == "Recent":
+                # Sort by creation time if available, otherwise keep original order
+                filtered_convs = sorted(filtered_convs, key=lambda c: c.metadata.get('create_time', 0), reverse=reverse)
             
             st.write(f"Showing {len(filtered_convs)} conversations")
             
@@ -279,7 +412,7 @@ def main():
                 # Create visualization
                 if st.button("Generate Visualization") or 'last_viz' in st.session_state:
                     with st.spinner("Creating visualization..."):
-                        viz = InteractiveEmbeddingVisualizer(method=viz_method.lower())
+                        viz = InteractiveEmbeddingVisualizer(method=(viz_method or "PCA").lower())
                         
                         try:
                             if viz_type == "2D":
@@ -302,6 +435,36 @@ def main():
         
         with tab3:
             st.header("Analytics & Insights")
+            
+            # Summary statistics section
+            st.subheader("📝 Processing Summary")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                embeddings_count = sum(1 for c in st.session_state.conversations if c.embedding is not None)
+                st.metric("Embeddings Computed", f"{embeddings_count}/{len(st.session_state.conversations)}")
+            with col2:
+                summaries_count = sum(1 for c in st.session_state.conversations if c.summary is not None)
+                st.metric("Summaries Generated", f"{summaries_count}/{len(st.session_state.conversations)}")
+            with col3:
+                metrics_count = sum(1 for c in st.session_state.conversations if c.metrics)
+                st.metric("Conversations Evaluated", f"{metrics_count}/{len(st.session_state.conversations)}")
+            
+            # Show summary length distribution if summaries exist
+            if summaries_count > 0:
+                st.subheader("📊 Summary Statistics")
+                summary_lengths = [len(c.summary.split()) for c in st.session_state.conversations if c.summary]
+                original_lengths = [len(c.get_text().split()) for c in st.session_state.conversations if c.summary]
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric("Avg Summary Length", f"{np.mean(summary_lengths):.0f} words")
+                    st.metric("Avg Original Length", f"{np.mean(original_lengths):.0f} words")
+                with col2:
+                    compression_ratio = (np.mean(summary_lengths) / np.mean(original_lengths)) * 100
+                    st.metric("Compression Ratio", f"{compression_ratio:.1f}%")
+                    st.metric("Total Summaries", summaries_count)
+            
+            st.divider()
             
             if not st.session_state.conversations[0].metrics:
                 st.warning("⚠️ Please evaluate conversations first (see sidebar)")

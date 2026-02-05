@@ -96,7 +96,7 @@ class InteractiveEmbeddingVisualizer:
             'x': reduced[:, 0],
             'y': reduced[:, 1],
             'conversation_id': [c.conversation_id or f"C{i}" for i, c in enumerate(conv_with_embeddings)],
-            'title': [c.metadata.get('title', 'Untitled')[:50] for c in conv_with_embeddings],
+            'title': [(c.metadata.get('title') or 'Untitled')[:50] for c in conv_with_embeddings],
             'message_count': [len(c.messages) for c in conv_with_embeddings],
         }
         
@@ -182,7 +182,7 @@ class InteractiveEmbeddingVisualizer:
         hover_texts = []
         for i, c in enumerate(conv_with_embeddings):
             text = f"ID: {c.conversation_id or f'C{i}'}<br>"
-            text += f"Title: {c.metadata.get('title', 'Untitled')[:50]}<br>"
+            text += f"Title: {(c.metadata.get('title') or 'Untitled')[:50]}<br>"
             text += f"Messages: {len(c.messages)}<br>"
             if color_by and color_by in c.metrics:
                 text += f"{color_by}: {c.metrics[color_by]:.2f}"

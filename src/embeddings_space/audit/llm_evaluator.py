@@ -22,6 +22,7 @@ class EvaluationMetrics(Enum):
     ENGAGEMENT = "engagement"
     FACTUALITY = "factuality"
     CONCISENESS = "conciseness"
+    MEANINGFULNESS = "meaningfulness"
 
 
 @dataclass
@@ -114,6 +115,14 @@ class LLMEvaluator:
                 - Is there unnecessary verbosity or repetition?
                 - Is information presented efficiently?
                 Rate from 0-10 where 10 is optimally concise.
+            """,
+            EvaluationMetrics.MEANINGFULNESS: """
+                Evaluate the meaningfulness of this conversation. Consider:
+                - Does the conversation address important or significant topics?
+                - Is there depth and substance to the discussion?
+                - Would this conversation provide lasting value or insights?
+                - Does it touch on meaningful questions or ideas?
+                Rate from 0-10 where 10 is highly meaningful and impactful.
             """
         }
     

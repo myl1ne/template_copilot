@@ -1,0 +1,231 @@
+{
+  "version": "1.0",
+  "generatedAt": "2026-02-11T11:01:26.924Z",
+  "totalCost": 1.2800000000000005,
+  "entities": {
+    "basic_archer": {
+      "type": "tower",
+      "path": "/assets/towers/basic_archer.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:36:34.145Z"
+    },
+    "sniper": {
+      "type": "tower",
+      "path": "/assets/towers/sniper.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:37:25.746Z"
+    },
+    "barracks": {
+      "type": "tower",
+      "path": "/assets/towers/barracks.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:38:21.307Z"
+    },
+    "catapult": {
+      "type": "tower",
+      "path": "/assets/towers/catapult.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:39:12.252Z"
+    },
+    "fire_mage": {
+      "type": "tower",
+      "path": "/assets/towers/fire_mage.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:40:01.039Z"
+    },
+    "frost_shard": {
+      "type": "tower",
+      "path": "/assets/towers/frost_shard.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:40:35.271Z"
+    },
+    "storm_pillar": {
+      "type": "tower",
+      "path": "/assets/towers/storm_pillar.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:41:22.099Z"
+    },
+    "inferno_tower": {
+      "type": "tower",
+      "path": "/assets/towers/inferno_tower.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:42:11.720Z"
+    },
+    "shadow_archer": {
+      "type": "tower",
+      "path": "/assets/towers/shadow_archer.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:43:01.550Z"
+    },
+    "necromancer": {
+      "type": "tower",
+      "path": "/assets/towers/necromancer.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:43:54.620Z"
+    },
+    "soul_obelisk": {
+      "type": "tower",
+      "path": "/assets/towers/soul_obelisk.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:44:46.710Z"
+    },
+    "plague_spreader": {
+      "type": "tower",
+      "path": "/assets/towers/plague_spreader.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:45:44.707Z"
+    },
+    "elven_ranger": {
+      "type": "tower",
+      "path": "/assets/towers/elven_ranger.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:46:34.509Z"
+    },
+    "moonwell": {
+      "type": "tower",
+      "path": "/assets/towers/moonwell.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:47:23.020Z"
+    },
+    "ancient_treant": {
+      "type": "tower",
+      "path": "/assets/towers/ancient_treant.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:48:18.189Z"
+    },
+    "sunbeam_spire": {
+      "type": "tower",
+      "path": "/assets/towers/sunbeam_spire.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:49:04.510Z"
+    },
+    "auto_turret": {
+      "type": "tower",
+      "path": "/assets/towers/auto_turret.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:49:56.058Z"
+    },
+    "missile_battery": {
+      "type": "tower",
+      "path": "/assets/towers/missile_battery.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:50:47.386Z"
+    },
+    "tesla_coil": {
+      "type": "tower",
+      "path": "/assets/towers/tesla_coil.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:51:36.483Z"
+    },
+    "void_cannon": {
+      "type": "tower",
+      "path": "/assets/towers/void_cannon.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:52:29.742Z"
+    },
+    "corrupted_hound": {
+      "type": "monster",
+      "path": "/assets/monsters/corrupted_hound.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:53:16.984Z"
+    },
+    "twisted_warrior": {
+      "type": "monster",
+      "path": "/assets/monsters/twisted_warrior.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:54:05.130Z"
+    },
+    "corrupted_swarm": {
+      "type": "monster",
+      "path": "/assets/monsters/corrupted_swarm.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:54:38.117Z"
+    },
+    "corrupted_brute": {
+      "type": "monster",
+      "path": "/assets/monsters/corrupted_brute.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:55:14.776Z"
+    },
+    "shadow_stalker": {
+      "type": "monster",
+      "path": "/assets/monsters/shadow_stalker.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:56:02.266Z"
+    },
+    "shadow_wraith": {
+      "type": "monster",
+      "path": "/assets/monsters/shadow_wraith.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:56:51.604Z"
+    },
+    "void_harbinger": {
+      "type": "monster",
+      "path": "/assets/monsters/void_harbinger.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:57:30.342Z"
+    },
+    "undead_skeleton": {
+      "type": "monster",
+      "path": "/assets/monsters/undead_skeleton.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:58:18.884Z"
+    },
+    "elemental_golem": {
+      "type": "monster",
+      "path": "/assets/monsters/elemental_golem.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:58:55.431Z"
+    },
+    "decay_lord": {
+      "type": "monster",
+      "path": "/assets/monsters/decay_lord.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T10:59:48.617Z"
+    },
+    "infernal_titan": {
+      "type": "monster",
+      "path": "/assets/monsters/infernal_titan.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T11:00:38.873Z"
+    },
+    "void_nexus": {
+      "type": "monster",
+      "path": "/assets/monsters/void_nexus.png",
+      "prompt": "Text-to-image generation",
+      "cost": 0.04,
+      "generatedAt": "2026-02-11T11:01:26.924Z"
+    }
+  }
+}

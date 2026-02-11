@@ -1,81 +1,158 @@
-# [Project Name] Template
+# Nexus Breach
 
-> **Note**: This is a meta-template repository. Replace `[Project Name]` and all placeholder content with your actual project information.
+**A roguelike tower defense game with procedurally generated art**
 
-Template for kickstarting new projects with GitHub Copilot-managed documentation.
+Nexus Breach is a browser-based tower defense game featuring 5 unique races, 20 distinct towers, and roguelike progression elements. Built with TypeScript, React, and Pixi.js, the game features 100% procedurally generated visuals using geometric shape primitives.
 
-## 🚀 Quick Start
+## Features
 
-1. **Use this template** to create a new repository
-2. **Replace placeholders** in all documentation files with your project information
-3. **Configure GitHub Copilot** to automatically maintain your documentation
-4. **Set up issue labels** for automatic backlog synchronization
+- **5 Unique Races**: Human, Elemental, Undead, Elven, and Mechanical, each with distinct towers and passive abilities
+- **20 Towers**: 4 towers per race with unique upgrade paths (levels 1-10)
+- **40 Abilities**: Towers unlock powerful abilities at levels 5 and 10
+- **Roguelike Progression**: Unlock new towers, earn buffs, and make strategic choices between runs
+- **15 Monster Types**: 12 regular enemies plus 3 epic boss encounters
+- **30 Waves**: Progressively challenging waves with boss fights every 10 waves
+- **Status Effects**: Slow, stun, freeze, burn, poison, and weakness
+- **Procedural Art**: All game entities rendered using geometric shapes (no sprite assets)
 
-## 📚 Documentation Structure
+## Quick Start
 
-This template provides a complete documentation ecosystem that GitHub Copilot will maintain:
+### Prerequisites
 
-### Core Documents
-- **[Project Overview](docs/project-overview.md)** - One-page summary of your project
-- **[Status & Roadmap](docs/roadmap.md)** - Current status and long-term planning
-- **[Current Backlog](docs/backlog.md)** - Task tracking synchronized with GitHub Issues
+- Node.js 18+ and npm
 
-### Copilot Configuration
-- **[Copilot Instructions](.github/copilot-instructions.md)** - Instructions for maintaining documentation
+### Installation
 
-## 🤖 How It Works
+```bash
+# Clone the repository
+git clone <repository-url>
+cd template_copilot
 
-This template includes:
+# Install dependencies
+npm install
 
-1. **GitHub Copilot Instructions** - Automated documentation maintenance rules
-2. **Structured Templates** - Consistent format for all project documentation  
-3. **GitHub Integration** - Automatic synchronization with issues and project boards
-4. **Living Documentation** - Documents that evolve with your project
+# Start development server
+npm run dev
+```
 
-## 🛠️ Customization
+The game will open at `http://localhost:5173`
 
-After using this template:
+### Build for Production
 
-1. **Update Project Information**:
-   - Replace `[Project Name]` throughout all files
-   - Add your actual project description and details
-   - Configure repository-specific information
+```bash
+npm run build
+npm run preview
+```
 
-2. **Customize Documentation**:
-   - Modify templates to match your project needs
-   - Add project-specific sections or remove unused ones
-   - Update the roadmap with your actual goals
+## Tech Stack
 
-3. **Configure GitHub Integration**:
-   - Set up issue labels for automatic backlog updates
-   - Configure project boards if needed
-   - Enable GitHub Copilot for your repository
+- **Frontend**: React 18, TypeScript
+- **Game Engine**: Pixi.js 7 (WebGL 2D rendering)
+- **State Management**: Zustand + Immer
+- **Build Tool**: Vite
+- **Code Quality**: Strict TypeScript, ESLint
 
-## 📖 Usage Guide
+## Project Structure
 
-### For Project Maintainers
-- The documentation will be automatically updated by GitHub Copilot
-- Review and approve Copilot's suggested changes
-- Manually update when major project changes occur
+```
+src/
+├── components/          # React UI components
+│   ├── game/           # GameCanvas, GameHUD
+│   └── ui/             # Menus, panels, modals
+├── core/               # Game loop, grid, pathfinding, math
+├── systems/            # Combat, wave, targeting, ability, upgrade
+├── managers/           # Tower, monster, projectile managers
+├── data/               # Tower/monster/ability/wave definitions
+├── rendering/          # Pixi.js renderer, procedural art
+├── abilities/          # Ability framework (triggers, effects)
+├── roguelike/          # Run manager, reward system
+├── types/              # TypeScript type definitions
+└── store/              # Zustand state stores
+```
 
-### For Contributors
-- Check the [backlog](docs/backlog.md) for current tasks
-- Refer to the [roadmap](docs/roadmap.md) for project direction
-- Read the [project overview](docs/project-overview.md) for context
+## How to Play
 
-## 🎯 Benefits
+1. **Select a Race**: Choose from 5 races, each with unique passive abilities
+2. **Place Towers**: Click a tower card, then click on the grid to place
+3. **Start Waves**: Click "Start Wave" to spawn enemies
+4. **Upgrade Towers**: Click towers to view stats and upgrade (max level 10)
+5. **Earn Rewards**: After each wave, choose from 3 rewards (new towers, buffs, gold, lives)
+6. **Survive**: Prevent enemies from reaching the exit and depleting your lives
 
-- **Consistent Documentation** - Standardized format across all projects
-- **Automated Maintenance** - Reduced manual documentation overhead  
-- **GitHub Integration** - Seamless connection with development workflow
-- **Living Documents** - Documentation that stays current with development
+## Game Systems
+
+### Tower Races
+
+- **Human**: Physical damage, versatile and balanced
+- **Elemental**: Magic specialists (fire, ice, lightning)
+- **Undead**: Shadow and poison damage over time
+- **Elven**: Holy and nature damage with support abilities
+- **Mechanical**: Technology-based towers with explosives and void damage
+
+### Damage Types
+
+Physical, Fire, Ice, Lightning, Shadow, Holy, Void
+
+Each monster has unique resistances and weaknesses to different damage types.
+
+### Status Effects
+
+- **Slow**: Reduces movement speed
+- **Stun**: Stops movement completely
+- **Freeze**: Combines slow and stun
+- **Burn**: Fire damage over time
+- **Poison**: Shadow damage over time
+- **Weakness**: Amplifies incoming damage
+
+## Development
+
+### Commands
+
+```bash
+npm run dev      # Start dev server with hot reload
+npm run build    # Build for production
+npm run preview  # Preview production build locally
+npm run lint     # Run ESLint
+```
+
+### Debugging
+
+The game exposes debug objects to the browser console:
+
+- `window.game` - Main Game instance
+- `window.runManager` - RunManager instance (race, towers, buffs)
+
+### Adding Content
+
+See [docs/content-guide.md](docs/content-guide.md) for detailed guides on:
+- Adding new towers
+- Creating monsters
+- Defining abilities
+- Designing waves
+
+## Documentation
+
+- [Project Overview](docs/project-overview.md) - Detailed project information
+- [Architecture](docs/architecture.md) - Technical architecture and design patterns
+- [Roadmap](docs/roadmap.md) - Current status and future plans
+- [Development Guide](docs/development.md) - Setup and debugging information
+- [Technical Debt](docs/technical-debt.md) - Known issues and refactoring opportunities
+- [Generative AI Pipeline](docs/generative-ai-pipeline.md) - Strategy for AI-generated assets
+
+## Version
+
+**v0.1.0** - Initial release with core gameplay and all 5 races
+
+See [CHANGELOG.md](CHANGELOG.md) for version history.
+
+## License
+
+MIT License - See LICENSE file for details
+
+## Contributing
+
+This project is currently in active development. Contributions, bug reports, and feature requests are welcome!
 
 ---
 
-## Template Information
-
-This is the `template_copilot` repository - a meta-template for creating copilot-managed documentation systems.
-
-**Template Version**: 1.0.0  
-**Last Updated**: 2024-09-27  
-**License**: MIT
+Built with ❤️ using React, TypeScript, and Pixi.js
